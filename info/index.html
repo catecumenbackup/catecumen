@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<link rel="icon" type="image/x-icon" href="/cat.ico" />
+<link rel="shortcut icon" href="/cat.ico" />
+
+<title>Sobre Catecumen</title>
+
+<script>
+  // Idioma: primero respeta la preferencia guardada por la plataforma principal
+  // (misma clave que usa App.jsx), y si no existe, detecta del navegador.
+  var SUPPORTED = ["es","en","fr","de","pt","it"];
+  var stored = null;
+  try { stored = localStorage.getItem("catecumen_lang"); } catch (e) {}
+  var lang;
+  if (stored && SUPPORTED.indexOf(stored) !== -1) {
+    lang = stored;
+  } else {
+    var nav = (navigator.language || navigator.userLanguage || "es").toLowerCase().split("-")[0];
+    lang = SUPPORTED.indexOf(nav) !== -1 ? nav : "es";
+  }
+  document.documentElement.lang = lang;
+
+  // ── Tema (sincronizado con la app vía localStorage "catecumen_theme") ──
+  // Se aplica temprano para evitar parpadeo.
+  (function(){
+    var pref = "light";
+    try { pref = localStorage.getItem("catecumen_theme") || "light"; } catch(e){}
+    var sysDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    var effective = pref === "system" ? (sysDark ? "dark" : "light") : pref;
+    document.documentElement.setAttribute("data-theme", effective);
+  })();
+
+  var TITLES = {
+    es: "Sobre Catecumen", en: "About Catecumen", fr: "À propos de Catecumen",
+    de: "Über Catecumen", pt: "Sobre a Catecumen", it: "Su Catecumen",
+  };
+  document.title = TITLES[lang] || TITLES.es;
+</script>
+
+<meta name="description" content="Formación sacramental católica a distancia: catecúmenos, padres, padrinos y catequistas. Fiel a la Revelación, la Tradición y el Magisterio."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet"/>
+<style>
+  :root, [data-theme="dark"]{
+    --bg:#060D18; --surface:#0C1829; --card:#112038;
+    --gold:#C8A951; --gold-l:#E5C97A; 
+    --ivory:#FFFFFF; /* Blanco puro para máxima legibilidad (UX) */
+    --ivory-m:#EAEAEA; /* Blanco humo para textos secundarios, excelente contraste */
+    --border:rgba(200,169,81,0.18); --border-d:rgba(255,255,255,0.07);
+    --green:#3DA070;
+  }
+  [data-theme="light"]{
+    --bg:#FBF6EA; --surface:#F5EDDA; --card:#FFFFFF;
+    --gold:#6F5310;   /* dorado oscuro: buen contraste para encabezados/acentos */
+    --gold-l:#856416; /* dorado medio: legible como texto sobre crema */
+    --ivory:#241F14;  /* texto principal (casi negro cálido) */
+    --ivory-m:#524B3B;/* texto secundario */
+    --border:rgba(200,169,81,0.40); --border-d:rgba(0,0,0,0.08);
+    --green:#2E7D55;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  
+  /* FONDO ACTUALIZADO */
+  body{
+    background:
+      /* Brillo sutil en la parte superior */
+      radial-gradient(1400px 700px at 50% -12%, rgba(200,169,81,0.15), transparent 60%),
+      
+      linear-gradient(170deg, rgba(10,22,38,0.85) 0%, rgba(6,13,24,0.9) 50%, rgba(4,8,15,0.95) 100%),
+      
+      url('/fondocatecumen.jpg') no-repeat center center;
+    background-size: cover;
+    background-attachment: fixed;
+    color:var(--ivory); font-family:'Crimson Text',serif; line-height:1.7;
+  }
+  /* ── FONDO TEMA CLARO ── */
+  [data-theme="light"] body{
+    background:
+      radial-gradient(1400px 700px at 50% -12%, rgba(200,169,81,0.14), transparent 60%),
+      linear-gradient(170deg, rgba(251,246,234,0.92) 0%, rgba(245,237,218,0.94) 55%, rgba(240,231,214,0.96) 100%),
+      url('/fondocatecumen-claro.jpg') no-repeat center center;
+    background-size: cover;
+    background-attachment: fixed;
+    color: var(--ivory);
+  }
+  /* ── botón de control visual (tema claro/oscuro) ── */
+  .theme-switcher{position:fixed;top:14px;right:62px;z-index:3000}
+  .theme-btn{
+    width:40px;height:40px;border-radius:50%;cursor:pointer;
+    background:rgba(200,169,81,0.18);border:1.5px solid var(--gold);
+    display:flex;align-items:center;justify-content:center;
+    line-height:1; color:var(--gold);
+    box-shadow:0 4px 14px rgba(0,0,0,.35);
+  }
+  .theme-btn:hover{background:rgba(200,169,81,0.30)}
+  .theme-btn svg{display:block}
+
+  .wrap{max-width:880px;margin:0 auto;padding:0 22px}
+  
+  /* ── encabezado con LOGO ACTUALIZADO ── */
+  header{padding:64px 0 40px;text-align:center}
+  .crest{
+    margin-bottom: 20px;
+    filter: drop-shadow(0 2px 14px rgba(200,169,81,.45));
+  }
+  .crest img{
+    height: 150px;
+    width: auto;
+    display: inline-block;
+    vertical-align: middle;
+  }
+  
+  .eyebrow{
+    font-family:'Cinzel',serif;font-size:20px;letter-spacing:.3em;text-transform:uppercase;
+    color:var(--gold-l);margin-bottom:14px;
+  }
+  .hero-img{
+    display:block;width:100%;max-width:640px;height:auto;margin:0 auto 28px;
+    border-radius:14px;border:1px solid rgba(200,169,81,.28);
+    box-shadow:0 12px 34px rgba(0,0,0,.45);
+  }
+  h1{
+    font-family:'Cinzel',serif;font-weight:900;color:var(--gold);
+    font-size:clamp(20px, 4.5vw, 32px);letter-spacing:.04em;line-height:1.25;margin-bottom:16px;
+  }
+  .lede{font-size:clamp(16px,2.6vw,19px);color:var(--ivory);max-width:640px;margin:0 auto 28px}
+  .lede em{color:var(--gold-l);font-style:italic}
+  .cta{
+    display:inline-flex;align-items:center;gap:8px;text-decoration:none;
+    font-family:'Cinzel',serif;font-size:13px;font-weight:700;letter-spacing:.07em;
+    color:var(--bg);padding:14px 34px;border-radius:10px;
+    background:linear-gradient(135deg,var(--gold-l) 0%,var(--gold) 45%,#9A7A2A 100%);
+    box-shadow:0 2px 14px rgba(200,169,81,.4), 0 1px 0 rgba(255,255,255,.15) inset;
+    transition:transform .15s ease;
+  }
+  .cta:hover{transform:translateY(-2px)}
+  .cta:focus-visible{outline:2px solid var(--gold-l);outline-offset:3px}
+  .cta.sec{
+    background:transparent;color:var(--gold);border:1px solid rgba(200,169,81,.45);
+    box-shadow:none;
+  }
+  .ctas{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+  /* ── secciones ── */
+  section{padding:44px 0;border-top:1px solid var(--border-d)}
+  h2{
+    font-family:'Cinzel',serif;font-weight:700;color:var(--gold);font-size:20px;
+    letter-spacing:.1em;text-transform:uppercase;text-align:center;margin-bottom:8px;
+  }
+  .h2sub{color:var(--ivory-m);text-align:center;font-size:18.5px;max-width:680px;margin:0 auto 32px}
+  
+  /* ── cita magisterial ── */
+  .cita-magisterial{
+    max-width:720px; margin:0 auto; padding: 24px; 
+    background: linear-gradient(90deg, rgba(200,169,81,0.08) 0%, transparent 100%);
+    border-left: 3px solid var(--gold); border-radius: 4px;
+  }
+  .cita-magisterial p.principal{ margin-bottom: 12px; font-size: 16px; color: var(--ivory); }
+  .cita-magisterial p.secundario{ font-size: 15px; color: var(--ivory-m); }
+
+  /* ── firma: el camino de la iniciación ── */
+  .camino{position:relative;max-width:560px;margin:0 auto;padding-left:34px}
+  .camino::before{
+    content:"";position:absolute;left:11px;top:14px;bottom:14px;width:2px;
+    background:linear-gradient(180deg,transparent, var(--gold) 12%, var(--gold) 88%, transparent);
+    box-shadow:0 0 12px rgba(200,169,81,.55);
+  }
+  .paso{position:relative;padding:0 0 30px}
+  .paso:last-child{padding-bottom:0}
+  .paso::before{
+    content:"";position:absolute;left:-30px;top:8px;width:12px;height:12px;border-radius:50%;
+    background:var(--gold);box-shadow:0 0 0 4px rgba(200,169,81,.18), 0 0 14px rgba(200,169,81,.7);
+  }
+  .paso h3{font-family:'Cinzel',serif;color:var(--gold-l);font-size:16px;letter-spacing:.06em;margin-bottom:4px}
+  .paso p{color:var(--ivory-m);font-size:15px}
+  
+  /* ── tarjetas ── */
+  .grid{display:grid;grid-template-columns:repeat(2, 1fr);gap:14px}
+  
+  .tarjeta{
+    background:linear-gradient(145deg,rgba(17,32,56,0.85) 0%,rgba(14,27,46,0.95) 100%);
+    backdrop-filter: blur(5px);
+    border:1px solid var(--border-d);border-radius:14px;padding:20px 22px;
+    box-shadow:0 4px 20px rgba(0,0,0,.35);
+  }
+  .tarjeta .ico{font-size:26px;margin-bottom:8px}
+  /* .tarjeta tiene fondo oscuro FIJO (no varía con el tema) — su tipografía
+     también debe quedar fija en tonos claros, o se vuelve ilegible cuando
+     el sitio está en tema claro (las variables --ivory/--ivory-m/--gold-l
+     se invierten a tonos oscuros pensados para fondos claros). */
+  .tarjeta h3{font-family:'Cinzel',serif;color:#E5C97A;font-size:14px;letter-spacing:.05em;margin-bottom:6px}
+  .tarjeta p{color:#EAEAEA;font-size:14.5px}
+  .tarjeta.beca{border-color:rgba(200,169,81,.35);background:linear-gradient(145deg,rgba(200,169,81,.07) 0%,rgba(14,27,46,0.95) 100%)}
+  .tarjeta .libre{color:var(--green);font-family:'Cinzel',serif;font-size:11px;letter-spacing:.08em;display:block;margin-top:8px}
+
+  /* Estilos específicos para las listas en la reseña de fundadores */
+  .tarjeta ul { padding-left: 20px; margin-top: 12px; }
+  .tarjeta ul li { color: #EAEAEA; font-size: 14.5px; margin-bottom: 8px; }
+  .tarjeta strong { color: #FFFFFF; font-weight: 600; }
+
+  /* ── lista "cómo funciona" ── */
+  .pasos-num{max-width:620px;margin:0 auto}
+  .pn{display:flex;gap:14px;align-items:flex-start;padding:12px 0;border-bottom:1px dashed var(--border-d)}
+  .pn:last-child{border-bottom:none}
+  .pn .n{
+    font-family:'Cinzel',serif;color:var(--gold);border:1px solid rgba(200,169,81,.4);
+    border-radius:50%;width:30px;height:30px;flex-shrink:0;display:flex;align-items:center;
+    justify-content:center;font-size:13px;margin-top:2px;
+    background: rgba(17,32,56,0.5);
+  }
+  .pn p{color:var(--ivory);font-size:15.5px}
+  .pn p small{color:var(--ivory-m)}
+  
+  /* ── pie ── */
+  footer{padding:48px 0 56px;text-align:center;border-top:1px solid var(--border-d)}
+  footer p{color:var(--ivory-m);font-size:13.5px;margin-top:18px}
+  footer .sello{font-family:'Cinzel',serif;color:var(--gold-l);font-size:11px;letter-spacing:.22em;text-transform:uppercase;margin-bottom:18px}
+  /* Idioma: el JS pone lang en <html>; cada texto existe en 6 variantes */
+  html:not([lang="es"]) .es{display:none}
+  html:not([lang="en"]) .en{display:none}
+  html:not([lang="fr"]) .fr{display:none}
+  html:not([lang="de"]) .de{display:none}
+  html:not([lang="pt"]) .pt{display:none}
+  html:not([lang="it"]) .it{display:none}
+.logo-footer {
+    width: 200px; /* <-- Cambia este valor al tamaño exacto que desees (ej. 150px, 250px) */
+    height: auto; /* Mantiene la proporción para que no se deforme */
+    display: block;
+    margin: 0 auto 15px auto; /* Centra el logo y deja un espacio abajo */
+    border-radius: 8px;
+}
+  /* MEDIA QUERY: En celulares de 768px o menos, pasa a 1 sola columna para que no se aprieten */
+  @media (max-width: 768px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+  /* ── selector de idioma ── */
+  .lang-switcher{position:fixed;top:14px;right:14px;z-index:3000}
+  .lang-btn{
+    width:40px;height:40px;border-radius:50%;cursor:pointer;
+    background:var(--card);border:1px solid var(--border);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 4px 14px rgba(0,0,0,.35);
+  }
+  .lang-btn img{width:20px;height:20px;border-radius:3px;display:block}
+  .lang-menu{
+    display:none;position:absolute;top:48px;right:0;min-width:180px;
+    background:var(--card);border:1px solid var(--border);border-radius:12px;
+    padding:6px;box-shadow:0 12px 30px rgba(0,0,0,.4);
+  }
+  .lang-menu.open{display:block}
+  .lang-opt{
+    width:100%;display:flex;align-items:center;gap:10px;background:transparent;
+    border:none;border-radius:8px;padding:9px 10px;cursor:pointer;
+    color:var(--ivory);font-family:'Crimson Text',serif;font-size:14.5px;text-align:left;
+  }
+  .lang-opt:hover,.lang-opt.active{background:rgba(200,169,81,0.14)}
+  .lang-opt img{width:16px;height:16px;border-radius:3px}
+  .lang-opt .chk{margin-left:auto;color:var(--gold)}
+</style>
+</head>
+<body>
+<div class="theme-switcher">
+  <button class="theme-btn" id="theme-btn" aria-label="Cambiar tema / Toggle theme"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></button>
+</div>
+<div class="lang-switcher">
+  <button class="lang-btn" id="lang-btn" aria-label="Cambiar idioma / Change language"></button>
+  <div class="lang-menu" id="lang-menu"></div>
+</div>
+<script>
+  (function(){
+    var NAMES = {
+      es:{es:"Español",en:"Spanish",fr:"Espagnol",de:"Spanisch",pt:"Espanhol",it:"Spagnolo"},
+      en:{es:"Inglés",en:"English",fr:"Anglais",de:"Englisch",pt:"Inglês",it:"Inglese"},
+      fr:{es:"Francés",en:"French",fr:"Français",de:"Französisch",pt:"Francês",it:"Francese"},
+      de:{es:"Alemán",en:"German",fr:"Allemand",de:"Deutsch",pt:"Alemão",it:"Tedesco"},
+      pt:{es:"Portugués",en:"Portuguese",fr:"Portugais",de:"Portugiesisch",pt:"Português",it:"Portoghese"},
+      it:{es:"Italiano",en:"Italian",fr:"Italien",de:"Italienisch",pt:"Italiano",it:"Italiano"},
+    };
+    var FLAG_CODE = {es:"ES",en:"US",fr:"FR",de:"DE",pt:"PT",it:"IT"};
+    function flagUrl(cc){
+      var cps = cc.toUpperCase().split("").map(function(c){
+        return (0x1F1E6 + c.charCodeAt(0) - 65).toString(16);
+      }).join("-");
+      return "https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/svg/" + cps + ".svg";
+    }
+    var current = document.documentElement.lang || "es";
+    var btn = document.getElementById("lang-btn");
+    var menu = document.getElementById("lang-menu");
+    var img = document.createElement("img");
+    img.src = flagUrl(FLAG_CODE[current] || "ES");
+    img.alt = current;
+    btn.appendChild(img);
+
+    SUPPORTED.forEach(function(code){
+      var opt = document.createElement("button");
+      opt.className = "lang-opt" + (code === current ? " active" : "");
+      var i = document.createElement("img");
+      i.src = flagUrl(FLAG_CODE[code]);
+      var span = document.createElement("span");
+      span.textContent = (NAMES[code] && NAMES[code][current]) || code;
+      opt.appendChild(i);
+      opt.appendChild(span);
+      if (code === current) {
+        var chk = document.createElement("span");
+        chk.className = "chk"; chk.textContent = "✓";
+        opt.appendChild(chk);
+      }
+      opt.addEventListener("click", function(){
+        try { localStorage.setItem("catecumen_lang", code); } catch(e){}
+        location.reload();
+      });
+      menu.appendChild(opt);
+    });
+
+    btn.addEventListener("click", function(e){
+      e.stopPropagation();
+      menu.classList.toggle("open");
+    });
+    document.addEventListener("click", function(){ menu.classList.remove("open"); });
+  })();
+</script>
+<div class="wrap">
+
+  <header>
+    <!-- SUSTITUCIÓN POR EL NUEVO FORMATO VECTORIAL (cicadi.svg) -->
+    <div class="crest">
+      <img src="/assets/CICADI-DzzUgdeo.svg" alt="Logo CICADI" />
+    </div>
+    <p class="eyebrow">
+      <span class="es">Centro Internacional de Catequesis a Distancia</span>
+      <span class="en">International Center for Distance Catechesis</span>
+      <span class="fr">Centre International de Catéchèse à Distance</span>
+      <span class="de">Internationales Zentrum für Fernkatechese</span>
+      <span class="pt">Centro Internacional de Catequese a Distância</span>
+      <span class="it">Centro Internazionale di Catechesi a Distanza</span>
+    </p>
+    <img class="hero-img" src="/bienvenida-comunidad.jpg"
+         alt="Centro Internacional de Catequesis a Distancia"/>
+    <h1>
+      <span class="es">Tu camino hacia los sacramentos, a tu propio ritmo</span>
+      <span class="en">Your path to the sacraments, at your own pace</span>
+      <span class="fr">Votre chemin vers les sacrements, à votre propre rythme</span>
+      <span class="de">Ihr Weg zu den Sakramenten, in Ihrem eigenen Tempo</span>
+      <span class="pt">Seu caminho até os sacramentos, no seu próprio ritmo</span>
+      <span class="it">Il tuo cammino verso i sacramenti, al tuo ritmo</span>
+    </h1>
+    <p class="lede">
+      <span class="es">CICADI impulsa Catecumen, la primera plataforma católica a distancia, basada en neuropedagogía catequética, en la <em>Revelación Bíblica</em>, la <em>Tradición</em> y el <em>Magisterio</em> de la Iglesia, con el soporte de Magisterium AI.</span>
+      <span class="en">ICDC launches Catecumen, the first Catholic distance learning platform based on catechetical neuropedagogy, on <em>Biblical Revelation</em>, <em>Tradition</em> and the <em>Magisterium</em> of the Church, supported by Magisterium AI.</span>
+      <span class="fr">L'ICDC propulse Catecumen, la première plateforme catholique d'enseignement à distance basée sur la neuropédagogie catéchétique, sur la <em>Révélation biblique</em>, la <em>Tradition</em> et le <em>Magistère</em> de l'Église, avec le soutien de Magisterium AI.</span>
+      <span class="de">Das ICDC treibt Catecumen voran, die erste katholische Fernlernplattform auf Grundlage der katechetischen Neuropädagogik, gegründet auf der <em>biblischen Offenbarung</em>, der <em>Tradition</em> und dem <em>Lehramt</em> der Kirche, mit Unterstützung von Magisterium AI.</span>
+      <span class="pt">A ICDC impulsiona a Catecumen, a primeira plataforma católica a distância baseada em neuropedagogia catequética, na <em>Revelação Bíblica</em>, na <em>Tradição</em> e no <em>Magistério</em> da Igreja, com o apoio da Magisterium AI.</span>
+      <span class="it">L'ICDC promuove Catecumen, la prima piattaforma cattolica a distanza basata sulla neuropedagogia catechetica, sulla <em>Rivelazione biblica</em>, sulla <em>Tradizione</em> e sul <em>Magistero</em> della Chiesa, con il supporto di Magisterium AI.</span>
+    </p>
+    <div class="ctas">
+      <a class="cta" href="https://www.catecumen.com">✝️
+        <span class="es">Comenzar mi formación</span><span class="en">Begin my formation</span>
+        <span class="fr">Commencer ma formation</span><span class="de">Meine Ausbildung beginnen</span>
+        <span class="pt">Começar minha formação</span><span class="it">Inizia la mia formazione</span>
+      </a>
+      <a class="cta sec" href="#afiliaciones">
+        <span class="es">Soy parroquia o institución</span><span class="en">I'm a parish or institution</span>
+        <span class="fr">Je suis une paroisse ou une institution</span><span class="de">Ich bin eine Pfarrei oder Einrichtung</span>
+        <span class="pt">Sou uma paróquia ou instituição</span><span class="it">Sono una parrocchia o istituzione</span>
+      </a>
+    </div>
+  </header>
+
+  <section aria-labelledby="s-porque">
+    <h2 id="s-porque">
+      <span class="es">¿Por qué existe CICADI?</span><span class="en">Why does ICDC exist?</span>
+      <span class="fr">Pourquoi l'ICDC existe-t-il ?</span><span class="de">Warum gibt es das ICDC?</span>
+      <span class="pt">Por que existe a ICDC?</span><span class="it">Perché esiste l'ICDC?</span>
+    </h2>
+    <p class="h2sub">
+      <span class="es">Llevando la catequesis a las periferias existenciales de la vida moderna.</span>
+      <span class="en">Bringing catechesis to the existential peripheries of modern life.</span>
+      <span class="fr">Porter la catéchèse aux périphéries existentielles de la vie moderne.</span>
+      <span class="de">Die Katechese zu den existenziellen Peripherien des modernen Lebens bringen.</span>
+      <span class="pt">Levando a catequese às periferias existenciais da vida moderna.</span>
+      <span class="it">Portare la catechesi alle periferie esistenziali della vita moderna.</span>
+    </p>
+
+    <div style="max-width:720px; margin:0 auto 32px; text-align: center;">
+      <p>
+        <span class="es">Existe una creciente demandada de adultos que desean recibir los Sacramentos de Iniciación Cristiana, pero la intensidad de la vida diaria les impide participar en una catequesis presencial tradicional. CICADI nace para acompañar a quienes necesitan flexibilidad:</span>
+        <span class="en">There is a growing demand from adults who wish to receive the Sacraments of Christian Initiation, but the intensity of daily life prevents them from participating in traditional in-person catechesis. CICADI was created to accompany those who need flexibility:</span>
+        <span class="fr">Il existe une demande croissante d'adultes souhaitant recevoir les Sacrements de l'Initiation Chrétienne, mais l'intensité de la vie quotidienne les empêche de participer à une catéchèse traditionnelle en présentiel. L'ICDC est né pour accompagner ceux qui ont besoin de flexibilité :</span>
+        <span class="de">Es gibt eine wachsende Nachfrage von Erwachsenen, die die Sakramente der christlichen Initiation empfangen möchten, aber die Intensität des Alltags hindert sie an der Teilnahme an traditioneller Präsenzkatechese. Das ICDC wurde gegründet, um diejenigen zu begleiten, die Flexibilität benötigen:</span>
+        <span class="pt">Existe uma demanda crescente de adultos que desejam receber os Sacramentos de Iniciação Cristã, mas a intensidade da vida diária os impede de participar de uma catequese presencial tradicional. A ICDC nasce para acompanhar quem precisa de flexibilidade:</span>
+        <span class="it">Esiste una domanda crescente di adulti che desiderano ricevere i Sacramenti dell'Iniziazione Cristiana, ma l'intensità della vita quotidiana impedisce loro di partecipare a una catechesi tradizionale in presenza. L'ICDC nasce per accompagnare chi ha bisogno di flessibilità:</span>
+      </p>
+    </div>
+
+    <div class="grid" style="margin-bottom: 36px;">
+      <div class="tarjeta"><div class="ico">💼</div>
+        <h3>
+          <span class="es">Ejecutivos y Profesionistas</span><span class="en">Executives & Professionals</span>
+          <span class="fr">Cadres et Professionnels</span><span class="de">Führungskräfte und Fachleute</span>
+          <span class="pt">Executivos e Profissionais</span><span class="it">Dirigenti e Professionisti</span>
+        </h3>
+        <p>
+          <span class="es">Personas con horarios en constante cambio y traslados continuos que no pueden comprometerse a una asistencia presencial fija.</span>
+          <span class="en">People with constantly changing schedules and continuous travel who cannot commit to fixed in-person attendance.</span>
+          <span class="fr">Personnes ayant des horaires en constante évolution et des déplacements continus qui ne peuvent s'engager à une présence fixe.</span>
+          <span class="de">Menschen mit ständig wechselnden Zeitplänen und häufigen Reisen, die sich nicht auf eine feste Präsenzteilnahme festlegen können.</span>
+          <span class="pt">Pessoas com horários em constante mudança e deslocamentos contínuos que não podem se comprometer com uma frequência presencial fixa.</span>
+          <span class="it">Persone con orari in costante cambiamento e spostamenti continui che non possono impegnarsi a una frequenza fissa in presenza.</span>
+        </p>
+      </div>
+      <div class="tarjeta"><div class="ico">🏡</div>
+        <h3>
+          <span class="es">Amas de Casa y Madres Profesionistas</span><span class="en">Homemakers & Mothers</span>
+          <span class="fr">Femmes au Foyer et Mères Actives</span><span class="de">Hausfrauen und berufstätige Mütter</span>
+          <span class="pt">Donas de Casa e Mães Profissionais</span><span class="it">Casalinghe e Madri Lavoratrici</span>
+        </h3>
+        <p>
+          <span class="es">Quienes se enfrentan al reto diario de conjugar el arduo trabajo en el hogar con las exigencias de su vida profesional.</span>
+          <span class="en">Those facing the daily challenge of combining hard work at home with the demands of their professional life.</span>
+          <span class="fr">Celles qui font face au défi quotidien de concilier le travail intense au foyer avec les exigences de leur vie professionnelle.</span>
+          <span class="de">Diejenigen, die täglich vor der Herausforderung stehen, die anspruchsvolle Arbeit im Haushalt mit den Anforderungen ihres Berufslebens zu vereinbaren.</span>
+          <span class="pt">Quem enfrenta o desafio diário de conciliar o árduo trabalho em casa com as exigências da vida profissional.</span>
+          <span class="it">Chi affronta la sfida quotidiana di conciliare il duro lavoro domestico con le esigenze della vita professionale.</span>
+        </p>
+      </div>
+      <div class="tarjeta"><div class="ico">📚💼</div>
+        <h3>
+          <span class="es">Estudiantes Trabajadores</span><span class="en">Working Students</span>
+          <span class="fr">Étudiants Salariés</span><span class="de">Studierende Berufstätige</span>
+          <span class="pt">Estudantes Trabalhadores</span><span class="it">Studenti Lavoratori</span>
+        </h3>
+        <p>
+          <span class="es">Jóvenes y adultos que deben combinar sus responsabilidades académicas con una jornada laboral, lo que reduce drásticamente su tiempo disponible para asistir a sesiones presenciales fijas.</span>
+          <span class="en">Young people and adults who must balance academic responsibilities with a work schedule, drastically reducing their available time to attend fixed in-person sessions.</span>
+          <span class="fr">Jeunes et adultes devant concilier responsabilités académiques et emploi du temps professionnel, réduisant drastiquement leur temps disponible pour des sessions fixes en présentiel.</span>
+          <span class="de">Junge Menschen und Erwachsene, die akademische Verpflichtungen mit einem Arbeitsplan vereinbaren müssen, wodurch ihre verfügbare Zeit für feste Präsenzsitzungen drastisch reduziert wird.</span>
+          <span class="pt">Jovens e adultos que precisam combinar responsabilidades acadêmicas com uma jornada de trabalho, o que reduz drasticamente seu tempo disponível para sessões presenciais fixas.</span>
+          <span class="it">Giovani e adulti che devono conciliare gli impegni accademici con un orario di lavoro, riducendo drasticamente il tempo disponibile per sessioni fisse in presenza.</span>
+        </p>
+      </div>
+      <div class="tarjeta"><div class="ico">👷🏽‍♂️</div>
+        <h3>
+          <span class="es">Trabajadores en Zonas Remotas</span><span class="en">Remote Area Workers</span>
+          <span class="fr">Travailleurs en Zones Reculées</span><span class="de">Arbeiter in abgelegenen Gebieten</span>
+          <span class="pt">Trabalhadores em Áreas Remotas</span><span class="it">Lavoratori in Zone Remote</span>
+        </h3>
+        <p>
+          <span class="es">Obreros y trabajadores en ubicaciones distantes que simplemente no tienen acceso a centros de catequesis a su disposición.</span>
+          <span class="en">Laborers and workers in distant locations who simply do not have access to available catechesis centers.</span>
+          <span class="fr">Ouvriers et travailleurs dans des lieux éloignés qui n'ont tout simplement pas accès à des centres de catéchèse.</span>
+          <span class="de">Arbeiter an entlegenen Orten, die schlicht keinen Zugang zu verfügbaren Katechesezentren haben.</span>
+          <span class="pt">Operários e trabalhadores em locais distantes que simplesmente não têm acesso a centros de catequese disponíveis.</span>
+          <span class="it">Operai e lavoratori in luoghi distanti che semplicemente non hanno accesso a centri di catechesi disponibili.</span>
+        </p>
+      </div>
+      <div class="tarjeta"><div class="ico">⏰</div>
+        <h3>
+          <span class="es">Turnos Atípicos o Rotativos</span><span class="en">Atypical or Rotating Shifts</span>
+          <span class="fr">Horaires Atypiques ou en Rotation</span><span class="de">Untypische oder wechselnde Schichten</span>
+          <span class="pt">Turnos Atípicos ou Rotativos</span><span class="it">Turni Atipici o a Rotazione</span>
+        </h3>
+        <p>
+          <span class="es">Personal de salud, seguridad o servicios cuyos horarios nocturnos o cambiantes les impiden coincidir con las agendas parroquiales convencionales.</span>
+          <span class="en">Healthcare, security, or service personnel whose night or changing shifts prevent them from matching conventional parish schedules.</span>
+          <span class="fr">Personnel de santé, de sécurité ou de services dont les horaires de nuit ou changeants les empêchent de correspondre aux horaires paroissiaux conventionnels.</span>
+          <span class="de">Personal aus Gesundheitswesen, Sicherheit oder Dienstleistungen, dessen Nacht- oder wechselnde Schichten eine Übereinstimmung mit den üblichen Pfarreizeiten verhindern.</span>
+          <span class="pt">Profissionais de saúde, segurança ou serviços cujos turnos noturnos ou variáveis impedem que coincidam com as agendas paroquiais convencionais.</span>
+          <span class="it">Personale sanitario, di sicurezza o di servizi i cui turni notturni o variabili impediscono di coincidere con gli orari parrocchiali convenzionali.</span>
+        </p>
+      </div>
+      <div class="tarjeta"><div class="ico">🦽</div>
+        <h3>
+          <span class="es">Movilidad Reducida o Salud</span><span class="en">Reduced Mobility or Health</span>
+          <span class="fr">Mobilité Réduite ou Santé</span><span class="de">Eingeschränkte Mobilität oder Gesundheit</span>
+          <span class="pt">Mobilidade Reduzida ou Saúde</span><span class="it">Mobilità Ridotta o Salute</span>
+        </h3>
+        <p>
+          <span class="es">Adultos mayores, personas con discapacidad o pacientes en recuperación que enfrentan serias dificultades para trasladarse físicamente.</span>
+          <span class="en">Older adults, people with disabilities, or patients in recovery who face serious difficulties in physically traveling.</span>
+          <span class="fr">Personnes âgées, personnes en situation de handicap ou patients en convalescence rencontrant de sérieuses difficultés à se déplacer physiquement.</span>
+          <span class="de">Ältere Erwachsene, Menschen mit Behinderungen oder Patienten in der Genesung, die ernsthafte Schwierigkeiten haben, sich physisch fortzubewegen.</span>
+          <span class="pt">Idosos, pessoas com deficiência ou pacientes em recuperação que enfrentam sérias dificuldades para se deslocar fisicamente.</span>
+          <span class="it">Anziani, persone con disabilità o pazienti in convalescenza che affrontano serie difficoltà negli spostamenti fisici.</span>
+        </p>
+      </div>
+      <div class="tarjeta"><div class="ico">🌍</div>
+        <h3>
+          <span class="es">Expatriados y Migrantes</span><span class="en">Expatriates & Migrants</span>
+          <span class="fr">Expatriés et Migrants</span><span class="de">Expatriates und Migranten</span>
+          <span class="pt">Expatriados e Migrantes</span><span class="it">Espatriati e Migranti</span>
+        </h3>
+        <p>
+          <span class="es">Familias en países con poca presencia católica o donde el idioma local representa una barrera para recibir formación en su propia lengua.</span>
+          <span class="en">Families in countries with little Catholic presence or where the local language represents a barrier to receiving formation in their own tongue.</span>
+          <span class="fr">Familles dans des pays à faible présence catholique ou où la langue locale représente un obstacle pour recevoir une formation dans leur propre langue.</span>
+          <span class="de">Familien in Ländern mit geringer katholischer Präsenz oder wo die Landessprache ein Hindernis darstellt, um Bildung in ihrer eigenen Sprache zu erhalten.</span>
+          <span class="pt">Famílias em países com pouca presença católica ou onde o idioma local representa uma barreira para receber formação em sua própria língua.</span>
+          <span class="it">Famiglie in paesi con scarsa presenza cattolica o dove la lingua locale rappresenta una barriera per ricevere formazione nella propria lingua.</span>
+        </p>
+      </div>
+      <div class="tarjeta"><div class="ico">❤️</div>
+        <h3>
+          <span class="es">Cuidadores de Tiempo Completo</span><span class="en">Full-Time Caregivers</span>
+          <span class="fr">Aidants à Temps Plein</span><span class="de">Vollzeit-Pflegepersonen</span>
+          <span class="pt">Cuidadores em Tempo Integral</span><span class="it">Caregiver a Tempo Pieno</span>
+        </h3>
+        <p>
+          <span class="es">Personas dedicadas enteramente a la atención de familiares enfermos o dependientes, lo que les exige permanecer en el hogar de forma continua.</span>
+          <span class="en">Individuals completely dedicated to caring for sick or dependent relatives, requiring them to remain at home on a continuous basis.</span>
+          <span class="fr">Personnes entièrement dédiées aux soins de proches malades ou dépendants, ce qui les oblige à rester continuellement à domicile.</span>
+          <span class="de">Personen, die sich vollständig der Pflege kranker oder pflegebedürftiger Angehöriger widmen und daher dauerhaft zu Hause bleiben müssen.</span>
+          <span class="pt">Pessoas inteiramente dedicadas ao cuidado de familiares doentes ou dependentes, o que as obriga a permanecer em casa continuamente.</span>
+          <span class="it">Persone interamente dedicate alla cura di familiari malati o non autosufficienti, il che le obbliga a rimanere a casa continuativamente.</span>
+        </p>
+      </div>
+      <div class="tarjeta"><div class="ico">🎓</div>
+        <h3>
+          <span class="es">Estudiantes Universitarios</span><span class="en">University Students</span>
+          <span class="fr">Étudiants Universitaires</span><span class="de">Universitätsstudierende</span>
+          <span class="pt">Estudantes Universitários</span><span class="it">Studenti Universitari</span>
+        </h3>
+        <p>
+          <span class="es">Jóvenes con pesadas cargas académicas o estudiantes foráneos que necesitan una alternativa flexible que no interfiera con sus estudios.</span>
+          <span class="en">Young people with heavy academic workloads or out-of-town students who need a flexible alternative that doesn't interfere with their studies.</span>
+          <span class="fr">Jeunes ayant une lourde charge académique ou étudiants venus d'ailleurs ayant besoin d'une alternative flexible n'interférant pas avec leurs études.</span>
+          <span class="de">Junge Menschen mit hoher akademischer Belastung oder auswärtige Studierende, die eine flexible Alternative benötigen, die ihr Studium nicht beeinträchtigt.</span>
+          <span class="pt">Jovens com pesadas cargas acadêmicas ou estudantes de fora que precisam de uma alternativa flexível que não interfira em seus estudos.</span>
+          <span class="it">Giovani con pesanti carichi accademici o studenti fuori sede che necessitano di un'alternativa flessibile che non interferisca con gli studi.</span>
+        </p>
+      </div>
+      <div class="tarjeta"><div class="ico">🚢</div>
+        <h3>
+          <span class="es">Personal Militar y Marinos</span><span class="en">Military & Maritime Personnel</span>
+          <span class="fr">Personnel Militaire et Marins</span><span class="de">Militär- und Schifffahrtspersonal</span>
+          <span class="pt">Militares e Marinheiros</span><span class="it">Personale Militare e Marittimo</span>
+        </h3>
+        <p>
+          <span class="es">Profesionales sujetos a despliegues prolongados o estancias en zonas aisladas, desconectados temporalmente de una comunidad presencial.</span>
+          <span class="en">Professionals subject to prolonged deployments or stays in isolated areas, temporarily disconnected from an in-person community.</span>
+          <span class="fr">Professionnels soumis à des déploiements prolongés ou des séjours en zones isolées, temporairement déconnectés d'une communauté en présentiel.</span>
+          <span class="de">Fachkräfte, die von längeren Einsätzen oder Aufenthalten in abgelegenen Gebieten betroffen sind und zeitweise von einer Präsenzgemeinschaft getrennt sind.</span>
+          <span class="pt">Profissionais sujeitos a longos períodos de deslocamento ou estadias em áreas isoladas, temporariamente desconectados de uma comunidade presencial.</span>
+          <span class="it">Professionisti soggetti a lunghi periodi di distacco o soggiorni in zone isolate, temporaneamente disconnessi da una comunità in presenza.</span>
+        </p>
+      </div>
+    </div>
+
+    <div class="cita-magisterial">
+      <p class="principal">
+        <span class="es">CICADI busca atender al llamado de la <strong>Nueva Evangelización</strong> priorizando la integridad del mensaje del Evangelio y el anuncio de la salvación en Cristo, aprovechando al mismo tiempo las bondades del avance tecnológico.</span>
+        <span class="en">CICADI seeks to answer the call of the <strong>New Evangelization</strong> by prioritizing the integrity of the Gospel message and the proclamation of salvation in Christ, while taking advantage of the benefits of technological progress.</span>
+        <span class="fr">L'ICDC cherche à répondre à l'appel de la <strong>Nouvelle Évangélisation</strong> en priorisant l'intégrité du message de l'Évangile et l'annonce du salut dans le Christ, tout en tirant parti des bienfaits du progrès technologique.</span>
+        <span class="de">Das ICDC möchte dem Ruf der <strong>Neuevangelisierung</strong> folgen, indem es die Unversehrtheit der Botschaft des Evangeliums und die Verkündigung des Heils in Christus in den Vordergrund stellt und gleichzeitig die Vorteile des technischen Fortschritts nutzt.</span>
+        <span class="pt">A ICDC busca atender ao chamado da <strong>Nova Evangelização</strong> priorizando a integridade da mensagem do Evangelho e o anúncio da salvação em Cristo, aproveitando ao mesmo tempo os benefícios do avanço tecnológico.</span>
+        <span class="it">L'ICDC cerca di rispondere alla chiamata della <strong>Nuova Evangelizzazione</strong> dando priorità all'integrità del messaggio del Vangelo e all'annuncio della salvezza in Cristo, sfruttando al contempo i vantaggi del progresso tecnologico.</span>
+      </p>
+      <p class="secundario">
+        <span class="es">Con base en la <em>Doctrina Social de la Iglesia</em> y atendiendo a las directrices planteadas por el Santo Padre León XIV en su reciente encíclica <strong>"Magnifica Humanitas"</strong>, nuestra misión es ir a las periferias —como lo planteó su antecesor el Papa Francisco— para acercar a Dios a todo corazón que lo busque.</span>
+        <span class="en">Based on the <em>Social Doctrine of the Church</em> and attending to the directives set forth by the Holy Father Leo XIV in his recent encyclical <strong>"Magnifica Humanitas"</strong>, our mission is to go to the peripheries —as proposed by his predecessor Pope Francis— to bring God closer to every seeking heart.</span>
+        <span class="fr">Sur la base de la <em>Doctrine sociale de l'Église</em> et suivant les directives établies par le Saint-Père Léon XIV dans sa récente encyclique <strong>« Magnifica Humanitas »</strong>, notre mission est d'aller vers les périphéries — comme le proposait son prédécesseur le Pape François — pour rapprocher Dieu de tout cœur qui le cherche.</span>
+        <span class="de">Auf Grundlage der <em>Soziallehre der Kirche</em> und gemäß den Richtlinien des Heiligen Vaters Leo XIV. in seiner jüngsten Enzyklika <strong>„Magnifica Humanitas"</strong> besteht unsere Mission darin, an die Peripherien zu gehen — wie es sein Vorgänger Papst Franziskus vorschlug — um Gott jedem suchenden Herzen näherzubringen.</span>
+        <span class="pt">Com base na <em>Doutrina Social da Igreja</em> e atendendo às diretrizes apresentadas pelo Santo Padre Leão XIV em sua recente encíclica <strong>"Magnifica Humanitas"</strong>, nossa missão é ir às periferias —como propôs seu antecessor o Papa Francisco— para aproximar Deus de todo coração que o busca.</span>
+        <span class="it">Sulla base della <em>Dottrina Sociale della Chiesa</em> e seguendo le direttive proposte dal Santo Padre Leone XIV nella sua recente enciclica <strong>"Magnifica Humanitas"</strong>, la nostra missione è andare verso le periferie —come proposto dal suo predecessore Papa Francesco— per avvicinare Dio a ogni cuore che lo cerca.</span>
+      </p>
+    </div>
+  </section>
+
+  <section aria-labelledby="s-camino">
+    <h2 id="s-camino">
+      <span class="es">El camino de la iniciación cristiana</span><span class="en">The path of Christian initiation</span>
+      <span class="fr">Le chemin de l'initiation chrétienne</span><span class="de">Der Weg der christlichen Initiation</span>
+      <span class="pt">O caminho da iniciação cristã</span><span class="it">Il cammino dell'iniziazione cristiana</span>
+    </h2>
+    <p class="h2sub">
+      <span class="es">Tres sacramentos, un solo camino completo hacia la vida en Cristo.</span>
+      <span class="en">Three sacraments, one complete path into life in Christ.</span>
+      <span class="fr">Trois sacrements, un seul chemin complet vers la vie dans le Christ.</span>
+      <span class="de">Drei Sakramente, ein vollständiger Weg zum Leben in Christus.</span>
+      <span class="pt">Três sacramentos, um único caminho completo até a vida em Cristo.</span>
+      <span class="it">Tre sacramenti, un unico cammino completo verso la vita in Cristo.</span>
+    </p>
+    <div class="camino">
+      <div class="paso">
+        <h3>
+          <span class="es">Bautismo</span><span class="en">Baptism</span>
+          <span class="fr">Baptême</span><span class="de">Taufe</span>
+          <span class="pt">Batismo</span><span class="it">Battesimo</span>
+        </h3>
+        <p>
+          <span class="es">La puerta de entrada a la Iglesia y el don de una vida nueva.</span>
+          <span class="en">The doorway into the Church and the gift of new life.</span>
+          <span class="fr">La porte d'entrée dans l'Église et le don d'une vie nouvelle.</span>
+          <span class="de">Das Tor zur Kirche und das Geschenk eines neuen Lebens.</span>
+          <span class="pt">A porta de entrada para a Igreja e o dom de uma vida nova.</span>
+          <span class="it">La porta d'ingresso alla Chiesa e il dono di una vita nuova.</span>
+        </p>
+      </div>
+      <div class="paso">
+        <h3>
+          <span class="es">Confirmación</span><span class="en">Confirmation</span>
+          <span class="fr">Confirmation</span><span class="de">Firmung</span>
+          <span class="pt">Crisma</span><span class="it">Cresima</span>
+        </h3>
+        <p>
+          <span class="es">La fuerza del Espíritu Santo para ser testigo de Cristo con palabra y obra.</span>
+          <span class="en">The strength of the Holy Spirit to witness Christ in word and deed.</span>
+          <span class="fr">La force de l'Esprit Saint pour témoigner du Christ en parole et en acte.</span>
+          <span class="de">Die Kraft des Heiligen Geistes, um Christus in Wort und Tat zu bezeugen.</span>
+          <span class="pt">A força do Espírito Santo para testemunhar Cristo em palavra e obra.</span>
+          <span class="it">La forza dello Spirito Santo per testimoniare Cristo con la parola e con l'opera.</span>
+        </p>
+      </div>
+      <div class="paso">
+        <h3>
+          <span class="es">Eucaristía / Primera Comunión</span><span class="en">Eucharist / First Communion</span>
+          <span class="fr">Eucharistie / Première Communion</span><span class="de">Eucharistie / Erstkommunion</span>
+          <span class="pt">Eucaristia / Primeira Comunhão</span><span class="it">Eucaristia / Prima Comunione</span>
+        </h3>
+        <p>
+          <span class="es">El alimento de la vida nueva que completa la iniciación.</span>
+          <span class="en">The nourishment of new life that completes initiation.</span>
+          <span class="fr">L'aliment de la vie nouvelle qui achève l'initiation.</span>
+          <span class="de">Die Nahrung des neuen Lebens, die die Initiation vollendet.</span>
+          <span class="pt">O alimento da vida nova que completa a iniciação.</span>
+          <span class="it">Il nutrimento della vita nuova che completa l'iniziazione.</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="s-quien">
+    <h2 id="s-quien">
+      <span class="es">¿Para quién es CICADI?</span><span class="en">Who is ICDC for?</span>
+      <span class="fr">Pour qui est l'ICDC ?</span><span class="de">Für wen ist das ICDC?</span>
+      <span class="pt">Para quem é a ICDC?</span><span class="it">Per chi è l'ICDC?</span>
+    </h2>
+    <p class="h2sub">
+      <span class="es">Selecciona tu perfil al registrarte y la plataforma adapta tu formación.</span>
+      <span class="en">Choose your profile when registering and the platform adapts your formation.</span>
+      <span class="fr">Sélectionnez votre profil lors de l'inscription et la plateforme adapte votre formation.</span>
+      <span class="de">Wählen Sie bei der Registrierung Ihr Profil, und die Plattform passt Ihre Ausbildung an.</span>
+      <span class="pt">Selecione seu perfil ao se registrar e a plataforma adapta sua formação.</span>
+      <span class="it">Seleziona il tuo profilo al momento della registrazione e la piattaforma adatta la tua formazione.</span>
+    </p>
+    <div class="grid">
+      <div class="tarjeta"><div class="ico">✝️</div>
+        <h3>
+          <span class="es">Catecúmenos</span><span class="en">Catechumens</span>
+          <span class="fr">Catéchumènes</span><span class="de">Katechumenen</span>
+          <span class="pt">Catecúmenos</span><span class="it">Catecumeni</span>
+        </h3>
+        <p>
+          <span class="es">Para quienes desean recibir el Bautismo, la Confirmación y/o la Eucaristía.</span>
+          <span class="en">For those who wish to receive Baptism, Confirmation and/or the Eucharist.</span>
+          <span class="fr">Pour ceux qui souhaitent recevoir le Baptême, la Confirmation et/ou l'Eucharistie.</span>
+          <span class="de">Für alle, die die Taufe, die Firmung und/oder die Eucharistie empfangen möchten.</span>
+          <span class="pt">Para quem deseja receber o Batismo, a Crisma e/ou a Eucaristia.</span>
+          <span class="it">Per chi desidera ricevere il Battesimo, la Cresima e/o l'Eucaristia.</span>
+        </p>
+      </div>
+      <div class="tarjeta"><div class="ico">👨‍👩‍👧</div>
+        <h3>
+          <span class="es">Papás y mamás</span><span class="en">Parents</span>
+          <span class="fr">Parents</span><span class="de">Eltern</span>
+          <span class="pt">Pais e mães</span><span class="it">Genitori</span>
+        </h3>
+        <p>
+          <span class="es">Formación pre-sacramental para que tu hijo/a reciba sus sacramentos.</span>
+          <span class="en">Pre-sacramental formation so your child can receive their sacraments.</span>
+          <span class="fr">Formation pré-sacramentelle pour que votre enfant reçoive ses sacrements.</span>
+          <span class="de">Vorsakramentale Bildung, damit Ihr Kind seine Sakramente empfangen kann.</span>
+          <span class="pt">Formação pré-sacramental para que seu filho(a) receba seus sacramentos.</span>
+          <span class="it">Formazione pre-sacramentale affinché tuo figlio/a riceva i suoi sacramenti.</span>
+        </p>
+      </div>
+      <div class="tarjeta"><div class="ico">🤝</div>
+        <h3>
+          <span class="es">Padrinos y madrinas</span><span class="en">Godparents</span>
+          <span class="fr">Parrains et marraines</span><span class="de">Paten und Patinnen</span>
+          <span class="pt">Padrinhos e madrinhas</span><span class="it">Padrini e madrine</span>
+        </h3>
+        <p>
+          <span class="es">Preparación para acompañar dignamente a tu ahijado/a.</span>
+          <span class="en">Preparation to worthily accompany your godchild.</span>
+          <span class="fr">Préparation pour accompagner dignement votre filleul(e).</span>
+          <span class="de">Vorbereitung, um Ihr Patenkind würdig zu begleiten.</span>
+          <span class="pt">Preparação para acompanhar dignamente seu afilhado(a).</span>
+          <span class="it">Preparazione per accompagnare degnamente il tuo figlioccio/a.</span>
+        </p>
+      </div>
+      <div class="tarjeta"><div class="ico">🧠</div>
+        <h3>
+          <span class="es">Catequistas</span><span class="en">Catechists</span>
+          <span class="fr">Catéchistes</span><span class="de">Katecheten</span>
+          <span class="pt">Catequistas</span><span class="it">Catechisti</span>
+        </h3>
+        <p>
+          <span class="es">Formación en Neuropedagogía Catequética para enseñar mejor la fe.</span>
+          <span class="en">Training in Catechetical Neuropedagogy to teach the faith better.</span>
+          <span class="fr">Formation en Neuropédagogie Catéchétique pour mieux enseigner la foi.</span>
+          <span class="de">Ausbildung in Katechetischer Neuropädagogik, um den Glauben besser zu vermitteln.</span>
+          <span class="pt">Formação em Neuropedagogia Catequética para ensinar melhor a fé.</span>
+          <span class="it">Formazione in Neuropedagogia Catechetica per insegnare meglio la fede.</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="s-como">
+    <h2 id="s-como">
+      <span class="es">Cómo funciona</span><span class="en">How it works</span>
+      <span class="fr">Comment ça marche</span><span class="de">Wie es funktioniert</span>
+      <span class="pt">Como funciona</span><span class="it">Come funziona</span>
+    </h2>
+    <div class="pasos-num">
+      <div class="pn"><span class="n">1</span><p>
+        <span class="es">Regístrate y elige tu perfil y tus sacramentos. Realizas una sola aportación según tu país de residencia.</span>
+        <span class="en">Register, choose your profile and sacraments. You make a single contribution according to your country of residence.</span>
+        <span class="fr">Inscrivez-vous et choisissez votre profil et vos sacrements. Vous effectuez une seule contribution selon votre pays de résidence.</span>
+        <span class="de">Registrieren Sie sich und wählen Sie Ihr Profil und Ihre Sakramente. Sie leisten einen einmaligen Beitrag entsprechend Ihrem Wohnsitzland.</span>
+        <span class="pt">Registre-se e escolha seu perfil e seus sacramentos. Você faz uma única contribuição de acordo com seu país de residência.</span>
+        <span class="it">Registrati e scegli il tuo profilo e i tuoi sacramenti. Effettui un unico contributo in base al tuo paese di residenza.</span>
+      </p></div>
+      <div class="pn"><span class="n">2</span><p>
+        <span class="es">Recibe tu formación en video y responde una breve evaluación al final de cada tema. <small>Sin límite de tiempo: avanzas a tu propio ritmo, con calma y reflexión.</small></span>
+        <span class="en">Receive your formation through videos and answer a short evaluation after each topic. <small>No time limit: advance at your own pace, calmly and reflectively.</small></span>
+        <span class="fr">Recevez votre formation en vidéo et répondez à une brève évaluation à la fin de chaque sujet. <small>Sans limite de temps : avancez à votre rythme, calmement et avec réflexion.</small></span>
+        <span class="de">Erhalten Sie Ihre Ausbildung per Video und beantworten Sie am Ende jedes Themas eine kurze Bewertung. <small>Ohne Zeitlimit: Sie gehen in Ihrem eigenen Tempo voran, ruhig und überlegt.</small></span>
+        <span class="pt">Receba sua formação em vídeo e responda a uma breve avaliação ao final de cada tema. <small>Sem limite de tempo: você avança no seu próprio ritmo, com calma e reflexão.</small></span>
+        <span class="it">Ricevi la tua formazione in video e rispondi a una breve valutazione al termine di ogni argomento. <small>Senza limiti di tempo: procedi al tuo ritmo, con calma e riflessione.</small></span>
+      </p></div>
+      <div class="pn"><span class="n">3</span><p>
+        <span class="es">Consulta tus dudas en cualquier momento con tu catequista asignado y con la IA Magisterium, la primera Inteligencia Artificial Católica.</span>
+        <span class="en">Ask your questions anytime with Magisterium, the first Catholic Artificial Intelligence.</span>
+        <span class="fr">Posez vos questions à tout moment à votre catéchiste assigné et à l'IA Magisterium, la première Intelligence Artificielle catholique.</span>
+        <span class="de">Stellen Sie Ihre Fragen jederzeit an Ihren zugewiesenen Katecheten und an die KI Magisterium, die erste katholische Künstliche Intelligenz.</span>
+        <span class="pt">Consulte suas dúvidas a qualquer momento com sua catequista designada e com a IA Magisterium, a primeira Inteligência Artificial Católica.</span>
+        <span class="it">Chiarisci i tuoi dubbi in qualsiasi momento con la tua catechista assegnata e con l'IA Magisterium, la prima Intelligenza Artificiale Cattolica.</span>
+      </p></div>
+      <div class="pn"><span class="n">4</span><p>
+        <span class="es">Al concluir recibes tu constancia con código de verificación. <small>La constancia tiene validez únicamente para mayores de 18 años.</small></span>
+        <span class="en">Upon completion you receive your certificate with a verification code. <small>The certificate is valid only for persons over 18 years of age.</small></span>
+        <span class="fr">À la fin, vous recevez votre attestation avec un code de vérification. <small>L'attestation n'est valable que pour les personnes de plus de 18 ans.</small></span>
+        <span class="de">Am Ende erhalten Sie Ihre Bescheinigung mit Verifizierungscode. <small>Die Bescheinigung ist nur für Personen über 18 Jahre gültig.</small></span>
+        <span class="pt">Ao concluir você recebe seu certificado com código de verificação. <small>O certificado tem validade apenas para maiores de 18 anos.</small></span>
+        <span class="it">Al termine ricevi il tuo attestato con codice di verifica. <small>L'attestato è valido solo per i maggiori di 18 anni.</small></span>
+      </p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="s-becas">
+    <h2 id="s-becas">🎓
+      <span class="es">Becas disponibles</span><span class="en">Scholarships available</span>
+      <span class="fr">Bourses disponibles</span><span class="de">Verfügbare Stipendien</span>
+      <span class="pt">Bolsas disponíveis</span><span class="it">Borse di studio disponibili</span>
+    </h2>
+    <p class="h2sub">
+      <span class="es">Tu aportación sostiene a las parroquias afiliadas y permite becar a quienes más lo necesitan. Destinamos el 30% de tu aportación al otorgamiento de becas solidarias.</span>
+      <span class="en">Your contribution sustains affiliated parishes and funds scholarships for those who need them most.</span>
+      <span class="fr">Votre contribution soutient les paroisses affiliées et permet d'accorder des bourses à ceux qui en ont le plus besoin. Nous consacrons 30 % de votre contribution à l'octroi de bourses solidaires.</span>
+      <span class="de">Ihr Beitrag unterstützt die angeschlossenen Pfarreien und ermöglicht es, Stipendien an diejenigen zu vergeben, die sie am meisten benötigen. Wir verwenden 30 % Ihres Beitrags für die Vergabe von Solidaritätsstipendien.</span>
+      <span class="pt">Sua contribuição sustenta as paróquias afiliadas e permite conceder bolsas a quem mais precisa. Destinamos 30% da sua contribuição à concessão de bolsas solidárias.</span>
+      <span class="it">Il tuo contributo sostiene le parrocchie affiliate e permette di offrire borse di studio a chi ne ha più bisogno. Destiniamo il 30% del tuo contributo all'assegnazione di borse di solidarietà.</span>
+    </p>
+    <div class="grid">
+      <div class="tarjeta beca"><div class="ico">🏆</div>
+        <h3>
+          <span class="es">Beca Solidaria del 100%</span><span class="en">100% Solidarity Scholarship</span>
+          <span class="fr">Bourse de Solidarité de 100 %</span><span class="de">Solidaritätsstipendium von 100 %</span>
+          <span class="pt">Bolsa Solidária de 100%</span><span class="it">Borsa di Solidarietà del 100%</span>
+        </h3>
+        <p>
+          <span class="es">Acceso totalmente gratuito a tu formación si te encuentras interno en un reclusorio, correccional o albergue.</span>
+          <span class="en">Completely free access to your formation if you are in a correctional, rehabilitation, or shelter institution.</span>
+          <span class="fr">Accès entièrement gratuit à votre formation si vous êtes interné(e) dans un établissement pénitentiaire, correctionnel ou un foyer.</span>
+          <span class="de">Völlig kostenloser Zugang zu Ihrer Ausbildung, wenn Sie sich in einer Justizvollzugsanstalt, Erziehungseinrichtung oder einem Heim befinden.</span>
+          <span class="pt">Acesso totalmente gratuito à sua formação se você estiver internado em um presídio, centro correcional ou abrigo.</span>
+          <span class="it">Accesso totalmente gratuito alla tua formazione se ti trovi recluso in un carcere, riformatorio o rifugio.</span>
+        </p>
+      </div>
+      <div class="tarjeta beca"><div class="ico">💊</div>
+        <h3>
+          <span class="es">Beca de Esperanza del 20%</span><span class="en">20% Hope Scholarship</span>
+          <span class="fr">Bourse d'Espérance de 20 %</span><span class="de">Hoffnungsstipendium von 20 %</span>
+          <span class="pt">Bolsa Esperança de 20%</span><span class="it">Borsa di Speranza del 20%</span>
+        </h3>
+        <p>
+          <span class="es">Descuento directo en tu cuota si luchas por tu recuperación como paciente en un Centro de Rehabilitación de Adicciones.</span>
+          <span class="en">A direct discount on your fee if you are fighting for your recovery as a patient in an Addiction Rehabilitation Center.</span>
+          <span class="fr">Réduction directe sur votre contribution si vous luttez pour votre rétablissement en tant que patient dans un Centre de Réhabilitation des Addictions.</span>
+          <span class="de">Direkter Rabatt auf Ihren Beitrag, wenn Sie als Patient in einem Suchtrehabilitationszentrum um Ihre Genesung kämpfen.</span>
+          <span class="pt">Desconto direto na sua taxa se você estiver lutando por sua recuperação como paciente em um Centro de Reabilitação de Dependências.</span>
+          <span class="it">Sconto diretto sulla tua quota se stai lottando per la tua guarigione come paziente in un Centro di Riabilitazione delle Dipendenze.</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section id="afiliaciones" aria-labelledby="s-afi">
+    <h2 id="s-afi">
+      <span class="es">Afiliaciones institucionales</span><span class="en">Institutional affiliations</span>
+      <span class="fr">Affiliations institutionnelles</span><span class="de">Institutionelle Partnerschaften</span>
+      <span class="pt">Afiliações institucionais</span><span class="it">Affiliazioni istituzionali</span>
+    </h2>
+    <p class="h2sub">
+      <span class="es">CICADI no sustituye la vida comunitaria y presencial: es una extensión digital que actúa como brazo colaborador.</span>
+      <span class="en">CICADI does not replace community and in-person life: it is a digital extension that acts as a collaborating arm.</span>
+      <span class="fr">L'ICDC ne remplace pas la vie communautaire et présentielle : c'est une extension numérique agissant comme un bras collaborateur.</span>
+      <span class="de">Das ICDC ersetzt nicht das gemeinschaftliche Leben vor Ort: Es ist eine digitale Erweiterung, die als unterstützender Arm fungiert.</span>
+      <span class="pt">A ICDC não substitui a vida comunitária e presencial: é uma extensão digital que atua como braço colaborador.</span>
+      <span class="it">L'ICDC non sostituisce la vita comunitaria e in presenza: è un'estensione digitale che funge da braccio collaboratore.</span>
+    </p>
+    <div class="grid">
+      <div class="tarjeta"><div class="ico">⛪</div>
+        <h3>
+          <span class="es">Parroquias</span><span class="en">Parishes</span>
+          <span class="fr">Paroisses</span><span class="de">Pfarreien</span>
+          <span class="pt">Paróquias</span><span class="it">Parrocchie</span>
+        </h3>
+        <p>
+          <span class="es">Reciben entre el 30 y 40% de la aportación de cada fiel que se forma vinculado a su comunidad.</span>
+          <span class="en">They receive 30-40% of the contribution of each faithful formed through their community.</span>
+          <span class="fr">Elles reçoivent entre 30 et 40 % de la contribution de chaque fidèle formé en lien avec leur communauté.</span>
+          <span class="de">Sie erhalten 30–40 % des Beitrags jedes Gläubigen, der in Verbindung mit ihrer Gemeinschaft ausgebildet wird.</span>
+          <span class="pt">Recebem entre 30 e 40% da contribuição de cada fiel que se forma vinculado à sua comunidade.</span>
+          <span class="it">Ricevono tra il 30 e il 40% del contributo di ogni fedele che si forma in collegamento con la propria comunità.</span>
+        </p>
+        <span class="libre">✅
+          <span class="es">Afiliación sin costo alguno</span><span class="en">Affiliation completely free of charge</span>
+          <span class="fr">Affiliation entièrement gratuite</span><span class="de">Kostenloser Anschluss</span>
+          <span class="pt">Afiliação totalmente gratuita</span><span class="it">Affiliazione completamente gratuita</span>
+        </span>
+      </div>
+      <div class="tarjeta"><div class="ico">🏛️</div>
+        <h3>
+          <span class="es">Diócesis</span><span class="en">Dioceses</span>
+          <span class="fr">Diocèses</span><span class="de">Diözesen</span>
+          <span class="pt">Dioceses</span><span class="it">Diocesi</span>
+        </h3>
+        <p>
+          <span class="es">Apoyo pastoral integral y digital para las parroquias de toda la diócesis.</span>
+          <span class="en">Comprehensive digital pastoral support for the parishes of the entire diocese.</span>
+          <span class="fr">Soutien pastoral intégral et numérique pour les paroisses de tout le diocèse.</span>
+          <span class="de">Umfassende digitale pastorale Unterstützung für die Pfarreien der gesamten Diözese.</span>
+          <span class="pt">Apoio pastoral integral e digital para as paróquias de toda a diocese.</span>
+          <span class="it">Supporto pastorale integrale e digitale per le parrocchie dell'intera diocesi.</span>
+        </p>
+        <span class="libre">✅
+          <span class="es">Afiliación sin costo alguno</span><span class="en">Affiliation completely free of charge</span>
+          <span class="fr">Affiliation entièrement gratuite</span><span class="de">Kostenloser Anschluss</span>
+          <span class="pt">Afiliação totalmente gratuita</span><span class="it">Affiliazione completamente gratuita</span>
+        </span>
+      </div>
+      <div class="tarjeta"><div class="ico">🏥</div>
+        <h3>
+          <span class="es">Centros de Tratamiento de Adicciones</span><span class="en">Addiction Treatment Centers</span>
+          <span class="fr">Centres de Traitement des Addictions</span><span class="de">Suchtbehandlungszentren</span>
+          <span class="pt">Centros de Tratamento de Dependências</span><span class="it">Centri di Trattamento delle Dipendenze</span>
+        </h3>
+        <p>
+          <span class="es">Sus pacientes acceden a la formación con el 20% de descuento como apoyo espiritual a su recuperación.</span>
+          <span class="en">Their patients access formation with a 20% discount as spiritual support for their recovery.</span>
+          <span class="fr">Leurs patients accèdent à la formation avec 20 % de réduction en soutien spirituel à leur rétablissement.</span>
+          <span class="de">Ihre Patienten erhalten Zugang zur Ausbildung mit 20 % Rabatt als geistliche Unterstützung ihrer Genesung.</span>
+          <span class="pt">Seus pacientes acessam a formação com 20% de desconto como apoio espiritual à sua recuperação.</span>
+          <span class="it">I loro pazienti accedono alla formazione con uno sconto del 20% come sostegno spirituale al loro recupero.</span>
+        </p>
+        <span class="libre">✅
+          <span class="es">Afiliación sin costo alguno</span><span class="en">Affiliation completely free of charge</span>
+          <span class="fr">Affiliation entièrement gratuite</span><span class="de">Kostenloser Anschluss</span>
+          <span class="pt">Afiliação totalmente gratuita</span><span class="it">Affiliazione completamente gratuita</span>
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <section id="fundadores" aria-labelledby="s-fundadores">
+    <h2 id="s-fundadores">
+      <span class="es">Sobre los Fundadores</span><span class="en">About the Founders</span>
+      <span class="fr">À propos des Fondateurs</span><span class="de">Über die Gründer</span>
+      <span class="pt">Sobre os Fundadores</span><span class="it">Sui Fondatori</span>
+    </h2>
+    
+    <p class="h2sub">
+      <span class="es">Jorge Medina y Nelly Montoya, unidos en matrimonio desde el año 2003, conforman un equipo multidisciplinario cuya trayectoria destaca por la integración armónica entre una sólida formación académica, una profunda vocación de servicio pastoral y un proyecto de vida compartido. Como esposos y colaboradores, han logrado un impacto significativo tanto en su comunidad local en Querétaro como a nivel internacional a través de la creación del Centro Internacional de Catequesis a Distancia (CICADI), del cual son cofundadores.</span>
+      <span class="en">Jorge Medina and Nelly Montoya, married since 2003, form a multidisciplinary team whose trajectory stands out for the harmonious integration between solid academic training, a deep vocation for pastoral service, and a shared life project. As spouses and collaborators, they have achieved a significant impact both in their local community in Querétaro and internationally through the creation of the International Center for Distance Catechesis (CICADI), of which they are co-founders.</span>
+      <span class="fr">Jorge Medina et Nelly Montoya, unis par le mariage depuis 2003, forment une équipe pluridisciplinaire dont le parcours se distingue par l'intégration harmonieuse entre une solide formation académique, une profonde vocation de service pastoral et un projet de vie partagé. En tant qu'époux et collaborateurs, ils ont eu un impact significatif tant dans leur communauté locale de Querétaro qu'à l'échelle internationale grâce à la création du Centre International de Catéchèse à Distance (ICDC), dont ils sont cofondateurs.</span>
+      <span class="de">Jorge Medina und Nelly Montoya, seit 2003 verheiratet, bilden ein multidisziplinäres Team, dessen Werdegang sich durch die harmonische Verbindung von solider akademischer Ausbildung, einer tiefen Berufung zum pastoralen Dienst und einem gemeinsamen Lebensprojekt auszeichnet. Als Ehepaar und Mitarbeiter haben sie sowohl in ihrer lokalen Gemeinschaft in Querétaro als auch international durch die Gründung des Internationalen Zentrums für Fernkatechese (ICDC), dessen Mitbegründer sie sind, eine bedeutende Wirkung erzielt.</span>
+      <span class="pt">Jorge Medina e Nelly Montoya, unidos em matrimônio desde 2003, formam uma equipe multidisciplinar cuja trajetória se destaca pela integração harmônica entre uma sólida formação acadêmica, uma profunda vocação de serviço pastoral e um projeto de vida compartilhado. Como cônjuges e colaboradores, alcançaram um impacto significativo tanto em sua comunidade local em Querétaro quanto internacionalmente através da criação do Centro Internacional de Catequese a Distância (ICDC), do qual são cofundadores.</span>
+      <span class="it">Jorge Medina e Nelly Montoya, uniti in matrimonio dal 2003, formano un team multidisciplinare il cui percorso si distingue per l'integrazione armoniosa tra una solida formazione accademica, una profonda vocazione al servizio pastorale e un progetto di vita condiviso. Come coniugi e collaboratori, hanno ottenuto un impatto significativo sia nella loro comunità locale a Querétaro sia a livello internazionale attraverso la creazione del Centro Internazionale di Catechesi a Distanza (ICDC), di cui sono cofondatori.</span>
+    </p>
+
+<div class="grid">
+      <div class="tarjeta">
+        <div class="ico">🧠</div>
+        <h3>
+          <span class="es">Nelly Montoya / Directora General</span><span class="en">Nelly Montoya / General Director</span>
+          <span class="fr">Nelly Montoya / Directrice Générale</span><span class="de">Nelly Montoya / Generaldirektorin</span>
+          <span class="pt">Nelly Montoya / Diretora Geral</span><span class="it">Nelly Montoya / Direttrice Generale</span>
+        </h3>
+        <p style="color:var(--gold-l); font-size:13px; font-style:italic; margin-bottom:12px;">
+          <span class="es">Neuroeducación, Pedagogía y Ciencias Religiosas</span>
+          <span class="en">Neuroeducation, Pedagogy, and Religious Sciences</span>
+          <span class="fr">Neuroéducation, Pédagogie et Sciences Religieuses</span>
+          <span class="de">Neuroedukation, Pädagogik und Religionswissenschaften</span>
+          <span class="pt">Neuroeducação, Pedagogia e Ciências Religiosas</span>
+          <span class="it">Neuroeducazione, Pedagogia e Scienze Religiose</span>
+        </p>
+        <p>
+          <span class="es">Nelly posee un perfil innovador que fusiona la ciencia del aprendizaje con la teología. Es Maestra en Neuroeducación por la UNIR (España), Licenciada en Educación Primaria por la Escuela Normal "Justo Sierra" y egresada en Ciencias Religiosas por el Centro de Estudios Religiosos de la Arquidiócesis Primada de México, complementando su perfil con un Diplomado en Disciplina Positiva por la MIU City University Miami. Cuenta además con un Diplomado en Alta Dirección por el Instituto Tecnológico de Estudios Superiores de Monterrey (ITESM).</span>
+          <span class="en">Nelly has an innovative profile that merges the science of learning with theology. She holds a Master's in Neuroeducation from UNIR (Spain), a Bachelor's in Primary Education from the "Justo Sierra" Normal School, and is a graduate in Religious Sciences from the Religious Studies Center of the Primate Archdiocese of Mexico, complementing her profile with a Diploma in Positive Discipline from MIU City University Miami. She also holds a Diploma in Senior Management from the Monterrey Institute of Technology and Higher Education (ITESM).</span>
+          <span class="fr">Nelly possède un profil innovant qui fusionne la science de l'apprentissage avec la théologie. Elle est titulaire d'un Master en Neuroéducation de l'UNIR (Espagne), d'une Licence en Éducation Primaire de l'École Normale « Justo Sierra » et diplômée en Sciences Religieuses du Centre d'Études Religieuses de l'Archidiocèse Primat du Mexique, complétant son profil par un Diplôme en Discipline Positive de la MIU City University Miami. Elle détient également un Diplôme en Haute Direction de l'Institut Technologique et d'Études Supérieures de Monterrey (ITESM).</span>
+          <span class="de">Nelly verfügt über ein innovatives Profil, das Lernwissenschaft mit Theologie verbindet. Sie hat einen Master in Neuroedukation von der UNIR (Spanien), einen Bachelor in Grundschulpädagogik von der Pädagogischen Hochschule „Justo Sierra" und einen Abschluss in Religionswissenschaften vom Zentrum für Religionsstudien der Erzdiözese Primas von Mexiko, ergänzt durch ein Diplom in Positiver Disziplin der MIU City University Miami. Sie verfügt außerdem über ein Diplom in Unternehmensführung des Tecnológico de Monterrey (ITESM).</span>
+          <span class="pt">Nelly possui um perfil inovador que funde a ciência da aprendizagem com a teologia. É Mestre em Neuroeducação pela UNIR (Espanha), Licenciada em Educação Primária pela Escola Normal "Justo Sierra" e formada em Ciências Religiosas pelo Centro de Estudos Religiosos da Arquidiocese Primaz do México, complementando seu perfil com um Diploma em Disciplina Positiva pela MIU City University Miami. Possui ainda um Diploma em Alta Direção pelo Instituto Tecnológico e de Estudos Superiores de Monterrey (ITESM).</span>
+          <span class="it">Nelly possiede un profilo innovativo che fonde la scienza dell'apprendimento con la teologia. È Magistra in Neuroeducazione presso l'UNIR (Spagna), Laureata in Educazione Primaria presso la Scuola Normale "Justo Sierra" e diplomata in Scienze Religiose presso il Centro di Studi Religiosi dell'Arcidiocesi Primate del Messico, completando il suo profilo con un Diploma in Disciplina Positiva della MIU City University Miami. Possiede inoltre un Diploma in Alta Direzione presso l'Istituto Tecnologico e di Studi Superiori di Monterrey (ITESM).</span>
+        </p>
+        <ul>
+          <li>
+            <span class="es"><strong>Ciencia y Terapia:</strong> Es terapeuta especializada en neurodiversidad, creadora de un modelo de Terapia Cerebral basada en Neurofeedback, así como Fundadora y Directora General del Observatorio Internacional de Neuroeducación y Neurodiversidad.</span>
+            <span class="en"><strong>Science and Therapy:</strong> She is a therapist specializing in neurodiversity, creator of a Brain Therapy model based on Neurofeedback, as well as Founder and General Director of the International Observatory of Neuroeducation and Neurodiversity.</span>
+            <span class="fr"><strong>Science et Thérapie :</strong> Elle est thérapeute spécialisée en neurodiversité, créatrice d'un modèle de Thérapie Cérébrale basé sur le Neurofeedback, ainsi que Fondatrice et Directrice Générale de l'Observatoire International de Neuroéducation et de Neurodiversité.</span>
+            <span class="de"><strong>Wissenschaft und Therapie:</strong> Sie ist auf Neurodiversität spezialisierte Therapeutin, Schöpferin eines auf Neurofeedback basierenden Gehirntherapiemodells sowie Gründerin und Generaldirektorin des Internationalen Observatoriums für Neuroedukation und Neurodiversität.</span>
+            <span class="pt"><strong>Ciência e Terapia:</strong> É terapeuta especializada em neurodiversidade, criadora de um modelo de Terapia Cerebral baseado em Neurofeedback, além de Fundadora e Diretora Geral do Observatório Internacional de Neuroeducação e Neurodiversidade.</span>
+            <span class="it"><strong>Scienza e Terapia:</strong> È terapeuta specializzata in neurodiversità, creatrice di un modello di Terapia Cerebrale basato sul Neurofeedback, oltre che Fondatrice e Direttrice Generale dell'Osservatorio Internazionale di Neuroeducazione e Neurodiversità.</span>
+          </li>
+          <li>
+            <span class="es"><strong>Pastoral Educativa y Catequesis:</strong> Catequista activa desde el año 2000. Actualmente, ejerce como Coordinadora de Catequesis de Adultos en la Parroquia de Nuestra Señora de la Esperanza y, junto a Jorge, es cofundadora del movimiento <em>Custodios de Jesús Eucaristía</em>. Ha sido pastoralista en diversos colegios católicos en la Ciudad de Querétaro y se ha desempeñado como catequista de la Catequesis del Buen Pastor con pedagogía Montessori desde 2006.</span>
+            <span class="en"><strong>Educational Pastoral and Catechesis:</strong> Active catechist since 2000. Currently, she serves as Adult Catechesis Coordinator at the Parish of Nuestra Señora de la Esperanza and, alongside Jorge, is co-founder of the <em>Custodians of Jesus Eucharist</em> movement. She has served in educational pastoral ministry at various Catholic schools in the City of Querétaro and has worked as a catechist of the Catechesis of the Good Shepherd with Montessori pedagogy since 2006.</span>
+            <span class="fr"><strong>Pastorale Éducative et Catéchèse :</strong> Catéchiste active depuis 2000. Elle exerce actuellement comme Coordinatrice de la Catéchèse des Adultes à la Paroisse Nuestra Señora de la Esperanza et, avec Jorge, est cofondatrice du mouvement <em>Gardiens de Jésus Eucharistie</em>. Elle a exercé une pastorale éducative dans divers collèges catholiques de la ville de Querétaro et travaille comme catéchiste de la Catéchèse du Bon Pasteur avec la pédagogie Montessori depuis 2006.</span>
+            <span class="de"><strong>Bildungspastoral und Katechese:</strong> Aktive Katechetin seit dem Jahr 2000. Derzeit ist sie Koordinatorin der Erwachsenenkatechese in der Pfarrei Nuestra Señora de la Esperanza und zusammen mit Jorge Mitbegründerin der Bewegung <em>Hüter der Eucharistie Jesu</em>. Sie war in der Bildungspastoral an verschiedenen katholischen Schulen in der Stadt Querétaro tätig und arbeitet seit 2006 als Katechetin der Katechese vom Guten Hirten mit Montessori-Pädagogik.</span>
+            <span class="pt"><strong>Pastoral Educativa e Catequese:</strong> Catequista ativa desde o ano 2000. Atualmente, exerce como Coordenadora de Catequese de Adultos na Paróquia de Nuestra Señora de la Esperanza e, junto com Jorge, é cofundadora do movimento <em>Custódios de Jesus Eucaristia</em>. Atuou na pastoral educativa em diversos colégios católicos na Cidade de Querétaro e trabalha como catequista da Catequese do Bom Pastor com pedagogia Montessori desde 2006.</span>
+            <span class="it"><strong>Pastorale Educativa e Catechesi:</strong> Catechista attiva dal 2000. Attualmente ricopre il ruolo di Coordinatrice della Catechesi degli Adulti nella Parrocchia di Nuestra Señora de la Esperanza e, insieme a Jorge, è cofondatrice del movimento <em>Custodi di Gesù Eucaristia</em>. Ha svolto pastorale educativa in diversi collegi cattolici nella Città di Querétaro e lavora come catechista della Catechesi del Buon Pastore con pedagogia Montessori dal 2006.</span>
+          </li>
+          <li>
+            <span class="es"><strong>Divulgación y Formación:</strong> Como conferencista y formadora, es pionera en el campo de la <em>Neuropedagogía Catequética</em>, brindando herramientas científicas modernas para optimizar los procesos de enseñanza de la fe.</span>
+            <span class="en"><strong>Outreach and Formation:</strong> As a speaker and trainer, she is a pioneer in the field of <em>Catechetical Neuropedagogy</em>, providing modern scientific tools to optimize the teaching processes of the faith.</span>
+            <span class="fr"><strong>Diffusion et Formation :</strong> En tant que conférencière et formatrice, elle est pionnière dans le domaine de la <em>Neuropédagogie Catéchétique</em>, offrant des outils scientifiques modernes pour optimiser les processus d'enseignement de la foi.</span>
+            <span class="de"><strong>Verbreitung und Ausbildung:</strong> Als Vortragende und Ausbilderin ist sie Pionierin auf dem Gebiet der <em>Katechetischen Neuropädagogik</em> und stellt moderne wissenschaftliche Werkzeuge zur Optimierung der Glaubensvermittlung bereit.</span>
+            <span class="pt"><strong>Divulgação e Formação:</strong> Como palestrante e formadora, é pioneira no campo da <em>Neuropedagogia Catequética</em>, oferecendo ferramentas científicas modernas para otimizar os processos de ensino da fé.</span>
+            <span class="it"><strong>Divulgazione e Formazione:</strong> Come conferenziera e formatrice, è pioniera nel campo della <em>Neuropedagogia Catechetica</em>, fornendo strumenti scientifici moderni per ottimizzare i processi di insegnamento della fede.</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="tarjeta">
+        <div class="ico">⚖️</div>
+        <h3>
+          <span class="es">Jorge Medina / Coordinador</span><span class="en">Jorge Medina / Coordinator</span>
+          <span class="fr">Jorge Medina / Coordinateur</span><span class="de">Jorge Medina / Koordinator</span>
+          <span class="pt">Jorge Medina / Coordenador</span><span class="it">Jorge Medina / Coordinatore</span>
+        </h3>
+        <p style="color:var(--gold-l); font-size:13px; font-style:italic; margin-bottom:12px;">
+          <span class="es">Derecho, Filosofía y Liderazgo Pastoral</span>
+          <span class="en">Law, Philosophy, and Pastoral Leadership</span>
+          <span class="fr">Droit, Philosophie et Leadership Pastoral</span>
+          <span class="de">Recht, Philosophie und Pastorale Führung</span>
+          <span class="pt">Direito, Filosofia e Liderança Pastoral</span>
+          <span class="it">Diritto, Filosofia e Leadership Pastorale</span>
+        </p>
+        <p>
+          <span class="es">Jorge cuenta con una base académica profundamente humanista y analítica. Es Licenciado en Derecho por la Universidad Pontificia de México y posee estudios de Bachillerato Pontificio en Filosofía por el Instituto Superior de Estudios Eclesiásticos de la Arquidiócesis Primada de México.</span>
+          <span class="en">Jorge has a deeply humanistic and analytical academic background. He holds a Law Degree from the Pontifical University of Mexico and has pontifical high school studies in Philosophy from the Higher Institute of Ecclesiastical Studies of the Primate Archdiocese of Mexico.</span>
+          <span class="fr">Jorge possède une base académique profondément humaniste et analytique. Il est titulaire d'une Licence en Droit de l'Université Pontificale du Mexique et a suivi des études pontificales de philosophie à l'Institut Supérieur d'Études Ecclésiastiques de l'Archidiocèse Primat du Mexique.</span>
+          <span class="de">Jorge verfügt über eine zutiefst humanistische und analytische akademische Grundlage. Er hat einen Abschluss in Rechtswissenschaften von der Päpstlichen Universität von Mexiko und päpstliche Gymnasialstudien in Philosophie am Höheren Institut für Kirchliche Studien der Erzdiözese Primas von Mexiko absolviert.</span>
+          <span class="pt">Jorge conta com uma base acadêmica profundamente humanista e analítica. É Bacharel em Direito pela Universidade Pontifícia do México e possui estudos de bacharelado pontifício em Filosofia pelo Instituto Superior de Estudos Eclesiásticos da Arquidiocese Primaz do México.</span>
+          <span class="it">Jorge possiede una base accademica profondamente umanistica e analitica. È Laureato in Giurisprudenza presso l'Università Pontificia del Messico e ha compiuto studi liceali pontifici in Filosofia presso l'Istituto Superiore di Studi Ecclesiastici dell'Arcidiocesi Primate del Messico.</span>
+        </p>
+        <ul>
+          <li>
+            <span class="es"><strong>Vocación y Servicio:</strong> Cuenta con más de tres décadas de experiencia como catequista de jóvenes y adultos, iniciando su labor en 1990.</span>
+            <span class="en"><strong>Vocation and Service:</strong> He has more than three decades of experience as a catechist for youth and adults, starting his work in 1990.</span>
+            <span class="fr"><strong>Vocation et Service :</strong> Il compte plus de trois décennies d'expérience comme catéchiste pour jeunes et adultes, ayant débuté en 1990.</span>
+            <span class="de"><strong>Berufung und Dienst:</strong> Er verfügt über mehr als drei Jahrzehnte Erfahrung als Katechet für Jugendliche und Erwachsene, seit Beginn seiner Tätigkeit im Jahr 1990.</span>
+            <span class="pt"><strong>Vocação e Serviço:</strong> Conta com mais de três décadas de experiência como catequista de jovens e adultos, tendo iniciado seu trabalho em 1990.</span>
+            <span class="it"><strong>Vocazione e Servizio:</strong> Vanta oltre tre decenni di esperienza come catechista di giovani e adulti, avendo iniziato il suo lavoro nel 1990.</span>
+          </li>
+          <li>
+            <span class="es"><strong>Liderazgo Comunitario:</strong> Su compromiso con la formación eclesial lo llevó a desempeñarse como Coordinador de Catequesis Pre-Bautismal.</span>
+            <span class="en"><strong>Community Leadership:</strong> His commitment to ecclesial formation led him to serve as Pre-Baptismal Catechesis Coordinator.</span>
+            <span class="fr"><strong>Leadership Communautaire :</strong> Son engagement envers la formation ecclésiale l'a conduit à exercer comme Coordinateur de la Catéchèse Pré-Baptismale.</span>
+            <span class="de"><strong>Gemeinschaftliche Führung:</strong> Sein Engagement für die kirchliche Bildung führte ihn zum Amt des Koordinators der Taufvorbereitungskatechese.</span>
+            <span class="pt"><strong>Liderança Comunitária:</strong> Seu compromisso com a formação eclesial o levou a atuar como Coordenador de Catequese Pré-Batismal.</span>
+            <span class="it"><strong>Leadership Comunitaria:</strong> Il suo impegno per la formazione ecclesiale lo ha portato a svolgere il ruolo di Coordinatore della Catechesi Pre-Battesimale.</span>
+          </li>
+          <li>
+            <span class="es"><strong>Fundación de Movimientos:</strong> En la Parroquia de Nuestra Señora de la Esperanza (Corregidora, Querétaro), ha sido un motor espiritual clave como cofundador de los movimientos parroquiales <em>Custodios de Jesús Eucaristía</em> y <em>Rosario de Hombres</em>.</span>
+            <span class="en"><strong>Foundation of Movements:</strong> At the Parish of Nuestra Señora de la Esperanza (Corregidora, Querétaro), he has been a key spiritual driver as co-founder of the parish movements <em>Custodians of Jesus Eucharist</em> and <em>Men's Rosary</em>.</span>
+            <span class="fr"><strong>Fondation de Mouvements :</strong> À la Paroisse Nuestra Señora de la Esperanza (Corregidora, Querétaro), il a été un moteur spirituel clé en tant que cofondateur des mouvements paroissiaux <em>Gardiens de Jésus Eucharistie</em> et <em>Rosaire des Hommes</em>.</span>
+            <span class="de"><strong>Gründung von Bewegungen:</strong> In der Pfarrei Nuestra Señora de la Esperanza (Corregidora, Querétaro) war er als Mitbegründer der Pfarrbewegungen <em>Hüter der Eucharistie Jesu</em> und <em>Männer-Rosenkranz</em> eine zentrale geistliche Triebkraft.</span>
+            <span class="pt"><strong>Fundação de Movimentos:</strong> Na Paróquia de Nuestra Señora de la Esperanza (Corregidora, Querétaro), tem sido um motor espiritual fundamental como cofundador dos movimentos paroquiais <em>Custódios de Jesus Eucaristia</em> e <em>Terço dos Homens</em>.</span>
+            <span class="it"><strong>Fondazione di Movimenti:</strong> Nella Parrocchia di Nuestra Señora de la Esperanza (Corregidora, Querétaro), è stato un motore spirituale chiave come cofondatore dei movimenti parrocchiali <em>Custodi di Gesù Eucaristia</em> e <em>Rosario degli Uomini</em>.</span>
+          </li>
+<li>
+            <span class="es"><strong>Coordinador de Catequesis de Adultos:</strong> Actualmente funge como co-coordinador parroquial de la catequesis de iniciación cristiana para adultos.</span>
+            <span class="en"><strong>Adult Catechesis Coordinator:</strong> He currently serves as parish co-coordinator of adult Christian initiation catechesis.</span>
+            <span class="fr"><strong>Coordinateur de la Catéchèse des Adultes :</strong> Il exerce actuellement comme co-coordinateur paroissial de la catéchèse d'initiation chrétienne pour adultes.</span>
+            <span class="de"><strong>Koordinator der Erwachsenenkatechese:</strong> Derzeit ist er Ko-Koordinator der Pfarrei für die christliche Initiationskatechese für Erwachsene.</span>
+            <span class="pt"><strong>Coordenador de Catequese de Adultos:</strong> Atualmente atua como co-coordenador paroquial da catequese de iniciação cristã para adultos.</span>
+            <span class="it"><strong>Coordinatore della Catechesi degli Adulti:</strong> Attualmente ricopre il ruolo di co-coordinatore parrocchiale della catechesi di iniziazione cristiana per adulti.</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+  </section>
+
+  <footer>
+    <p class="sello">CICADI / ICDC</p>
+<img src="/assets/catecumenlogoaurea-DrMXEslD.jpg" alt="Logo Catecumen" class="logo-footer" />
+    <p>
+      <span class="es">Comienza hoy con tu formación hacia los Sacramentos.</span>
+      <span class="en">Begin your formation for the Sacraments today.</span>
+      <span class="fr">Commencez dès aujourd'hui votre formation vers les Sacrements.</span>
+      <span class="de">Beginnen Sie noch heute Ihre Ausbildung zu den Sakramenten.</span>
+      <span class="pt">Comece hoje sua formação rumo aos Sacramentos.</span>
+      <span class="it">Inizia oggi la tua formazione verso i Sacramenti.</span>
+    </p>
+    <a class="cta" href="https://www.catecumen.com">✝️
+      <span class="es">Registrarme ahora</span><span class="en">Register now</span>
+      <span class="fr">M'inscrire maintenant</span><span class="de">Jetzt registrieren</span>
+      <span class="pt">Registrar-me agora</span><span class="it">Registrati ora</span>
+    </a>
+    <p>
+      <span class="es">Impulsada por el Centro Internacional de Catequesis a Distancia · Con el soporte de Magisterium AI</span>
+      <span class="en">Powered by the International Center for Distance Catechesis · Supported by Magisterium AI</span>
+      <span class="fr">Propulsée par le Centre International de Catéchèse à Distance · Avec le soutien de Magisterium AI</span>
+      <span class="de">Angetrieben vom Internationalen Zentrum für Fernkatechese · Mit Unterstützung von Magisterium AI</span>
+      <span class="pt">Impulsionada pelo Centro Internacional de Catequese a Distância · Com o apoio da Magisterium AI</span>
+      <span class="it">Promossa dal Centro Internazionale di Catechesi a Distanza · Con il supporto di Magisterium AI</span>
+    </p>
+  </footer>
+
+</div>
+<script>
+  (function(){
+    var btn = document.getElementById("theme-btn");
+    if(!btn) return;
+    function current(){ return document.documentElement.getAttribute("data-theme") || "dark"; }
+    var SUN=`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>`, MOON=`<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+    function paint(){ btn.innerHTML = current() === "dark" ? SUN : MOON; }
+    paint();
+    btn.addEventListener("click", function(){
+      var next = current() === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      try { localStorage.setItem("catecumen_theme", next); } catch(e){}
+      paint();
+    });
+  })();
+</script>
+</body>
+</html>

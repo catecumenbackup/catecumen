@@ -1,0 +1,40 @@
+{
+  "name": "Catecumen — Formación Sacramental",
+  "short_name": "Catecumen",
+  "description": "Centro Internacional de Catequesis a Distancia. Formación sacramental católica.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#060D18",
+  "theme_color": "#1e3a8a",
+  "lang": "es",
+  "dir": "ltr",
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "https://www.catecumen.com/manifest.webmanifest"
+    }
+  ],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

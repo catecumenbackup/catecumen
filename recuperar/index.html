@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<link rel="icon" type="image/x-icon" href="/cat.ico" />
+<link rel="shortcut icon" href="/cat.ico" />
+
+<title>Recuperar contraseña — Catecumen</title>
+
+<script>
+  // Idioma: primero respeta la preferencia guardada por la plataforma principal
+  // (misma clave que usa App.jsx), y si no existe, detecta del navegador.
+  var SUPPORTED = ["es","en","fr","de","pt","it"];
+  var stored = null;
+  try { stored = localStorage.getItem("catecumen_lang"); } catch (e) {}
+  var lang;
+  if (stored && SUPPORTED.indexOf(stored) !== -1) {
+    lang = stored;
+  } else {
+    var nav = (navigator.language || navigator.userLanguage || "es").toLowerCase().split("-")[0];
+    lang = SUPPORTED.indexOf(nav) !== -1 ? nav : "es";
+  }
+  document.documentElement.lang = lang;
+  (function(){
+    var pref="light";
+    try{pref=localStorage.getItem("catecumen_theme")||"light";}catch(e){}
+    var sysDark=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;
+    document.documentElement.setAttribute("data-theme", pref==="system"?(sysDark?"dark":"light"):pref);
+  })();
+
+  var TITLES = {
+    es: "Recuperar contraseña — Catecumen",
+    en: "Reset password — Catecumen",
+    fr: "Réinitialiser le mot de passe — Catecumen",
+    de: "Passwort zurücksetzen — Catecumen",
+    pt: "Recuperar senha — Catecumen",
+    it: "Recupera password — Catecumen",
+  };
+  document.title = TITLES[lang] || TITLES.es;
+</script>
+
+<meta name="description" content="Restablece tu contraseña de la plataforma Catecumen."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet"/>
+<style>
+  :root, [data-theme="dark"]{
+    --bg:#060D18; --surface:#0C1829; --card:#112038;
+    --gold:#C8A951; --gold-l:#E5C97A; --ivory:#F0EAD6; --ivory-m:#9A8F7A;
+    --border:rgba(200,169,81,0.18); --err:#F87171; --ok:#3DA070;
+  }
+  [data-theme="light"]{
+    --bg:#FBF6EA; --surface:#F5EDDA; --card:#FFFFFF;
+    --gold:#9C7A28; --gold-l:#C8A951; --ivory:#2A2418; --ivory-m:#5A5342;
+    --border:rgba(200,169,81,0.40); --err:#C0392B; --ok:#2E7D55;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{min-height:100%}
+  body{
+    background:
+      radial-gradient(1200px 600px at 50% -10%, rgba(200,169,81,0.08), transparent 60%),
+      linear-gradient(170deg,#0A1626 0%, var(--bg) 55%, #04080F 100%);
+    background-attachment:fixed;
+    font-family:'Crimson Text',serif; color:var(--ivory);
+    display:flex; align-items:center; justify-content:center;
+    padding:24px 16px; min-height:100dvh;
+  }
+  [data-theme="light"] body{
+    background:
+      radial-gradient(1200px 600px at 50% -10%, rgba(200,169,81,0.12), transparent 60%),
+      linear-gradient(170deg, #FBF6EA 0%, #F5EDDA 55%, #F0E7D6 100%);
+  }
+  .theme-switcher{position:fixed;top:14px;right:62px;z-index:3000}
+  .lang-switcher{position:fixed;top:14px;right:14px;z-index:3000}
+  .lang-btn{
+    width:40px;height:40px;border-radius:50%;cursor:pointer;
+    background:var(--card);border:1px solid var(--border);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 4px 14px rgba(0,0,0,.35);
+  }
+  .lang-btn img{width:20px;height:20px;border-radius:3px;display:block}
+  .lang-menu{
+    display:none;position:absolute;top:48px;right:0;min-width:180px;
+    background:var(--card);border:1px solid var(--border);border-radius:12px;
+    padding:6px;box-shadow:0 12px 30px rgba(0,0,0,.4);
+  }
+  .lang-menu.open{display:block}
+  .lang-opt{
+    width:100%;display:flex;align-items:center;gap:10px;background:transparent;
+    border:none;border-radius:8px;padding:9px 10px;cursor:pointer;
+    color:var(--ivory);font-family:'Crimson Text',serif;font-size:14.5px;text-align:left;
+  }
+  .lang-opt:hover,.lang-opt.active{background:rgba(200,169,81,0.14)}
+  .lang-opt img{width:16px;height:16px;border-radius:3px}
+  .lang-opt .chk{margin-left:auto;color:var(--gold)}
+  .theme-btn{
+    width:40px;height:40px;border-radius:50%;cursor:pointer;
+    background:rgba(200,169,81,0.18);border:1.5px solid var(--gold);
+    display:flex;align-items:center;justify-content:center;
+    line-height:1; color:var(--gold);
+    box-shadow:0 4px 14px rgba(0,0,0,.35);
+  }
+  .theme-btn:hover{background:rgba(200,169,81,0.30)}
+  .theme-btn svg{display:block}
+  .panel{
+    width:100%; max-width:440px;
+    background:linear-gradient(160deg,#0E1F36 0%, var(--surface) 60%, #09111E 100%);
+    border:1px solid var(--border); border-radius:20px;
+    padding:36px 30px 30px;
+    box-shadow:0 24px 64px rgba(0,0,0,0.7), 0 1px 0 rgba(200,169,81,0.15) inset;
+    animation:enter .35s cubic-bezier(.34,1.2,.64,1) both;
+  }
+  @keyframes enter{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){.panel{animation:none}}
+  .icon{font-size:36px;text-align:center;margin-bottom:10px}
+  h1{
+    font-family:'Cinzel',serif; color:var(--gold); font-size:20px; font-weight:700;
+    letter-spacing:.06em; text-align:center; margin-bottom:8px;
+  }
+  .sub{color:var(--ivory-m);font-size:15px;line-height:1.6;text-align:center;margin-bottom:24px}
+  .brand{
+    font-family:'Cinzel',serif; color:var(--gold); font-size:11px; letter-spacing:.22em;
+    text-transform:uppercase; text-align:center; margin-bottom:18px; opacity:1;
+    text-shadow:0 1px 8px rgba(200,169,81,0.35);
+  }
+  .brand::before,.brand::after{content:"—";margin:0 10px;color:var(--border)}
+  label{
+    display:block; font-size:12px; color:#fff; letter-spacing:.08em;
+    text-transform:uppercase; margin:0 0 6px 2px; font-family:'Cinzel',serif;
+  }
+  .field{margin-bottom:16px}
+  input{
+    width:100%; background:rgba(255,255,255,0.04); border:1px solid var(--border);
+    border-radius:8px; padding:12px 14px; color:var(--ivory);
+    font-family:'Crimson Text',serif; font-size:16px; outline:none;
+    transition:border-color .2s;
+  }
+  input:focus-visible{border-color:var(--gold); box-shadow:0 0 0 2px rgba(200,169,81,.25)}
+  .pwd-wrap{position:relative}
+  .pwd-wrap input{padding-right:42px}
+  .pwd-toggle{
+    position:absolute; right:8px; top:50%; transform:translateY(-50%);
+    width:auto; background:none; border:none; box-shadow:none; cursor:pointer;
+    display:flex; align-items:center; padding:4px; color:var(--gold);
+  }
+  .pwd-toggle:hover{transform:translateY(-50%)}
+  .bars{display:flex;gap:4px;margin:8px 0 4px}
+  .bars span{flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,0.1)}
+  .hint{font-size:12.5px;color:var(--ivory-m);line-height:1.5}
+  .msg{font-size:14px;line-height:1.55;margin:4px 0 14px}
+  .msg.err{color:var(--err)} .msg.ok{color:var(--ok)}
+  button{
+    width:100%; border:none; border-radius:10px; padding:13px 20px; cursor:pointer;
+    font-family:'Cinzel',serif; font-size:13px; font-weight:700; letter-spacing:.07em;
+    background:linear-gradient(135deg,var(--gold-l) 0%,var(--gold) 45%,#9A7A2A 100%);
+    color:var(--bg); transition:transform .15s ease, box-shadow .15s ease;
+    box-shadow:0 2px 12px rgba(200,169,81,.35), 0 1px 0 rgba(255,255,255,.15) inset;
+  }
+  button:hover:not(:disabled){transform:translateY(-1px)}
+  button:focus-visible{outline:2px solid var(--gold-l);outline-offset:2px}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  a.back{
+    display:block;text-align:center;margin-top:16px;font-size:14px;
+    color:var(--gold);text-decoration:none;
+  }
+  a.back:hover{text-decoration:underline}
+  .step{display:none}
+  .step.active{display:block}
+  /* Idioma: el JS pone lang en <html>; cada texto existe en 6 variantes */
+  html:not([lang="es"]) .es{display:none}
+  html:not([lang="en"]) .en{display:none}
+  html:not([lang="fr"]) .fr{display:none}
+  html:not([lang="de"]) .de{display:none}
+  html:not([lang="pt"]) .pt{display:none}
+  html:not([lang="it"]) .it{display:none}
+</style>
+  <script type="module" crossorigin src="/assets/recuperar--a_g_2Im.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/dist-DVRStZXb.js">
+</head>
+<body>
+<div class="lang-switcher">
+  <button class="lang-btn" id="lang-btn" aria-label="Cambiar idioma / Change language"></button>
+  <div class="lang-menu" id="lang-menu"></div>
+</div>
+<div class="theme-switcher">
+  <button class="theme-btn" id="theme-btn" aria-label="Cambiar tema / Toggle theme"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></button>
+</div>
+  <main class="panel">
+    <p class="brand">Catecumen</p>
+
+    <section id="step-request" class="step active" aria-labelledby="t1">
+      <div class="icon">🔑</div>
+      <h1 id="t1">
+        <span class="es">Recuperar contraseña</span><span class="en">Reset password</span>
+        <span class="fr">Réinitialiser le mot de passe</span><span class="de">Passwort zurücksetzen</span>
+        <span class="pt">Recuperar senha</span><span class="it">Recupera password</span>
+      </h1>
+      <p class="sub">
+        <span class="es">Escribe el correo con el que te registraste y te enviaremos un enlace para crear una nueva contraseña.</span>
+        <span class="en">Enter the email you registered with and we will send you a link to create a new password.</span>
+        <span class="fr">Saisissez l'e-mail avec lequel vous vous êtes inscrit(e) et nous vous enverrons un lien pour créer un nouveau mot de passe.</span>
+        <span class="de">Geben Sie die E-Mail-Adresse ein, mit der Sie sich registriert haben, und wir senden Ihnen einen Link zum Erstellen eines neuen Passworts.</span>
+        <span class="pt">Digite o e-mail com o qual você se registrou e enviaremos um link para criar uma nova senha.</span>
+        <span class="it">Inserisci l'email con cui ti sei registrato/a e ti invieremo un link per creare una nuova password.</span>
+      </p>
+      <form id="form-request" novalidate>
+        <div class="field">
+          <label for="email">
+            <span class="es">Correo electrónico</span><span class="en">Email address</span>
+            <span class="fr">Adresse e-mail</span><span class="de">E-Mail-Adresse</span>
+            <span class="pt">E-mail</span><span class="it">Indirizzo email</span>
+          </label>
+          <input id="email" type="email" autocomplete="email" placeholder="usuario@correo.com" required/>
+        </div>
+        <p id="msg-request" class="msg" role="status"></p>
+        <button id="btn-request" type="submit">
+          <span class="es">Enviarme el enlace</span><span class="en">Send me the link</span>
+          <span class="fr">M'envoyer le lien</span><span class="de">Link senden</span>
+          <span class="pt">Enviar o link</span><span class="it">Inviami il link</span> →
+        </button>
+      </form>
+      <a class="back" href="https://www.catecumen.com">
+        ←
+        <span class="es">Volver a la plataforma</span><span class="en">Back to the platform</span>
+        <span class="fr">Retour à la plateforme</span><span class="de">Zurück zur Plattform</span>
+        <span class="pt">Voltar à plataforma</span><span class="it">Torna alla piattaforma</span>
+      </a>
+    </section>
+
+    <section id="step-reset" class="step" aria-labelledby="t2">
+      <div class="icon">🔐</div>
+      <h1 id="t2">
+        <span class="es">Crea tu nueva contraseña</span><span class="en">Create your new password</span>
+        <span class="fr">Créez votre nouveau mot de passe</span><span class="de">Erstellen Sie Ihr neues Passwort</span>
+        <span class="pt">Crie sua nova senha</span><span class="it">Crea la tua nuova password</span>
+      </h1>
+      <p class="sub">
+        <span class="es">Mínimo 8 caracteres, 1 mayúscula, 1 número y 1 carácter especial.</span>
+        <span class="en">Minimum 8 characters, 1 uppercase, 1 number and 1 special character.</span>
+        <span class="fr">Minimum 8 caractères, 1 majuscule, 1 chiffre et 1 caractère spécial.</span>
+        <span class="de">Mindestens 8 Zeichen, 1 Großbuchstabe, 1 Zahl und 1 Sonderzeichen.</span>
+        <span class="pt">Mínimo de 8 caracteres, 1 maiúscula, 1 número e 1 caractere especial.</span>
+        <span class="it">Minimo 8 caratteri, 1 maiuscola, 1 numero e 1 carattere speciale.</span>
+      </p>
+      <form id="form-reset" novalidate>
+        <div class="field">
+          <label for="pw1">
+            <span class="es">Nueva contraseña</span><span class="en">New password</span>
+            <span class="fr">Nouveau mot de passe</span><span class="de">Neues Passwort</span>
+            <span class="pt">Nova senha</span><span class="it">Nuova password</span>
+          </label>
+          <div class="pwd-wrap">
+            <input id="pw1" type="password" autocomplete="new-password" required/>
+            <button type="button" class="pwd-toggle" data-target="pw1" aria-label="Mostrar/ocultar contraseña">
+              <svg class="ico-eye" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg class="ico-eye-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.06-5.94M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 7 11 7a21.6 21.6 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            </button>
+          </div>
+          <div class="bars" id="bars" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+          <p class="hint" id="str-label"></p>
+        </div>
+        <div class="field">
+          <label for="pw2">
+            <span class="es">Confirmar contraseña</span><span class="en">Confirm password</span>
+            <span class="fr">Confirmer le mot de passe</span><span class="de">Passwort bestätigen</span>
+            <span class="pt">Confirmar senha</span><span class="it">Conferma password</span>
+          </label>
+          <div class="pwd-wrap">
+            <input id="pw2" type="password" autocomplete="new-password" required/>
+            <button type="button" class="pwd-toggle" data-target="pw2" aria-label="Mostrar/ocultar contraseña">
+              <svg class="ico-eye" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg class="ico-eye-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.06-5.94M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 7 11 7a21.6 21.6 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            </button>
+          </div>
+        </div>
+        <p id="msg-reset" class="msg" role="status"></p>
+        <button id="btn-reset" type="submit" disabled>
+          <span class="es">Guardar nueva contraseña</span><span class="en">Save new password</span>
+          <span class="fr">Enregistrer le mot de passe</span><span class="de">Neues Passwort speichern</span>
+          <span class="pt">Salvar nova senha</span><span class="it">Salva nuova password</span> ✓
+        </button>
+      </form>
+    </section>
+
+    <section id="step-done" class="step" aria-labelledby="t3">
+      <div class="icon">✅</div>
+      <h1 id="t3">
+        <span class="es">¡Contraseña actualizada!</span><span class="en">Password updated!</span>
+        <span class="fr">Mot de passe mis à jour !</span><span class="de">Passwort aktualisiert!</span>
+        <span class="pt">Senha atualizada!</span><span class="it">Password aggiornata!</span>
+      </h1>
+      <p class="sub">
+        <span class="es">Tu contraseña fue cambiada correctamente. Ya puedes iniciar sesión en la plataforma.</span>
+        <span class="en">Your password was changed successfully. You can now sign in to the platform.</span>
+        <span class="fr">Votre mot de passe a été modifié avec succès. Vous pouvez maintenant vous connecter à la plateforme.</span>
+        <span class="de">Ihr Passwort wurde erfolgreich geändert. Sie können sich jetzt auf der Plattform anmelden.</span>
+        <span class="pt">Sua senha foi alterada com sucesso. Você já pode fazer login na plataforma.</span>
+        <span class="it">La tua password è stata modificata con successo. Ora puoi accedere alla piattaforma.</span>
+      </p>
+      <button onclick="location.href='https://www.catecumen.com'">
+        🔑
+        <span class="es">Iniciar sesión</span><span class="en">Sign in</span>
+        <span class="fr">Se connecter</span><span class="de">Anmelden</span>
+        <span class="pt">Entrar</span><span class="it">Accedi</span> →
+      </button>
+    </section>
+  </main>
+
+<script>
+  (function(){
+    var btn=document.getElementById("theme-btn"); if(!btn) return;
+    function cur(){return document.documentElement.getAttribute("data-theme")||"dark";}
+    var SUN=`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>`, MOON=`<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+    function paint(){btn.innerHTML=cur()==="dark"?SUN:MOON;}
+    paint();
+    btn.addEventListener("click",function(){
+      var next=cur()==="dark"?"light":"dark";
+      document.documentElement.setAttribute("data-theme",next);
+      try{localStorage.setItem("catecumen_theme",next);}catch(e){}
+      paint();
+    });
+  })();
+</script>
+<script>
+  (function(){
+    var SUPPORTED = ["es","en","fr","de","pt","it"];
+    var NAMES = {
+      es:{es:"Español",en:"Spanish",fr:"Espagnol",de:"Spanisch",pt:"Espanhol",it:"Spagnolo"},
+      en:{es:"Inglés",en:"English",fr:"Anglais",de:"Englisch",pt:"Inglês",it:"Inglese"},
+      fr:{es:"Francés",en:"French",fr:"Français",de:"Französisch",pt:"Francês",it:"Francese"},
+      de:{es:"Alemán",en:"German",fr:"Allemand",de:"Deutsch",pt:"Alemão",it:"Tedesco"},
+      pt:{es:"Portugués",en:"Portuguese",fr:"Portugais",de:"Portugiesisch",pt:"Português",it:"Portoghese"},
+      it:{es:"Italiano",en:"Italian",fr:"Italien",de:"Italienisch",pt:"Italiano",it:"Italiano"},
+    };
+    var FLAG_CODE = {es:"ES",en:"US",fr:"FR",de:"DE",pt:"PT",it:"IT"};
+    function flagUrl(cc){
+      var cps = cc.toUpperCase().split("").map(function(c){
+        return (0x1F1E6 + c.charCodeAt(0) - 65).toString(16);
+      }).join("-");
+      return "https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/svg/" + cps + ".svg";
+    }
+    var current = document.documentElement.lang || "es";
+    var btn = document.getElementById("lang-btn");
+    var menu = document.getElementById("lang-menu");
+    if(!btn||!menu) return;
+    var img = document.createElement("img");
+    img.src = flagUrl(FLAG_CODE[current] || "ES"); img.alt = current;
+    btn.appendChild(img);
+    SUPPORTED.forEach(function(code){
+      var opt = document.createElement("button");
+      opt.className = "lang-opt" + (code === current ? " active" : "");
+      var i = document.createElement("img"); i.src = flagUrl(FLAG_CODE[code]);
+      var span = document.createElement("span");
+      span.textContent = (NAMES[code] && NAMES[code][current]) || code;
+      opt.appendChild(i); opt.appendChild(span);
+      if (code === current) {
+        var chk = document.createElement("span"); chk.className = "chk"; chk.textContent = "✓";
+        opt.appendChild(chk);
+      }
+      opt.addEventListener("click", function(){
+        try { localStorage.setItem("catecumen_lang", code); } catch(e){}
+        location.reload();
+      });
+      menu.appendChild(opt);
+    });
+    btn.addEventListener("click", function(e){ e.stopPropagation(); menu.classList.toggle("open"); });
+    document.addEventListener("click", function(){ menu.classList.remove("open"); });
+  })();
+</script>
+<script>
+  // Mostrar/ocultar contraseña en #pw1 / #pw2 (independiente del bundle de /assets).
+  document.querySelectorAll(".pwd-toggle").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var input = document.getElementById(btn.getAttribute("data-target"));
+      if(!input) return;
+      var showing = input.type === "text";
+      input.type = showing ? "password" : "text";
+      btn.querySelector(".ico-eye").style.display = showing ? "" : "none";
+      btn.querySelector(".ico-eye-off").style.display = showing ? "none" : "";
+    });
+  });
+</script>
+</body>
+</html>

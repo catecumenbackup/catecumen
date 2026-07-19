@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node scripts/migrate-preguntas.mjs)",
+      "Bash(node -e ' *)",
+      "Bash(grep -n \"correct,total\\\\|correct}/{total}\\\\|function ResultModal\" src/App.jsx)",
+      "Bash(grep -v \"// \")",
+      "Bash(npm run *)",
+      "Bash(grep -v \"^\\\\s*//\")",
+      "Bash(sort -u -t'\"' -k2,2)",
+      "Bash(awk 'NR==1591 || NR==2877 {print NR\": \"substr\\($0,1,300\\)}' /c/CATECUMEN/src/App.jsx)",
+      "Bash(node \"/c/Users/jorme/AppData/Local/Temp/claude/C--CATECUMEN/39c9d17f-e7b5-473d-85a3-bb38278bc215/scratchpad/audit_t_calls.mjs\" /c/CATECUMEN/src/App.jsx)",
+      "Bash(node \"/c/Users/jorme/AppData/Local/Temp/claude/C--CATECUMEN/39c9d17f-e7b5-473d-85a3-bb38278bc215/scratchpad/audit_spans.mjs\" /c/CATECUMEN/recuperar/index.html)",
+      "Bash(node \"/c/Users/jorme/AppData/Local/Temp/claude/C--CATECUMEN/39c9d17f-e7b5-473d-85a3-bb38278bc215/scratchpad/audit_spans.mjs\" /c/CATECUMEN/info/index.html)",
+      "Bash(node \"/c/Users/jorme/AppData/Local/Temp/claude/C--CATECUMEN/39c9d17f-e7b5-473d-85a3-bb38278bc215/scratchpad/audit_spans2.mjs\" /c/CATECUMEN/recuperar/index.html)",
+      "Bash(node \"/c/Users/jorme/AppData/Local/Temp/claude/C--CATECUMEN/39c9d17f-e7b5-473d-85a3-bb38278bc215/scratchpad/audit_spans2.mjs\" /c/CATECUMEN/info/index.html)",
+      "Bash(node scripts/generate_i18n_update.mjs)"
+    ]
+  }
+}

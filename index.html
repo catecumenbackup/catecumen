@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#1e3a8a" /> 
+    <meta name="application-name" content="Catecumen" />
+    <meta name="description" content="Comunidad virtual de preparación a los sacramentos en la Iglesia Católica desde la neuropedagogía catequética. Formación integral a tu propio ritmo." />
+    
+    <link rel="alternate" hreflang="es" href="https://www.catecumen.com/" />
+    <link rel="alternate" hreflang="en" href="https://www.catecumen.com/en/" />
+    <link rel="alternate" hreflang="de" href="https://www.catecumen.com/de/" />
+    <link rel="alternate" hreflang="pt" href="https://www.catecumen.com/pt/" />
+    <link rel="alternate" hreflang="it" href="https://www.catecumen.com/it/" />
+    <link rel="alternate" hreflang="fr" href="https://www.catecumen.com/fr/" />
+    <link rel="alternate" hreflang="x-default" href="https://www.catecumen.com/" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Catecumen" />
+    <meta property="og:title" content="Catecumen — Centro Internacional de Catequesis a Distancia" />
+    <meta property="og:description" content="Comunidad virtual de preparación a los sacramentos en la Iglesia Católica desde la neuropedagogía catequética. Formación integral a tu propio ritmo." />
+    <meta property="og:url" content="https://www.catecumen.com" />
+
+    <meta property="og:image" content="https://www.catecumen.com/catecumenlogo.png" />
+    <meta property="og:image:secure_url" content="https://www.catecumen.com/catecumenlogo.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="300" />
+    <meta property="og:image:height" content="100" />
+    <meta property="og:image:alt" content="Catecumen — Formación sacramental de la Iglesia Católica" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Catecumen — Centro Internacional de Catequesis a Distancia" />
+    <meta name="twitter:description" content="Comunidad virtual de preparación a los sacramentos en la Iglesia Católica desde la neuropedagogía catequética. Formación integral a tu propio ritmo." />
+    <meta name="twitter:image" content="https://www.catecumen.com/catecumenlogo.png" />
+
+    <link rel="icon" type="image/x-icon" href="/cat.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon-pwa.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Catecumen" />
+    <title>Catecumen: El Aula Global de la Catequesis</title>
+    <script>
+      // Título del tab localizado: usa el idioma guardado por la app
+      // (localStorage "catecumen_lang") o, si no hay, el del navegador.
+      // Se ejecuta antes de React para que la pestaña muestre el idioma correcto
+      // de inmediato; al cambiar de idioma la app recarga y este script re-corre.
+      (function () {
+        try {
+          var L = ["es", "en", "fr", "de", "pt", "it"];
+          var s = localStorage.getItem("catecumen_lang");
+          var lang = (s && L.indexOf(s) > -1)
+            ? s
+            : (navigator.language || "es").toLowerCase().split("-")[0];
+          if (L.indexOf(lang) < 0) lang = "es";
+          var titles = {
+            es: "Catecumen: El Aula Global de la Catequesis",
+            en: "Catecumen: The Global Classroom of Catechesis",
+            fr: "Catecumen : La Salle de Classe Mondiale de la Catéchèse",
+            de: "Catecumen: Das globale Klassenzimmer der Katechese",
+            pt: "Catecumen: A Sala de Aula Global da Catequese",
+            it: "Catecumen: L'Aula Globale della Catechesi"
+          };
+          document.title = titles[lang] || titles.es;
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root">
+      <div style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">
+        <main style="font-family:system-ui,sans-serif;color:#0f172a">
+          <h1 style="color:#1e3a8a">Catecumen</h1>
+          <p>Centro Internacional de Catequesis a Distancia.</p>
+          <p>
+            Únete a nuestra comunidad global de formación. Conectamos a personas de todo el mundo 
+            a través de la educación y el diálogo continuo.
+          </p>
+        </main>
+        <footer style="font-family:system-ui,sans-serif">
+          <a href="/privacidad.html">Aviso de Privacidad</a> ·
+          <a href="/terminos.html">Términos y Condiciones</a>
+        </footer>
+      </div>
+    </div>
+    <script type="module" src="/src/main.jsx"></script>
+    <script>
+      // Registro del Service Worker (PWA). No bloquea la carga.
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", function () {
+          navigator.serviceWorker.register("/sw.js").catch(function (e) {
+            console.warn("SW no registrado:", e);
+          });
+        });
+      }
+    </script>
+  </body>
+</html>
