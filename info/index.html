@@ -121,11 +121,12 @@
     font-family:'Cinzel',serif;font-size:20px;letter-spacing:.3em;text-transform:uppercase;
     color:var(--gold-l);margin-bottom:14px;
   }
-  .hero-img{
+  .hero-img,.hero-video{
     display:block;width:100%;max-width:640px;height:auto;margin:0 auto 28px;
     border-radius:14px;border:1px solid rgba(200,169,81,.28);
     box-shadow:0 12px 34px rgba(0,0,0,.45);
   }
+  .hero-video{aspect-ratio:16/9;object-fit:cover;background:#060D18;}
   h1{
     font-family:'Cinzel',serif;font-weight:900;color:var(--gold);
     font-size:clamp(20px, 4.5vw, 32px);letter-spacing:.04em;line-height:1.25;margin-bottom:16px;
@@ -340,8 +341,12 @@
       <span class="pt">Centro Internacional de Catequese a Distância</span>
       <span class="it">Centro Internazionale di Catechesi a Distanza</span>
     </p>
-    <img class="hero-img" src="/bienvenida-comunidad.jpg"
-         alt="Centro Internacional de Catequesis a Distancia"/>
+    <video class="hero-video" autoplay loop muted playsinline preload="metadata"
+           poster="/info-catecumen-poster.jpg"
+           aria-label="Centro Internacional de Catequesis a Distancia">
+      <source src="/info-catecumen.webm" type="video/webm"/>
+      <source src="/info-catecumen.mp4" type="video/mp4"/>
+    </video>
     <h1>
       <span class="es">Tu camino hacia los sacramentos, a tu propio ritmo</span>
       <span class="en">Your path to the sacraments, at your own pace</span>

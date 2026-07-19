@@ -1,7 +1,16 @@
 <!doctype html>
+<!--
+  Catecumen — Plataforma de formación sacramental
+  Copyright © 2026 CICADI/ICDC. Todos los derechos reservados.
+  Software propietario. NO es de código abierto. Prohibida su copia,
+  clonación, ingeniería inversa o redistribución total o parcial.
+  Contacto: info@catecumen.com
+-->
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
+    <meta name="author" content="CICADI/ICDC" />
+    <meta name="copyright" content="© 2026 CICADI/ICDC — Todos los derechos reservados. Software propietario, no open source." />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#1e3a8a" /> 
     <meta name="application-name" content="Catecumen" />
@@ -87,6 +96,17 @@
     </div>
     <script type="module" src="/src/main.jsx"></script>
     <script>
+      // Aviso de propiedad intelectual en consola.
+      try {
+        console.info(
+          "%cCatecumen © 2026 CICADI/ICDC",
+          "color:#C8A951;font-weight:bold;font-size:13px"
+        );
+        console.info(
+          "Software propietario — no es de código abierto. Prohibida su copia, clonación o ingeniería inversa. info@catecumen.com"
+        );
+      } catch (e) {}
+
       // Registro del Service Worker (PWA). No bloquea la carga.
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", function () {

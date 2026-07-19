@@ -12,6 +12,8 @@ import { resolve } from "path";
 export default defineConfig({
   plugins: [react()],
   build: {
+    // No publicar sourcemaps: evitan exponer el código fuente legible en producción.
+    sourcemap: false,
     rollupOptions: {
       input: {
         main: resolve(__dirname, "index.html"),
