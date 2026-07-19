@@ -129,3 +129,22 @@ La plataforma es una PWA instalable. Archivos: `public/manifest.webmanifest` (no
 Construido (requiere ejecutar sus SQL y desplegar): **Etapa 0** fundamentos de seguridad (login real, `es_admin`, `admin_log`). **Etapa 1** gestión de videos. **Etapa 2** gestión de usuarios (suspender/reactivar, borrado suave/total). **Etapa 3** mensajería bidireccional (campana+bandeja del usuario, difusión y mensaje individual del admin). **Etapa 4** constancias (revisar, descargar PDF, verificar QR, revocar/reactivar, revocar+reemitir). **Etapa 5** filtros del panel de usuarios (país/idioma/tipo/estado de pago) + tarjetas resumen de pagos + columna de idioma y de estado de pago. **Etapa 6** PWA instalable + barra "Descargar aplicación".
 
 Todas las etapas están construidas. SQL de cada una en los archivos entregados; orden acumulado: `encuestas-video.sql` → `admin-fundamentos.sql` → `admin-videos.sql` (FIX) → `admin-usuarios.sql` → `admin-mensajeria.sql` → `admin-constancias.sql` → `admin-filtros.sql`.
+
+## Control de versiones (git)
+
+El proyecto usa **git** (rama `main`, repo local en `C:\catecumen\.git`). Flujo: `git add -A` → `git commit -m "..."` tras cada cambio que funciona; commitear **antes** de subir `dist/` a Hostinger para tener punto de retorno. El `.gitignore` excluye `node_modules`, `dist`, `.env`/`.env.*` (claves) y `_archivo`.
+
+**Carpeta `_archivo/`** (ignorada por git, NO se despliega): backups y duplicados sacados de la raíz/`src`, capturas de documentación, assets de `public/` sin uso, y videos fuente sin optimizar (`_archivo/fuentes-video/`). Nada de ahí forma parte del build. Ver `_archivo/LEEME.md`.
+
+Pendiente/opcional: respaldo en **GitHub privado** (`git remote add origin ...` + `git push`), aún sin configurar.
+
+## Cambios recientes (julio 2026)
+
+- **Favicon e íconos de app = monograma.** `public/cat.ico` es un **ICO válido cuadrado** con el monograma (letra "C" + cruz, dorado en degradado sobre azul marca `#1e3a8a`) — reemplazó al antiguo `catecumenlogo.ico` (archivado). Los 4 iconos PWA (`icon-192.png`, `icon-512.png`, `icon-512-maskable.png` con margen de seguridad, `apple-touch-icon-pwa.png`) se regeneraron con el mismo monograma. Scripts en `_archivo/build_iconos.py`. El favicon está en las 4 páginas (`index.html`, `info/`, `recuperar/`, `admin/`) como `/cat.ico`.
+- **Título del tab localizado.** `index.html` fija `document.title` según idioma (localStorage `catecumen_lang` o `navigator.language`) vía script inline en `<head>`: "Catecumen: El Aula Global de la Catequesis" (traducido a los 6 idiomas). `<title>` estático = versión ES de respaldo.
+- **Banner de `/info` = video.** `info/index.html` usa un `<video>` (`.hero-video`, autoplay/loop/muted) con `public/info-catecumen.webm` + `.mp4` (720p sin audio, `+faststart`) y `public/info-catecumen-poster.jpg`, en lugar de `bienvenida-comunidad.jpg`.
+- **Novena tarjeta del tour.** `WelcomeModal` en `App.jsx` tiene una tarjeta final `scene:"comunidad"` (comunidad/seguimiento pastoral) con video `public/tour/comunidad.mp4/.webm`; `"comunidad"` añadido a `CON_VIDEO` y escena CSS de respaldo.
+- **Admin — botón "Agendar" en Usuarios.** Cada fila tiene `window.__agendarUsuario(id)` que abre un modal para agendar sesión a ese usuario individual (reutiliza la RPC `admin_crear_sesion` con un solo `p_usuario_ids`). El panel admin real incluye además de las pestañas ya documentadas las de **Sesiones, Atención y Constancias**.
+- **Anti-clonación / licencia.** `vite.config.js` con `build.sourcemap:false` explícito; avisos de copyright en `index.html` (comentario, `<meta>`, consola). Los PDF de T&C (`normatividad_catecumen.pdf` ES, `norms_catecumen_en.pdf` EN) llevan una página-anexo **"12. Licencia de Software"** (Copyright, software propietario, NO open source, prohibición de copia/ingeniería inversa). Generador: `_archivo/build_licencia.py`.
+- **Preview de WhatsApp/OG.** `og:image`/`twitter:image` = `catecumenlogo.png`; descripción (meta/og/twitter): "Comunidad virtual de preparación a los sacramentos en la Iglesia Católica desde la neuropedagogía catequética. Formación integral a tu propio ritmo."
+- **PWA:** `sw.js` `CACHE_VERSION` va en **`catecumen-v3`**. Recordar subirlo en cada release. Los íconos de una PWA ya instalada los cachea el SO: para ver el ícono nuevo puede requerirse **desinstalar y reinstalar** la app.
