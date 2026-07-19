@@ -284,7 +284,7 @@
         si un país no está en la lista, se usa el precio de respaldo del sistema.
       </p>
       <div class="scroll"><table><thead><tr>
-        <th>País</th><th>Moneda</th><th class="num">Bautismo</th><th class="num">Confirmación</th>
+        <th>País</th><th>ISO</th><th>Moneda</th><th class="num">Bautismo</th><th class="num">Confirmación</th>
         <th class="num">1ª Comunión</th><th class="num">Prebautismal</th><th class="num">Catequista</th>
         <th class="num">Padrino</th><th class="num">Estado</th><th>Acciones</th>
       </tr></thead><tbody id="cuotas-body"></tbody></table></div>
@@ -1230,7 +1230,7 @@
 
   // ---------- PRECIOS POR PAÍS ----------
   let CUOTAS=[];
-  const CSV_COLS=["pais","moneda","bautismo","confirmacion","primera_comunion","prebautismal","catequista","padrino","activo"];
+  const CSV_COLS=["pais","codigo_iso","moneda","bautismo","confirmacion","primera_comunion","prebautismal","catequista","padrino","activo"];
   async function cargarCuotas(){
     try{
       const {data,error}=await sb.rpc("admin_listar_cuotas");
@@ -1242,6 +1242,7 @@
   function renderCuotas(){
     $("cuotas-body").innerHTML=CUOTAS.length?CUOTAS.map(c=>`<tr>
       <td>${esc(c.pais)}</td>
+      <td style="font-family:monospace;color:var(--ivory-m)">${esc(c.codigo_iso||"—")}</td>
       <td style="font-family:monospace;color:var(--gold-l)">${esc(c.moneda||"—")}</td>
       <td class="num">${num(c.bautismo)}</td>
       <td class="num">${num(c.confirmacion)}</td>
@@ -1255,7 +1256,7 @@
         <button class="btn ghost sm" onclick="window.__toggleCuota('${esc(c.pais)}',${c.activo?'false':'true'})">${c.activo?'Desactivar':'Activar'}</button>
         <button class="btn danger sm" onclick="window.__borrarCuota('${esc(c.pais)}')">Borrar</button>
       </div></td>
-    </tr>`).join(""):`<tr><td colspan="10" class="empty">Sin precios configurados. Usa “+ Nuevo país” o importa un CSV.</td></tr>`;
+    </tr>`).join(""):`<tr><td colspan="11" class="empty">Sin precios configurados. Usa “+ Nuevo país” o importa un CSV.</td></tr>`;
   }
   window.__editarCuota=(pais)=>{
     const c=CUOTAS.find(x=>x.pais===pais)||{pais:"",moneda:"USD",activo:true};
@@ -1265,7 +1266,9 @@
       <div style="display:flex;gap:10px">
         <div style="flex:2"><label class="fld">País (exacto como aparece en la plataforma)</label>
           <input id="cu-pais" type="text" value="${esc(c.pais||'')}" ${esNuevo?'':'readonly'}/></div>
-        <div style="width:110px"><label class="fld">Moneda</label>
+        <div style="width:90px"><label class="fld">ISO</label>
+          <input id="cu-iso" type="text" maxlength="2" placeholder="MX" value="${esc(c.codigo_iso||'')}"/></div>
+        <div style="width:100px"><label class="fld">Moneda</label>
           <input id="cu-moneda" type="text" maxlength="3" value="${esc(c.moneda||'USD')}"/></div>
       </div>
       <div style="display:flex;gap:10px">
@@ -1290,10 +1293,12 @@
   };
   window.__guardarCuota=async()=>{
     const pais=$("cu-pais").value.trim(), moneda=$("cu-moneda").value.trim().toUpperCase();
+    const iso=$("cu-iso").value.trim().toUpperCase();
     if(!pais||!moneda){ $("cu-msg").className="msg err"; $("cu-msg").textContent="País y moneda son obligatorios."; return; }
+    if(iso.length!==2){ $("cu-msg").className="msg err"; $("cu-msg").textContent="El código ISO son 2 letras (ej. MX, US, CO)."; return; }
     try{
       const {error}=await sb.rpc("admin_guardar_cuota",{
-        p_pais:pais, p_moneda:moneda,
+        p_pais:pais, p_codigo_iso:iso, p_moneda:moneda,
         p_bautismo:+$("cu-b").value||0, p_confirmacion:+$("cu-c").value||0,
         p_primera_comunion:+$("cu-p").value||0, p_prebautismal:+$("cu-pre").value||0,
         p_catequista:+$("cu-cat").value||0, p_padrino:+$("cu-pad").value||0,
@@ -1324,8 +1329,8 @@
   function plantillaCSV(){
     descargarCSV("plantilla-precios-catecumen.csv",
       CSV_COLS.join(",")+"\n"+
-      "México,MXN,1160,1160,1160,695,890,695,true\n"+
-      "Estados Unidos,USD,130,130,130,78,100,78,true\n");
+      "México,MX,MXN,1160,1160,1160,695,890,695,true\n"+
+      "Estados Unidos,US,USD,130,130,130,78,100,78,true\n");
   }
   function exportarCuotasCSV(){
     const filas=CUOTAS.map(c=>CSV_COLS.map(k=>{
@@ -1367,7 +1372,8 @@
       const faltan=["pais","moneda"].filter(k=>!(k in filas[0]));
       if(faltan.length){ $("cuotas-msg").className="msg err"; $("cuotas-msg").textContent="Faltan columnas obligatorias: "+faltan.join(", ")+". Descarga la plantilla como referencia."; return; }
       const limpias=filas.map(f=>({
-        pais:f.pais, moneda:(f.moneda||"USD").toUpperCase(),
+        pais:f.pais, codigo_iso:(f.codigo_iso||"").toUpperCase(),
+        moneda:(f.moneda||"USD").toUpperCase(),
         bautismo:+f.bautismo||0, confirmacion:+f.confirmacion||0,
         primera_comunion:+f.primera_comunion||0, prebautismal:+f.prebautismal||0,
         catequista:+f.catequista||0, padrino:+f.padrino||0,
