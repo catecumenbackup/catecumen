@@ -12,7 +12,20 @@
     <meta name="author" content="CICADI/ICDC" />
     <meta name="copyright" content="© 2026 CICADI/ICDC — Todos los derechos reservados. Software propietario, no open source." />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#1e3a8a" /> 
+    <meta name="theme-color" content="#1e3a8a" />
+
+    <!-- Google tag (gtag.js) — Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-YDQW0M852Y"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-YDQW0M852Y');
+    </script>
+
+    <!-- SEO -->
+    <link rel="canonical" href="https://www.catecumen.com/" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
     <meta name="application-name" content="Catecumen" />
     <meta name="description" content="Comunidad virtual de preparación a los sacramentos en la Iglesia Católica desde la neuropedagogía catequética. Formación integral a tu propio ritmo." />
     
@@ -50,6 +63,48 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Catecumen" />
+
+    <!-- Datos estructurados: ayudan a Google a entender el sitio -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "EducationalOrganization",
+          "@id": "https://www.catecumen.com/#organizacion",
+          "name": "Catecumen",
+          "alternateName": "Centro Internacional de Catequesis a Distancia (CICADI/ICDC)",
+          "url": "https://www.catecumen.com/",
+          "logo": "https://www.catecumen.com/catecumenlogo.png",
+          "email": "info@catecumen.com",
+          "description": "Comunidad virtual de preparación a los sacramentos en la Iglesia Católica desde la neuropedagogía catequética. Formación integral a tu propio ritmo.",
+          "areaServed": "Worldwide",
+          "sameAs": ["https://www.catecumen.com/info"]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://www.catecumen.com/#sitio",
+          "url": "https://www.catecumen.com/",
+          "name": "Catecumen: El Aula Global de la Catequesis",
+          "inLanguage": ["es", "en", "fr", "de", "pt", "it"],
+          "publisher": { "@id": "https://www.catecumen.com/#organizacion" }
+        },
+        {
+          "@type": "Course",
+          "name": "Formación sacramental católica a distancia",
+          "description": "Preparación para Bautismo, Primera Comunión, Confirmación y formación de catequistas, basada en Neuropedagogía Catequética.",
+          "provider": { "@id": "https://www.catecumen.com/#organizacion" },
+          "inLanguage": ["es", "en", "fr", "de", "pt", "it"],
+          "hasCourseInstance": {
+            "@type": "CourseInstance",
+            "courseMode": "online",
+            "courseWorkload": "PT10H"
+          }
+        }
+      ]
+    }
+    </script>
+
     <title>Catecumen: El Aula Global de la Catequesis</title>
     <script>
       // Título del tab localizado: usa el idioma guardado por la app

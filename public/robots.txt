@@ -1,0 +1,9 @@
+# Catecumen — https://www.catecumen.com
+User-agent: *
+Allow: /
+
+# Zonas privadas / utilitarias: no deben indexarse
+Disallow: /admin/
+Disallow: /recuperar/
+
+Sitemap: https://www.catecumen.com/sitemap.xml
