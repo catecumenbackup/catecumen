@@ -9,9 +9,9 @@
 -- (pregunta, opcion_a..d, respuesta_correcta). Las rellenamos con el
 -- contenido en español para no violar las restricciones.
 --
--- El registro en admin_log va dentro de un bloque con EXCEPTION: si los
--- nombres de columna de tu admin_log difieren, la operación principal NO
--- falla (solo se omite la auditoría). Avísame los nombres reales y lo afino.
+-- Auditoría: escribe en public.admin_log (admin_id, admin_email, accion,
+-- entidad, entidad_id, detalle). OJO: entidad_id es TEXT, por eso los uuid
+-- van con ::text — sin el cast, el INSERT falla.
 -- ============================================================================
 
 -- ─────────────────────────────────────────────────────────────────────────
@@ -191,15 +191,14 @@ BEGIN
     IF v_id IS NULL THEN RAISE EXCEPTION 'La pregunta no existe'; END IF;
   END IF;
 
-  -- Auditoría (no bloquea la operación si el esquema difiere)
-  BEGIN
-    INSERT INTO public.admin_log (admin_id, accion, entidad, entidad_id, detalle)
-    VALUES (auth.uid(),
-            CASE WHEN p_id IS NULL THEN 'pregunta_crear' ELSE 'pregunta_editar' END,
-            'preguntas', v_id,
-            jsonb_build_object('video_id', p_video_id, 'pregunta', left(COALESCE(p_datos->>'pregunta_es',''), 120)));
-  EXCEPTION WHEN OTHERS THEN NULL;
-  END;
+  -- Auditoría
+  INSERT INTO public.admin_log (admin_id, admin_email, accion, entidad, entidad_id, detalle)
+  VALUES (auth.uid(),
+          (SELECT a.email FROM public.admins a WHERE a.user_id = auth.uid()),
+          CASE WHEN p_id IS NULL THEN 'pregunta_crear' ELSE 'pregunta_editar' END,
+          'preguntas', v_id::text,
+          jsonb_build_object('video_id', p_video_id,
+                             'pregunta', left(COALESCE(p_datos->>'pregunta_es',''), 120)));
 
   RETURN v_id;
 END;
@@ -219,13 +218,11 @@ BEGIN
   UPDATE public.preguntas SET activo = p_activo WHERE id = p_id;
   IF NOT FOUND THEN RAISE EXCEPTION 'La pregunta no existe'; END IF;
 
-  BEGIN
-    INSERT INTO public.admin_log (admin_id, accion, entidad, entidad_id, detalle)
-    VALUES (auth.uid(),
-            CASE WHEN p_activo THEN 'pregunta_activar' ELSE 'pregunta_desactivar' END,
-            'preguntas', p_id, jsonb_build_object('activo', p_activo));
-  EXCEPTION WHEN OTHERS THEN NULL;
-  END;
+  INSERT INTO public.admin_log (admin_id, admin_email, accion, entidad, entidad_id, detalle)
+  VALUES (auth.uid(),
+          (SELECT a.email FROM public.admins a WHERE a.user_id = auth.uid()),
+          CASE WHEN p_activo THEN 'pregunta_activar' ELSE 'pregunta_desactivar' END,
+          'preguntas', p_id::text, jsonb_build_object('activo', p_activo));
 END;
 $$;
 
@@ -246,12 +243,11 @@ BEGIN
 
   DELETE FROM public.preguntas WHERE id = p_id;
 
-  BEGIN
-    INSERT INTO public.admin_log (admin_id, accion, entidad, entidad_id, detalle)
-    VALUES (auth.uid(), 'pregunta_borrar', 'preguntas', p_id,
-            jsonb_build_object('video_id', v_video, 'pregunta', left(COALESCE(v_txt,''), 120)));
-  EXCEPTION WHEN OTHERS THEN NULL;
-  END;
+  INSERT INTO public.admin_log (admin_id, admin_email, accion, entidad, entidad_id, detalle)
+  VALUES (auth.uid(),
+          (SELECT a.email FROM public.admins a WHERE a.user_id = auth.uid()),
+          'pregunta_borrar', 'preguntas', p_id::text,
+          jsonb_build_object('video_id', v_video, 'pregunta', left(COALESCE(v_txt,''), 120)));
 END;
 $$;
 
