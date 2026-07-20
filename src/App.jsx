@@ -3046,12 +3046,16 @@ function TourScene({tipo,video,webm,poster}){
   // la convención /tour/<escena>.(webm|mp4) de siempre.
   const srcWebm = webm || (CON_VIDEO.includes(tipo) ? `/tour/${tipo}.webm` : null);
   const srcMp4  = video || (CON_VIDEO.includes(tipo) ? `/tour/${tipo}.mp4`  : null);
+  // Póster: imagen ligera (~20 KB) que se pinta de inmediato mientras el video
+  // se descarga. Mejora mucho el LCP: sin él, el hueco queda vacío hasta que
+  // llega el primer fotograma del video (~250 KB).
+  const srcPoster = poster || (CON_VIDEO.includes(tipo) ? `/tour/${tipo}.webp` : null);
   if((srcWebm||srcMp4) && !videoFallo){
     return(
       <div style={{width:"100%",aspectRatio:"640 / 373",position:"relative",overflow:"hidden",
         borderRadius:14,marginBottom:4,border:"1px solid rgba(200,169,81,0.22)",
         background:"rgba(6,13,24,0.4)"}}>
-        <video autoPlay loop muted playsInline preload="metadata" poster={poster||undefined}
+        <video autoPlay loop muted playsInline preload="metadata" poster={srcPoster||undefined}
           onError={()=>setVideoFallo(true)}
           style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}>
           {srcWebm&&<source src={srcWebm} type="video/webm"/>}

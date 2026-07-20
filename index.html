@@ -18,6 +18,12 @@
          El tag se carga ÚNICAMENTE si el usuario acepta en el banner (RGPD). -->
     <script src="/cookies.js" defer></script>
 
+    <!-- Recursos de la primera pantalla: se piden ya, sin esperar a que React
+         monte. Rompe la cadena HTML → bundle → React → petición → pintado,
+         que es lo que retrasaba el Largest Contentful Paint. -->
+    <link rel="preload" as="image" href="/catecumenlogo.png" fetchpriority="high" />
+    <link rel="preload" as="image" href="/tour/bienvenida.webp" />
+
     <!-- SEO -->
     <link rel="canonical" href="https://www.catecumen.com/" />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
