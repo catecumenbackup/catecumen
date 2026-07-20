@@ -12,10 +12,12 @@ import { createPortal } from "react-dom";
 //  en la raíz del sitio — igual que /catecumenlogo.png, que nunca falló.)
 //  IMPORTANTE: coloca estos 6 archivos en la carpeta `public/` de tu proyecto
 //  Vite para que el build los copie a la raíz del dist.
-const fondoBg = "/fondocatecumen.jpg";
-const fondoBgClaro = "/fondocatecumen-claro.jpg";
-const imgBienvenida = "/bienvenida-catequesis.jpg";
-const imgBienvenida2 = "/bienvenida-comunidad.jpg";
+// Imágenes en WebP (~60% más ligeras que los JPG originales, que quedan
+// archivados). Soportado por todos los navegadores desde 2020.
+const fondoBg = "/fondocatecumen.webp";
+const fondoBgClaro = "/fondocatecumen-claro.webp";
+const imgBienvenida = "/bienvenida-catequesis.webp";
+const imgBienvenida2 = "/bienvenida-comunidad.webp";
 const iconoBautismo = "/iconobautismo.svg";
 const iconoConfirmacion = "/iconoconfirmacion.svg";
 import { createClient } from "@supabase/supabase-js";

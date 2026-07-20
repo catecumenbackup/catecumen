@@ -1,0 +1,118 @@
+# ============================================================================
+# Catecumen — configuración de Apache (Hostinger)
+# Copyright © 2026 CICADI/ICDC.
+#
+# Este archivo se copia a dist/ en el build y debe subirse a la raíz del
+# hosting junto con el resto de dist/. Hace tres cosas:
+#   1. Comprime texto/JS/CSS (el bundle baja de ~900 KB a ~250 KB reales)
+#   2. Cachea agresivamente los archivos con hash, y NUNCA el HTML ni el SW
+#   3. Añade cabeceras de seguridad básicas
+# ============================================================================
+
+# ---------------------------------------------------------------------------
+# 1) COMPRESIÓN
+# ---------------------------------------------------------------------------
+<IfModule mod_brotli.c>
+  AddOutputFilterByType BROTLI_COMPRESS text/html text/plain text/css text/xml
+  AddOutputFilterByType BROTLI_COMPRESS application/javascript application/x-javascript
+  AddOutputFilterByType BROTLI_COMPRESS application/json application/ld+json
+  AddOutputFilterByType BROTLI_COMPRESS application/manifest+json
+  AddOutputFilterByType BROTLI_COMPRESS image/svg+xml application/xml
+</IfModule>
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml
+  AddOutputFilterByType DEFLATE application/javascript application/x-javascript
+  AddOutputFilterByType DEFLATE application/json application/ld+json
+  AddOutputFilterByType DEFLATE application/manifest+json
+  AddOutputFilterByType DEFLATE image/svg+xml application/xml
+  # No recomprimir lo que ya viene comprimido
+  SetEnvIfNoCase Request_URI \.(?:jpe?g|png|webp|gif|ico|mp4|webm|woff2?|pdf|zip)$ no-gzip dont-vary
+</IfModule>
+
+# ---------------------------------------------------------------------------
+# 2) TIPOS MIME (por si el servidor no los reconoce)
+# ---------------------------------------------------------------------------
+<IfModule mod_mime.c>
+  AddType application/manifest+json  .webmanifest
+  AddType image/webp                 .webp
+  AddType video/webm                 .webm
+  AddType image/x-icon               .ico
+  AddType font/woff2                 .woff2
+</IfModule>
+
+# ---------------------------------------------------------------------------
+# 3) CACHÉ
+#    - /assets/*  llevan hash en el nombre → caché de 1 año, inmutable
+#    - imágenes, videos, fuentes → 6 meses
+#    - HTML, service worker y manifest → SIN caché (para publicar cambios ya)
+# ---------------------------------------------------------------------------
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresDefault                          "access plus 1 month"
+  ExpiresByType text/html                 "access plus 0 seconds"
+  ExpiresByType image/jpeg                "access plus 6 months"
+  ExpiresByType image/png                 "access plus 6 months"
+  ExpiresByType image/webp                "access plus 6 months"
+  ExpiresByType image/svg+xml             "access plus 6 months"
+  ExpiresByType image/x-icon              "access plus 6 months"
+  ExpiresByType video/mp4                 "access plus 6 months"
+  ExpiresByType video/webm                "access plus 6 months"
+  ExpiresByType font/woff2                "access plus 1 year"
+  ExpiresByType application/pdf           "access plus 1 month"
+</IfModule>
+
+<IfModule mod_headers.c>
+  # Archivos con hash de Vite: nunca cambian de contenido → caché máxima
+  <FilesMatch "\.(js|css)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+
+  # HTML: siempre revalidar, así un deploy se ve de inmediato
+  <FilesMatch "\.html$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+
+  # Service worker y manifest: NUNCA cachear (si no, la PWA no se actualiza)
+  <FilesMatch "(sw\.js|manifest\.webmanifest)$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+  </FilesMatch>
+
+  # robots/sitemap: revalidar a diario
+  <FilesMatch "(robots\.txt|sitemap\.xml)$">
+    Header set Cache-Control "public, max-age=86400"
+  </FilesMatch>
+
+  # ------------------------------------------------------------------------
+  # 4) SEGURIDAD
+  # ------------------------------------------------------------------------
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+  # Quita cabeceras que revelan versiones del servidor
+  Header unset X-Powered-By
+</IfModule>
+
+# ---------------------------------------------------------------------------
+# 5) Forzar HTTPS y dominio con www (evita contenido duplicado en SEO)
+# ---------------------------------------------------------------------------
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # http -> https
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
+  RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+  # catecumen.com -> www.catecumen.com
+  RewriteCond %{HTTP_HOST} ^catecumen\.com$ [NC]
+  RewriteRule ^(.*)$ https://www.catecumen.com/$1 [R=301,L]
+</IfModule>
+
+# ---------------------------------------------------------------------------
+# 6) Bloquear acceso a archivos sensibles
+# ---------------------------------------------------------------------------
+<FilesMatch "^\.(env|git|gitignore)|\.(sql|log|md)$">
+  Require all denied
+</FilesMatch>
