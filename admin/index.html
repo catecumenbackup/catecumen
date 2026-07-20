@@ -129,6 +129,7 @@
       <button class="tab" data-tab="videos">🎬 Videos</button>
       <button class="tab" data-tab="evaluaciones">📝 Evaluaciones</button>
       <button class="tab" data-tab="tour">🎠 Tour</button>
+      <button class="tab" data-tab="etiquetas">🏷️ Etiquetas</button>
       <button class="tab" data-tab="usuarios">👤 Usuarios</button>
       <button class="tab" data-tab="mensajes">✉️ Mensajes <span id="msg-badge" class="pill bad" style="display:none"></span></button>
       <button class="tab" data-tab="sesiones">📅 Sesiones</button>
@@ -255,6 +256,22 @@
         <th class="num">Correcta</th><th class="num">Puntaje</th><th class="num">Estado</th><th>Acciones</th>
       </tr></thead><tbody id="ev-body"></tbody></table></div>
       <p id="ev-msg" class="msg"></p>
+    </div>
+
+    <!-- TAB ETIQUETAS -->
+    <div id="tab-etiquetas" class="tabpane hidden">
+      <div class="controls">
+        <button id="etq-recargar" class="btn ghost sm">Actualizar</button>
+        <span style="color:var(--ivory-m);font-size:13px">
+          Etiquetas sobre los botones del modal de registro (“¿qué quieres hacer?”).
+          Enciende solo las opciones que aún no estén disponibles.
+        </span>
+      </div>
+      <div class="scroll"><table><thead><tr>
+        <th>Opción</th><th>Texto (ES)</th><th>Vista previa</th>
+        <th class="num">Estado</th><th>Acciones</th>
+      </tr></thead><tbody id="etq-body"></tbody></table></div>
+      <p id="etq-msg" class="msg"></p>
     </div>
 
     <!-- TAB TOUR -->
@@ -588,6 +605,7 @@
     if(t.dataset.tab==="precios") cargarCuotas();
     if(t.dataset.tab==="evaluaciones") cargarEvaluaciones();
     if(t.dataset.tab==="tour") cargarTour();
+    if(t.dataset.tab==="etiquetas") cargarEtiquetas();
   }));
 
   // ---------- ESTADÍSTICAS ----------
@@ -1654,6 +1672,86 @@
     }catch(e){if(m){m.className="msg err";m.textContent="Error: "+(e.message||e);}console.error(e);}
   };
 
+  // ---------- ETIQUETAS (badges del modal de registro) ----------
+  const ETQ_NOMBRES={catecumeno:"Quiero recibir mis sacramentos",
+    prebautismal:"Papá/mamá — formación pre-sacramental", padrino:"Padrino/madrina",
+    catequista:"Catequista — Neuropedagogía", parroquia:"Parroquia (afiliación)",
+    diocesis:"Diócesis (afiliación)", centroadiccion:"Centro de adicciones (afiliación)"};
+  let ETQ=[];
+  async function cargarEtiquetas(){
+    try{
+      const {data,error}=await sb.rpc("admin_listar_etiquetas");
+      if(error)throw error;
+      ETQ=data||[]; renderEtiquetas(); $("etq-msg").textContent="";
+    }catch(e){ $("etq-msg").className="msg err"; $("etq-msg").textContent="Error: "+(e.message||e); }
+  }
+  function renderEtiquetas(){
+    $("etq-body").innerHTML=ETQ.length?ETQ.map(e=>{
+      const prev=`<span style="display:inline-block;background:${esc(e.color_fondo)};color:${esc(e.color_texto)};
+        font-family:'Cinzel',serif;font-size:10.5px;font-weight:700;letter-spacing:.12em;
+        text-transform:uppercase;padding:3px 10px;border-radius:99px;
+        border:1px solid ${esc(e.color_texto)}55">${esc(e.texto_es||"—")}</span>`;
+      const faltan=["en","fr","de","pt","it"].filter(c=>!(e["texto_"+c]||"").trim()).map(c=>c.toUpperCase());
+      return `<tr>
+        <td style="font-size:13px">${esc(ETQ_NOMBRES[e.clave]||e.clave)}
+          <br><span style="font-family:monospace;font-size:11px;color:var(--ivory-m)">${esc(e.clave)}</span></td>
+        <td style="font-size:13px">${esc(e.texto_es||"—")}
+          ${faltan.length?`<br><span class="pill off">falta: ${faltan.join(" ")}</span>`:""}</td>
+        <td>${prev}</td>
+        <td class="num">${e.activo?'<span class="pill ok">visible</span>':'<span class="pill off">oculta</span>'}</td>
+        <td><div class="actions-cell">
+          <button class="btn ghost sm" onclick="window.__editarEtiqueta('${e.id}')">Editar</button>
+          <button class="btn ghost sm" onclick="window.__etqActivo('${e.id}',${e.activo?"false":"true"})">${e.activo?"Ocultar":"Mostrar"}</button>
+        </div></td>
+      </tr>`;
+    }).join(""):`<tr><td colspan="5" class="empty">Sin etiquetas. Ejecuta admin-etiquetas.sql.</td></tr>`;
+  }
+  window.__editarEtiqueta=(id)=>{
+    const e=ETQ.find(x=>x.id===id); if(!e)return;
+    const L=[["es","Español"],["en","Inglés"],["fr","Francés"],["de","Alemán"],["pt","Portugués"],["it","Italiano"]];
+    $("modal-mount").innerHTML=`<div class="overlay"><div class="modal" style="max-width:600px;max-height:88vh;overflow:auto">
+      <h3>Etiqueta — ${esc(ETQ_NOMBRES[e.clave]||e.clave)}</h3>
+      <label class="fld">Texto por idioma</label>
+      ${L.map(([c,n])=>`<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+        <span style="width:34px;font-size:11px;color:var(--ivory-m);text-transform:uppercase">${c}</span>
+        <input id="et-${c}" type="text" value="${esc(e["texto_"+c]||"")}" placeholder="${n}" style="flex:1"/>
+      </div>`).join("")}
+      <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">
+        <div><label class="fld">Color de fondo</label>
+          <input id="et-bg" type="color" value="${esc(e.color_fondo||"#B3261E")}" style="width:70px;height:38px;padding:2px"/></div>
+        <div><label class="fld">Color del texto</label>
+          <input id="et-fg" type="color" value="${esc(e.color_texto||"#E5C97A")}" style="width:70px;height:38px;padding:2px"/></div>
+        <div><label class="fld">Visible</label>
+          <select id="et-activo" style="width:110px">
+            <option value="true" ${e.activo?"selected":""}>Sí</option>
+            <option value="false" ${!e.activo?"selected":""}>No</option></select></div>
+      </div>
+      <p id="et-msg" class="msg"></p>
+      <div class="modal-actions">
+        <button class="btn ghost" onclick="window.__closeModal()">Cancelar</button>
+        <button class="btn" onclick="window.__guardarEtiqueta('${e.id}','${esc(e.clave)}')">Guardar</button>
+      </div>
+    </div></div>`;
+  };
+  window.__guardarEtiqueta=async(id,clave)=>{
+    const datos={clave:clave, color_fondo:$("et-bg").value, color_texto:$("et-fg").value,
+                 activo:$("et-activo").value==="true"};
+    ["es","en","fr","de","pt","it"].forEach(c=>{ datos["texto_"+c]=$("et-"+c).value.trim(); });
+    if(!datos.texto_es){ $("et-msg").className="msg err"; $("et-msg").textContent="El texto en español es obligatorio."; return; }
+    $("et-msg").className="msg"; $("et-msg").textContent="Guardando…";
+    try{
+      const {error}=await sb.rpc("admin_guardar_etiqueta",{p_id:id,p_datos:datos});
+      if(error)throw error;
+      window.__closeModal(); await cargarEtiquetas();
+      $("etq-msg").className="msg ok"; $("etq-msg").textContent="Etiqueta actualizada.";
+    }catch(e){ $("et-msg").className="msg err"; $("et-msg").textContent="Error: "+(e.message||e); }
+  };
+  window.__etqActivo=async(id,activo)=>{
+    try{ const {error}=await sb.rpc("admin_etiqueta_activo",{p_id:id,p_activo:activo});
+      if(error)throw error; await cargarEtiquetas();
+    }catch(e){ $("etq-msg").className="msg err"; $("etq-msg").textContent="Error: "+(e.message||e); }
+  };
+
   // ---------- TOUR (tarjetas de bienvenida) ----------
   let TOUR=[];
   async function cargarTour(){
@@ -1927,6 +2025,8 @@
   $("f-coment").addEventListener("change",renderComentarios);
   $("f-buscar").addEventListener("input",renderComentarios);
   $("nuevo-video").addEventListener("click",()=>videoModal(null));
+  // Etiquetas
+  $("etq-recargar").addEventListener("click",cargarEtiquetas);
   // Tour
   $("tour-recargar").addEventListener("click",cargarTour);
   $("tour-nueva").addEventListener("click",()=>window.__editarTour(null));

@@ -3299,6 +3299,27 @@ function WelcomeModal({onContinue,onLogin}){
 // ─── FILTER MODAL ──────────────────────────────────────────────────
 function FilterModal({onSelect}){
   const [showBecas,setShowBecas]=useState(true);
+  // Etiquetas configurables por opción (ej. "Próximamente"), administradas
+  // desde el panel. Si la BD no responde, simplemente no se muestra ninguna.
+  const [etiquetas,setEtiquetas]=useState({});
+  useEffect(()=>{
+    let vivo=true;
+    (async()=>{
+      try{
+        const {data,error}=await supabase.rpc("obtener_etiquetas_opciones");
+        if(error||!Array.isArray(data)||!vivo)return;
+        const m={};
+        data.forEach(e=>{
+          const txt=PICK({es:e.texto_es,en:e.texto_en,fr:e.texto_fr,
+                          de:e.texto_de,pt:e.texto_pt,it:e.texto_it});
+          if(txt&&txt.trim())m[e.clave]={txt:txt.trim(),
+            bg:e.color_fondo||"#B3261E", fg:e.color_texto||"#E5C97A"};
+        });
+        if(vivo)setEtiquetas(m);
+      }catch{/* sin conexión: sin etiquetas */}
+    })();
+    return()=>{vivo=false;};
+  },[]);
   const opts=[
     {k:"catecumeno", icon:"✝️", es:"Quiero recibir mis sacramentos",en:"I want to receive my sacraments",fr:"Je veux recevoir mes sacrements",de:"Ich möchte meine Sakramente empfangen",pt:"Quero receber meus sacramentos",it:"Voglio ricevere i miei sacramenti"},
     {k:"prebautismal",icon:"👨‍👩‍👧",es:"Soy papá/mamá y quiero formación pre-sacramental para que mi hijo reciba el Bautismo, Confirmación y/o Primera Comunión",en:"I'm a parent and want pre-sacramental formation for my child attending to receive the Baptism, Confirmation and/or Fist Communion",fr:"Je suis parent et je souhaite une formation pré-sacramentelle pour que mon enfant reçoive le Baptême, la Confirmation et/ou la Première Communion",de:"Ich bin Vater/Mutter und möchte eine vorsakramentale Bildung, damit mein Kind die Taufe, Firmung und/oder Erstkommunion empfängt",pt:"Sou pai/mãe e quero formação pré-sacramental para que meu filho receba o Batismo, a Crisma e/ou a Primeira Comunhão",it:"Sono genitore e desidero una formazione pre-sacramentale affinché mio figlio riceva il Battesimo, la Cresima e/o la Prima Comunione"},
@@ -3485,6 +3506,17 @@ function FilterModal({onSelect}){
               <div>
                 <span style={{color:C.ivory,fontFamily:"'Crimson Text',serif",fontSize:16.5,
                   display:"block"}}>{T(o.es,o.en,o.fr,o.de,o.pt,o.it)}</span>
+                {etiquetas[o.k]&&(
+                  <span style={{display:"inline-block",marginTop:6,
+                    background:etiquetas[o.k].bg,color:etiquetas[o.k].fg,
+                    fontFamily:"'Cinzel',serif",fontSize:10.5,fontWeight:700,
+                    letterSpacing:"0.12em",textTransform:"uppercase",
+                    padding:"3px 10px",borderRadius:99,
+                    border:`1px solid ${etiquetas[o.k].fg}55`,
+                    boxShadow:"0 1px 6px rgba(0,0,0,0.35)"}}>
+                    {etiquetas[o.k].txt}
+                  </span>
+                )}
               </div>
               <span style={{marginLeft:"auto",color:C.gold,fontSize:16,opacity:0.5}}>›</span>
             </button>
