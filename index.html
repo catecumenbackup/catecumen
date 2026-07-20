@@ -18,6 +18,14 @@
          El tag se carga ÚNICAMENTE si el usuario acepta en el banner (RGPD). -->
     <script src="/cookies.js" defer></script>
 
+    <!-- Fondo de pantalla completa = elemento LCP de la app.
+         Va ESTÁTICO (no creado por JS) para que el escáner de precarga del
+         navegador lo encuentre antes de ejecutar ningún script, y con
+         fetchpriority alto, tal como recomienda la auditoría de Lighthouse.
+         Se precarga el tema claro, que es el predeterminado; si el usuario
+         tiene el oscuro, el script de más abajo añade el suyo. -->
+    <link rel="preload" as="image" href="/fondocatecumen-claro.webp" fetchpriority="high" />
+
     <!-- SEO -->
     <link rel="canonical" href="https://www.catecumen.com/" />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
@@ -125,17 +133,16 @@
           document.title = titles[lang] || titles.es;
         } catch (e) {}
 
-        // Precarga del fondo de pantalla completa: es el elemento LCP de la
-        // app. React lo pinta como background-image en un style, así que el
-        // navegador no lo descubría hasta montar (~620 ms tarde). Al declararlo
-        // aquí empieza a descargarse mientras aún se parsea el HTML.
-        // Debe coincidir con la lógica de tema de App.jsx (por defecto "light").
+        // El tema claro ya va precargado estáticamente arriba. Solo si el
+        // usuario tiene el tema oscuro guardado, añadimos el suyo.
         try {
-          var tema = localStorage.getItem("catecumen_theme") || "light";
-          var fondo = tema === "dark" ? "/fondocatecumen.webp" : "/fondocatecumen-claro.webp";
-          var l = document.createElement("link");
-          l.rel = "preload"; l.as = "image"; l.href = fondo;
-          document.head.appendChild(l);
+          if (localStorage.getItem("catecumen_theme") === "dark") {
+            var l = document.createElement("link");
+            l.rel = "preload"; l.as = "image";
+            l.href = "/fondocatecumen.webp";
+            l.setAttribute("fetchpriority", "high");
+            document.head.appendChild(l);
+          }
         } catch (e) {}
       })();
     </script>
