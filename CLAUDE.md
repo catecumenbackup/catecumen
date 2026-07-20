@@ -130,6 +130,49 @@ Construido (requiere ejecutar sus SQL y desplegar): **Etapa 0** fundamentos de s
 
 Todas las etapas están construidas. SQL de cada una en los archivos entregados; orden acumulado: `encuestas-video.sql` → `admin-fundamentos.sql` → `admin-videos.sql` (FIX) → `admin-usuarios.sql` → `admin-mensajeria.sql` → `admin-constancias.sql` → `admin-filtros.sql`.
 
+## Rendimiento (PageSpeed) — hallazgos medidos, julio 2026
+
+Punto de partida **73** → actual **85** (móvil). FCP 0.8 s, Speed Index ~2 s,
+TBT ~10 ms, CLS 0.015. El único aviso rojo restante es *"Reduce el código
+JavaScript sin usar — 122 KiB"*.
+
+**Qué FUNCIONÓ (no quitar):**
+- **`.htaccess`** con Brotli/Gzip: el bundle de ~914 KB viaja como ~254 KB. La
+  mejora más rentable de todas. Incluye caché larga para `/assets/` y **nunca**
+  para HTML ni `sw.js`.
+- **Pantalla de carga inline** en `index.html` (`#cat-splash`): HTML+CSS puro,
+  sin peticiones. Bajó el FCP de 3.2 s a 0.8 s. React la reemplaza al montar.
+- **Precarga del fondo** (`<link rel="preload" as="image" fetchpriority="high">`
+  **estático** en el HTML): el `div` con `background-image` a pantalla completa
+  es el **elemento LCP** de la app. Debe ir estático, no creado por JS, para que
+  el escáner de precarga del navegador lo vea. Redujo el "retraso en la carga
+  de recursos" del LCP de 620 ms a ~120 ms.
+- **Imágenes en WebP** (calidad 65 para fondos): −683 KB.
+- **Pósters `.webp` de las tarjetas del tour** (`/tour/<clave>.webp`): pintan
+  mientras el video descarga.
+- **CSS incrustado en el HTML** (plugin `inlineCss` en `vite.config.js`):
+  elimina una petición que bloqueaba el render (~170 ms).
+
+**Qué NO funcionó (no reintentar sin medir):**
+- **Vendor splitting** (`manualChunks` separando React/Supabase): **empeoró de
+  84 a 70**. Más archivos = más viajes de ida y vuelta en hosting compartido, y
+  esos chunks se necesitan todos de inmediato. El Speed Index subió de 1.2 s a
+  4.9 s. Está documentado en `vite.config.js`.
+- **Precargar recursos que NO son el LCP** (logo, póster del tour): roban ancho
+  de banda en la conexión móvil simulada sin mejorar la métrica.
+
+**Metodología obligatoria:** una optimización por despliegue y medir entre cada
+una. Las corridas de PageSpeed varían ±10 puntos; **hacer 3-4 y tomar la
+mediana** antes de concluir que algo mejoró o empeoró (un FCP de 3.2 s resultó
+ser un dato atípico frente a 0.8 s reales).
+
+**Pendiente (única palanca grande que queda):** troceo por pantallas con
+`React.lazy`. Requiere extraer primero el ámbito compartido de `App.jsx`
+(`C`, `T`, `PICK`, `BTN`, `OVERLAY`, `supabase`…) a un módulo y luego mover una
+pantalla a la vez (constancias, mensajería, panel de cuenta, registro), probando
+el flujo de pago entre cada paso. Es la intervención de mayor riesgo del
+proyecto: abordarla como proyecto propio, no al final de una sesión.
+
 ## Control de versiones (git)
 
 El proyecto usa **git** (rama `main`, repo local en `C:\catecumen\.git`). Flujo: `git add -A` → `git commit -m "..."` tras cada cambio que funciona; commitear **antes** de subir `dist/` a Hostinger para tener punto de retorno. El `.gitignore` excluye `node_modules`, `dist`, `.env`/`.env.*` (claves) y `_archivo`.
