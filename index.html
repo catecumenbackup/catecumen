@@ -129,6 +129,39 @@
   </head>
   <body>
     <div id="root">
+      <!-- Pantalla de carga: HTML/CSS puro, sin peticiones externas. Pinta de
+           inmediato (mejora el First Contentful Paint) y React la reemplaza
+           automáticamente al montar. -->
+      <div id="cat-splash" style="position:fixed;inset:0;display:flex;flex-direction:column;
+        align-items:center;justify-content:center;gap:22px;background:#0B1526;z-index:9999">
+        <style>
+          @keyframes catPulse{0%,100%{opacity:.75;transform:scale(.98)}50%{opacity:1;transform:scale(1)}}
+          @keyframes catBar{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}
+        </style>
+        <svg width="118" height="118" viewBox="0 0 100 100" aria-label="Catecumen"
+             style="animation:catPulse 1.8s ease-in-out infinite">
+          <defs>
+            <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#F0D68A"/><stop offset="100%" stop-color="#B08A2F"/>
+            </linearGradient>
+          </defs>
+          <rect x="46.6" y="8" width="6.8" height="27" fill="url(#cg)"/>
+          <rect x="38.5" y="16.4" width="23" height="6.8" fill="url(#cg)"/>
+          <text x="50" y="88" text-anchor="middle" fill="url(#cg)"
+                font-family="Georgia,'Times New Roman',serif" font-size="72" font-weight="700">C</text>
+        </svg>
+        <div style="font-family:Georgia,'Times New Roman',serif;color:#C8A951;font-size:15px;
+          letter-spacing:.34em;text-transform:uppercase">Catecumen</div>
+        <div style="width:132px;height:2px;background:rgba(200,169,81,.2);overflow:hidden;border-radius:2px">
+          <div style="width:40%;height:100%;background:#C8A951;animation:catBar 1.4s ease-in-out infinite"></div>
+        </div>
+        <noscript>
+          <p style="color:#F0EAD6;font-family:system-ui,sans-serif;font-size:14px;text-align:center;max-width:300px">
+            Esta plataforma necesita JavaScript activado para funcionar.
+          </p>
+        </noscript>
+      </div>
+
       <div style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">
         <main style="font-family:system-ui,sans-serif;color:#0f172a">
           <h1 style="color:#1e3a8a">Catecumen</h1>
