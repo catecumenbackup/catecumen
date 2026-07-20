@@ -21,25 +21,13 @@ export default defineConfig({
         info: resolve(__dirname, "info/index.html"),
         admin: resolve(__dirname, "admin/index.html"),
       },
-      output: {
-        // ── Separación de dependencias (code splitting de vendor) ──────────
-        // React y Supabase no cambian entre despliegues. Al aislarlos en sus
-        // propios archivos, el navegador los guarda en caché (1 año, ver
-        // .htaccess) y en cada release el usuario solo vuelve a descargar
-        // TU código, no las librerías. Beneficia sobre todo a los alumnos
-        // que regresan a continuar el curso.
-        manualChunks(id) {
-          if (!id.includes("node_modules")) return;
-          if (id.includes("react-dom") || id.includes("/react/") ||
-              id.includes("react/jsx") || id.includes("scheduler")) {
-            return "vendor-react";
-          }
-          if (id.includes("@supabase")) return "vendor-supabase";
-          return "vendor";
-        },
-      },
     },
   },
+  // NOTA (jul 2026): se probó separar React/Supabase en chunks propios
+  // (manualChunks). En este hosting compartido EMPEORÓ el rendimiento de 84
+  // a 70: más archivos = más viajes de ida y vuelta, y el Speed Index subió
+  // de 1.2 s a 4.9 s. Un solo bundle resultó más rápido aquí. No reintroducir
+  // sin medir antes con PageSpeed.
 });
 // Nota: si tu versión de Vite (8+ con Rolldown) muestra una advertencia
 // sobre rollupOptions, renombra la clave a `rolldownOptions` — la
