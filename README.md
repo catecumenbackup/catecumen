@@ -1,16 +1,78 @@
-# React + Vite
+# Catecumen — El Aula Global de la Catequesis
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Plataforma web de **formación sacramental católica a distancia** ([catecumen.com](https://www.catecumen.com)),
+en colaboración con el Centro Internacional de Catequesis a Distancia (CICADI/ICDC) y la
+Diócesis de Querétaro, México.
 
-Currently, two official plugins are available:
+> ⚠️ **Software propietario — Copyright © 2026 CICADI/ICDC. Todos los derechos reservados.**
+> Este repositorio **NO es de código abierto**. Queda prohibida su copia, clonación, ingeniería
+> inversa, redistribución o uso total o parcial sin autorización previa y por escrito.
+> Ver la cláusula 12 (Licencia de Software) en `public/normatividad_catecumen.pdf`.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Capa | Tecnología |
+|---|---|
+| Frontend | React 18 + Vite (rolldown-vite v8), SPA monolítica |
+| Backend | Supabase (Postgres + Auth + Edge Functions) |
+| Pagos | Stripe (tarjeta y efectivo: OXXO / Boleto / Multibanco) |
+| Hosting | Hostinger (despliegue manual subiendo `dist/`) |
+| Idiomas | 6 — es, en, fr, de, pt, it |
 
-## Expanding the ESLint configuration
+## Estructura
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```
+src/App.jsx           Toda la aplicación (monolítico)
+index.html            Entrada principal de Vite
+info/index.html       Página pública "Sobre Catecumen"
+recuperar/index.html  Recuperación de contraseña
+admin/index.html      Consola de administración
+public/               Assets servidos tal cual (iconos, videos, PDF)
+supabase/functions/   Edge Functions
+scripts/              Migraciones SQL y utilidades
+_archivo/             Backups y fuentes (ignorado por git, no se despliega)
+```
+
+> **Regla crítica:** los archivos de `info/`, `recuperar/` y `admin/` deben llamarse
+> **exactamente `index.html`**. Vite ignora silenciosamente cualquier otro nombre.
+
+## Desarrollo
+
+```bash
+npm install
+npm run dev
+```
+
+Requiere un archivo `.env` (no versionado) con:
+
+```
+VITE_SUPABASE_URL=...
+VITE_SUPABASE_ANON_KEY=...
+```
+
+## Despliegue
+
+```powershell
+cd C:\catecumen
+Remove-Item -Recurse -Force node_modules\.vite -ErrorAction SilentlyContinue
+npm run build
+# subir el contenido de dist/ a Hostinger
+```
+
+Antes de publicar:
+
+1. Verifica que `TEST_MODE` esté en `false` en `src/App.jsx`.
+2. Sube `CACHE_VERSION` en `public/sw.js` para invalidar la caché de la PWA.
+3. Confirma que cambió el hash del bundle (`dist/assets/main-XXXX.js`).
+4. Prueba en **ventana de incógnito**.
+
+## Documentación interna
+
+El contexto completo del proyecto (base de datos, edge functions, consola de
+administración, convenciones y trampas conocidas) está en **`CLAUDE.md`**.
+
+---
+
+**Contacto:** info@catecumen.com
