@@ -3036,20 +3036,24 @@ function WelcomeImageCarousel({images}){
 // Escenas animadas por CSS, una por tarjeta. Ligeras, sin imágenes ni video.
 // Escenas del tour: si existe un video para la escena lo reproduce (MP4+WebM);
 // si el video no carga, cae automáticamente a la escena animada por CSS.
-function TourScene({tipo}){
+function TourScene({tipo,video,webm,poster}){
   const [videoFallo,setVideoFallo]=useState(false);
   // Escenas con video disponible en /tour/<escena>.(mp4|webm)
   const CON_VIDEO=["bienvenida","institucion","biblia","sacerdotes","ia","documentos","avatares","comunidad"];
-  if(CON_VIDEO.includes(tipo) && !videoFallo){
+  // Prioridad: lo que venga de la BD (editable desde el panel) y, si no hay,
+  // la convención /tour/<escena>.(webm|mp4) de siempre.
+  const srcWebm = webm || (CON_VIDEO.includes(tipo) ? `/tour/${tipo}.webm` : null);
+  const srcMp4  = video || (CON_VIDEO.includes(tipo) ? `/tour/${tipo}.mp4`  : null);
+  if((srcWebm||srcMp4) && !videoFallo){
     return(
       <div style={{width:"100%",aspectRatio:"640 / 373",position:"relative",overflow:"hidden",
         borderRadius:14,marginBottom:4,border:"1px solid rgba(200,169,81,0.22)",
         background:"rgba(6,13,24,0.4)"}}>
-        <video autoPlay loop muted playsInline preload="metadata"
+        <video autoPlay loop muted playsInline preload="metadata" poster={poster||undefined}
           onError={()=>setVideoFallo(true)}
           style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}>
-          <source src={`/tour/${tipo}.webm`} type="video/webm"/>
-          <source src={`/tour/${tipo}.mp4`} type="video/mp4"/>
+          {srcWebm&&<source src={srcWebm} type="video/webm"/>}
+          {srcMp4&&<source src={srcMp4} type="video/mp4"/>}
         </video>
       </div>
     );
@@ -3142,12 +3146,22 @@ function TourScene({tipo}){
       <span className="tstar" style={{top:20,left:"26%",fontSize:12}}>✦</span>
       <span className="tstar" style={{bottom:24,right:"24%",fontSize:14,animationDelay:"1.1s"}}>✦</span>
     </div>),
+    // 10 · Descarga de la app / video de muestra (video cargable desde el panel)
+    muestra:(<div style={S}>{common}
+      <div style={center}><span className="tbig" style={{animationDelay:".1s"}}>📲</span></div>
+      <span style={{position:"absolute",left:"24%",top:"50%",transform:"translateY(-50%)",fontSize:26,animation:"tFloat2 3s ease-in-out infinite"}}>▶️</span>
+      <span style={{position:"absolute",right:"24%",top:"50%",transform:"translateY(-50%)",fontSize:24,animation:"tFloat2 3s ease-in-out infinite .8s"}}>⬇️</span>
+      <span className="tstar" style={{top:18,left:"46%",fontSize:12,animationDelay:".4s"}}>✦</span>
+    </div>),
   };
   return scenes[tipo]||scenes.bienvenida;
 }
 
 function WelcomeModal({onContinue,onLogin}){
-  const cards=[
+  // Tarjetas por defecto (respaldo). El panel de administración puede
+  // sobrescribir videos y textos vía la tabla `tour_tarjetas`; si la BD no
+  // responde o un campo viene vacío, se usa lo que está aquí.
+  const cardsBase=[
     {scene:"bienvenida", t:T("Bienvenidos a la primera plataforma para formación sacramental católica basada en Neuropedagogía Catequética.","Welcome to the first Catholic sacramental formation platform based on catechetical neuropedagogy.","Bienvenue sur la première plateforme de formation sacramentelle catholique fondée sur la Neuropédagogie Catéchétique.","Willkommen auf der ersten katholischen Plattform für Sakramentenbildung auf Grundlage der Katechetischen Neuropädagogik.","Bem-vindos à primeira plataforma de formação sacramental católica baseada na Neuropedagogia Catequética.","Benvenuti nella prima piattaforma per la formazione sacramentale cattolica basata sulla Neuropedagogia Catechetica.")},
     {scene:"institucion", t:T("Impulsada por el Centro Internacional de Catequesis a Distancia, un proyecto bajo el auspicio y la guía de la Parroquia de Nuestra Señora de la Esperanza perteneciente a la Diócesis de Querétaro, México.","Powered by the International Center for Distance Catechesis, a project under the auspices and guidance of the Parish of Nuestra Señora de la Esperanza, belonging to the Diocese of Querétaro, Mexico.","Propulsée par le Centre International de Catéchèse à Distance, un projet placé sous les auspices et la direction de la Paroisse Nuestra Señora de la Esperanza, appartenant au Diocèse de Querétaro, au Mexique.","Angetrieben vom Internationalen Zentrum für Fernkatechese, einem Projekt unter der Schirmherrschaft und Leitung der Pfarrei Nuestra Señora de la Esperanza, die zur Diözese Querétaro, Mexiko, gehört.","Impulsionada pelo Centro Internacional de Catequese a Distância, um projeto sob os auspícios e orientação da Paróquia de Nuestra Señora de la Esperanza, pertencente à Diocese de Querétaro, México.","Promossa dal Centro Internazionale di Catechesi a Distanza, un progetto sotto gli auspici e la guida della Parrocchia di Nuestra Señora de la Esperanza, appartenente alla Diocesi di Querétaro, Messico.")},
     {scene:"biblia", t:T("Basada completamente en la Revelación Bíblica, la Tradición y el Magisterio de la Iglesia Católica.","Fully based on Revelation, Tradition, and the Magisterium of the Catholic Church.","Entièrement fondée sur la Révélation biblique, la Tradition et le Magistère de l'Église catholique.","Vollständig gegründet auf der biblischen Offenbarung, der Tradition und dem Lehramt der katholischen Kirche.","Totalmente baseada na Revelação Bíblica, na Tradição e no Magistério da Igreja Católica.","Interamente basata sulla Rivelazione biblica, sulla Tradizione e sul Magistero della Chiesa Cattolica.")},
@@ -3158,9 +3172,43 @@ function WelcomeModal({onContinue,onLogin}){
     {scene:"avatares", t:T("Cada lección se convierte en una experiencia viva, guiada por avatares de personajes bíblicos y santos de la Iglesia Católica: una manera única de formarte en la fe.","Each lesson becomes a living experience, guided by avatars of biblical figures and saints of the Catholic Church: a unique way to grow in faith.","Chaque leçon devient une expérience vivante, guidée par des avatars de personnages bibliques et de saints de l'Église catholique : une façon unique de vous former dans la foi.","Jede Lektion wird zu einer lebendigen Erfahrung, begleitet von Avataren biblischer Gestalten und Heiliger der katholischen Kirche – ein einzigartiger Weg, im Glauben zu wachsen.","Cada lição torna-se uma experiência viva, guiada por avatares de personagens bíblicos e santos da Igreja Católica: uma forma única de crescer na fé.","Ogni lezione diventa un'esperienza viva, guidata da avatar di personaggi biblici e santi della Chiesa Cattolica: un modo unico per formarti nella fede.")},
     // NUEVA tarjeta final · comunidad y seguimiento pastoral
     {scene:"comunidad", t:T("Intégrate a una comunidad de formación sacramental. Recibirás seguimiento pastoral personalizado y en grupos donde profundizaremos las verdades de nuestra fe.","Join a community of sacramental formation. You will receive personalized pastoral guidance, individually and in groups, where we will deepen the truths of our faith.","Rejoignez une communauté de formation sacramentelle. Vous bénéficierez d'un accompagnement pastoral personnalisé et en groupe, où nous approfondirons les vérités de notre foi.","Werde Teil einer Gemeinschaft der Sakramentenbildung. Du erhältst eine persönliche und gemeinschaftliche seelsorgliche Begleitung, in der wir die Wahrheiten unseres Glaubens vertiefen.","Integre-se a uma comunidade de formação sacramental. Você receberá acompanhamento pastoral personalizado e em grupos, onde aprofundaremos as verdades da nossa fé.","Unisciti a una comunità di formazione sacramentale. Riceverai un accompagnamento pastorale personalizzato e di gruppo, in cui approfondiremo le verità della nostra fede.")},
+    // Tarjeta final · video de bienvenida y muestra del curso.
+    // El video se carga desde el panel (tabla tour_tarjetas, clave "muestra").
+    {scene:"muestra", t:T("Descarga la app y accede al video de muestra","Download the app and watch the sample video","Téléchargez l'application et accédez à la vidéo de démonstration","Lade die App herunter und sieh dir das Beispielvideo an","Baixe o aplicativo e acesse o vídeo de demonstração","Scarica l'app e accedi al video di esempio")},
   ];
+
+  // Tarjetas efectivas: las de la BD (si las hay) sobre las de respaldo.
+  const [cards,setCards]=useState(cardsBase);
+  useEffect(()=>{
+    let vivo=true;
+    (async()=>{
+      try{
+        const {data,error}=await supabase.rpc("obtener_tour");
+        if(error||!Array.isArray(data)||!data.length||!vivo)return;
+        const porClave={};
+        cardsBase.forEach(c=>{porClave[c.scene]=c;});
+        const fusion=data.map(r=>{
+          const base=porClave[r.clave]||{};
+          const txt=PICK({es:r.texto_es,en:r.texto_en,fr:r.texto_fr,
+                          de:r.texto_de,pt:r.texto_pt,it:r.texto_it});
+          return {
+            scene: r.clave,
+            t: (txt&&txt.trim())?txt:(base.t||""),
+            video: r.video_url||null,
+            webm:  r.video_webm_url||null,
+            poster:r.poster_url||null,
+          };
+        }).filter(c=>c.t);           // descarta tarjetas sin texto utilizable
+        if(vivo&&fusion.length)setCards(fusion);
+      }catch{/* sin conexión: se queda el respaldo */}
+    })();
+    return()=>{vivo=false;};
+  },[]);
+
   const [i,setI]=useState(0);
   const n=cards.length;
+  // Índice seguro: la BD puede devolver más o menos tarjetas que el respaldo.
+  const cur=cards[Math.min(i,Math.max(0,n-1))]||cardsBase[0];
   const go=(d)=>setI(p=>Math.max(0,Math.min(n-1,p+d)));
   const touch=useRef(null);
   const onTouchStart=e=>{touch.current=e.touches[0].clientX;};
@@ -3199,10 +3247,11 @@ function WelcomeModal({onContinue,onLogin}){
             style={{flex:1,minHeight:270,background:`linear-gradient(145deg,${C.card} 0%,rgba(200,169,81,0.06) 100%)`,
               border:`1px solid ${C.borderD}`,borderRadius:16,padding:"16px 18px 18px",
               display:"flex",flexDirection:"column",justifyContent:"flex-start"}}>
-            <TourScene key={cards[i].scene} tipo={cards[i].scene}/>
+            <TourScene key={cur.scene} tipo={cur.scene}
+              video={cur.video} webm={cur.webm} poster={cur.poster}/>
             <div style={{display:"flex",gap:9,alignItems:"flex-start",marginTop:12,textAlign:"left"}}>
               <span style={{color:C.gold,flexShrink:0,marginTop:2,fontSize:16}}>✦</span>
-              <span style={{color:C.ivory,fontFamily:"'Crimson Text',serif",fontSize:16,lineHeight:1.55}}>{cards[i].t}</span>
+              <span style={{color:C.ivory,fontFamily:"'Crimson Text',serif",fontSize:16,lineHeight:1.55}}>{cur.t}</span>
             </div>
           </div>
           <div style={{display:window.innerWidth>560?"block":"none"}}>{arrowBtn(1,i===n-1)}</div>

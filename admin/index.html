@@ -128,6 +128,7 @@
       <button class="tab active" data-tab="estadisticas">📊 Estadísticas</button>
       <button class="tab" data-tab="videos">🎬 Videos</button>
       <button class="tab" data-tab="evaluaciones">📝 Evaluaciones</button>
+      <button class="tab" data-tab="tour">🎠 Tour</button>
       <button class="tab" data-tab="usuarios">👤 Usuarios</button>
       <button class="tab" data-tab="mensajes">✉️ Mensajes <span id="msg-badge" class="pill bad" style="display:none"></span></button>
       <button class="tab" data-tab="sesiones">📅 Sesiones</button>
@@ -254,6 +255,22 @@
         <th class="num">Correcta</th><th class="num">Puntaje</th><th class="num">Estado</th><th>Acciones</th>
       </tr></thead><tbody id="ev-body"></tbody></table></div>
       <p id="ev-msg" class="msg"></p>
+    </div>
+
+    <!-- TAB TOUR -->
+    <div id="tab-tour" class="tabpane hidden">
+      <div class="controls">
+        <button id="tour-nueva" class="btn">+ Nueva tarjeta</button>
+        <button id="tour-recargar" class="btn ghost sm">Actualizar</button>
+        <span style="color:var(--ivory-m);font-size:13px">
+          Tarjetas de bienvenida. Si dejas un texto vacío se usa el que trae la app por defecto.
+        </span>
+      </div>
+      <div class="scroll"><table><thead><tr>
+        <th class="num">Orden</th><th>Clave</th><th>Texto (ES)</th><th>Video</th>
+        <th class="num">Estado</th><th>Acciones</th>
+      </tr></thead><tbody id="tour-body"></tbody></table></div>
+      <p id="tour-msg" class="msg"></p>
     </div>
 
     <!-- TAB CONSTANCIAS -->
@@ -570,6 +587,7 @@
     if(t.dataset.tab==="atencion") cargarAtencion();
     if(t.dataset.tab==="precios") cargarCuotas();
     if(t.dataset.tab==="evaluaciones") cargarEvaluaciones();
+    if(t.dataset.tab==="tour") cargarTour();
   }));
 
   // ---------- ESTADÍSTICAS ----------
@@ -1636,6 +1654,99 @@
     }catch(e){if(m){m.className="msg err";m.textContent="Error: "+(e.message||e);}console.error(e);}
   };
 
+  // ---------- TOUR (tarjetas de bienvenida) ----------
+  let TOUR=[];
+  async function cargarTour(){
+    try{
+      const {data,error}=await sb.rpc("admin_listar_tour");
+      if(error)throw error;
+      TOUR=data||[];
+      renderTour();
+      $("tour-msg").textContent="";
+    }catch(e){ $("tour-msg").className="msg err"; $("tour-msg").textContent="Error: "+(e.message||e); }
+  }
+  function renderTour(){
+    $("tour-body").innerHTML=TOUR.length?TOUR.map(t=>{
+      const vid=t.video_url
+        ? `<span style="font-size:11.5px;font-family:monospace;color:var(--gold-l)">${esc(t.video_url)}</span>`
+        : `<span class="pill warn">sin video</span>`;
+      const faltan=["en","fr","de","pt","it"].filter(c=>!(t["texto_"+c]||"").trim()).map(c=>c.toUpperCase());
+      return `<tr>
+        <td class="num">${t.orden}</td>
+        <td style="font-family:monospace;font-size:12px;color:var(--gold-l)">${esc(t.clave)}</td>
+        <td style="max-width:300px;font-size:13px">${esc((t.texto_es||"").slice(0,110))||'<span style="color:var(--ivory-m)">(usa el texto por defecto)</span>'}
+          ${t.texto_es&&faltan.length?`<br><span class="pill off">falta: ${faltan.join(" ")}</span>`:""}</td>
+        <td>${vid}</td>
+        <td class="num">${t.activo?'<span class="pill ok">activa</span>':'<span class="pill off">oculta</span>'}</td>
+        <td><div class="actions-cell">
+          <button class="btn ghost sm" onclick="window.__editarTour('${t.id}')">Editar</button>
+          <button class="btn ghost sm" onclick="window.__tourActivo('${t.id}',${t.activo?"false":"true"})">${t.activo?"Ocultar":"Mostrar"}</button>
+          <button class="btn danger sm" onclick="window.__borrarTour('${t.id}')">Borrar</button>
+        </div></td>
+      </tr>`;
+    }).join(""):`<tr><td colspan="6" class="empty">Sin tarjetas. Ejecuta admin-tour.sql para sembrarlas.</td></tr>`;
+  }
+  window.__editarTour=(id)=>{
+    const t=id?TOUR.find(x=>x.id===id):null;
+    const L=[["es","Español"],["en","Inglés"],["fr","Francés"],["de","Alemán"],["pt","Portugués"],["it","Italiano"]];
+    $("modal-mount").innerHTML=`<div class="overlay"><div class="modal" style="max-width:660px;max-height:88vh;overflow:auto">
+      <h3>${t?"Editar tarjeta del tour":"Nueva tarjeta del tour"}</h3>
+      <div style="display:flex;gap:10px">
+        <div style="flex:1"><label class="fld">Clave (identificador)</label>
+          <input id="tt-clave" type="text" value="${t?esc(t.clave):""}" placeholder="ej. muestra" ${t?"":""}/></div>
+        <div style="width:110px"><label class="fld">Orden</label>
+          <input id="tt-orden" type="number" min="1" value="${t?t.orden:""}" placeholder="auto"/></div>
+        <div style="width:120px"><label class="fld">Visible</label>
+          <select id="tt-activo"><option value="true" ${!t||t.activo?"selected":""}>Sí</option>
+          <option value="false" ${t&&!t.activo?"selected":""}>No</option></select></div>
+      </div>
+      <label class="fld">Video MP4 (ruta o URL)</label>
+      <input id="tt-mp4" type="text" value="${t?esc(t.video_url||""):""}" placeholder="/tour/muestra.mp4"/>
+      <label class="fld">Video WebM (opcional)</label>
+      <input id="tt-webm" type="text" value="${t?esc(t.video_webm_url||""):""}" placeholder="/tour/muestra.webm"/>
+      <label class="fld">Imagen de respaldo / póster (opcional)</label>
+      <input id="tt-poster" type="text" value="${t?esc(t.poster_url||""):""}" placeholder="/tour/muestra.jpg"/>
+      <label class="fld" style="margin-top:10px">Texto de la tarjeta (vacío = usa el de la app)</label>
+      ${L.map(([c,n])=>`<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+        <span style="width:34px;font-size:11px;color:var(--ivory-m);text-transform:uppercase">${c}</span>
+        <input id="tt-txt-${c}" type="text" value="${t?esc(t["texto_"+c]||""):""}" placeholder="${n}" style="flex:1"/>
+      </div>`).join("")}
+      <p id="tt-msg" class="msg"></p>
+      <div class="modal-actions">
+        <button class="btn ghost" onclick="window.__closeModal()">Cancelar</button>
+        <button class="btn" onclick="window.__guardarTour(${t?`'${t.id}'`:"null"})">Guardar</button>
+      </div>
+    </div></div>`;
+  };
+  window.__guardarTour=async(id)=>{
+    const datos={clave:$("tt-clave").value.trim().toLowerCase(),
+      orden:$("tt-orden").value, activo:$("tt-activo").value==="true",
+      video_url:$("tt-mp4").value.trim(), video_webm_url:$("tt-webm").value.trim(),
+      poster_url:$("tt-poster").value.trim()};
+    ["es","en","fr","de","pt","it"].forEach(c=>{ datos["texto_"+c]=$("tt-txt-"+c).value.trim(); });
+    if(!datos.clave){ $("tt-msg").className="msg err"; $("tt-msg").textContent="La clave es obligatoria."; return; }
+    $("tt-msg").className="msg"; $("tt-msg").textContent="Guardando…";
+    try{
+      const {error}=await sb.rpc("admin_guardar_tarjeta_tour",{p_id:id,p_datos:datos});
+      if(error)throw error;
+      window.__closeModal(); await cargarTour();
+      $("tour-msg").className="msg ok"; $("tour-msg").textContent=id?"Tarjeta actualizada.":"Tarjeta creada.";
+    }catch(e){ $("tt-msg").className="msg err"; $("tt-msg").textContent="Error: "+(e.message||e); }
+  };
+  window.__tourActivo=async(id,activo)=>{
+    try{ const {error}=await sb.rpc("admin_tour_activo",{p_id:id,p_activo:activo});
+      if(error)throw error; await cargarTour();
+    }catch(e){ $("tour-msg").className="msg err"; $("tour-msg").textContent="Error: "+(e.message||e); }
+  };
+  window.__borrarTour=async(id)=>{
+    const t=TOUR.find(x=>x.id===id);
+    if(!confirm(`¿Borrar la tarjeta "${t?.clave}" del tour?\n\nSi solo quieres quitarla temporalmente, usa Ocultar.`))return;
+    try{ const {error}=await sb.rpc("admin_borrar_tarjeta_tour",{p_id:id});
+      if(error)throw error; await cargarTour();
+      $("tour-msg").className="msg ok"; $("tour-msg").textContent="Tarjeta borrada.";
+    }catch(e){ $("tour-msg").className="msg err"; $("tour-msg").textContent="Error: "+(e.message||e); }
+  };
+
   // ---------- EVALUACIONES (preguntas por video) ----------
   const LANGS=[["es","Español"],["en","Inglés"],["fr","Francés"],["de","Alemán"],["pt","Portugués"],["it","Italiano"]];
   let EV_VIDEOS=[], EV_PREGS=[];
@@ -1816,6 +1927,9 @@
   $("f-coment").addEventListener("change",renderComentarios);
   $("f-buscar").addEventListener("input",renderComentarios);
   $("nuevo-video").addEventListener("click",()=>videoModal(null));
+  // Tour
+  $("tour-recargar").addEventListener("click",cargarTour);
+  $("tour-nueva").addEventListener("click",()=>window.__editarTour(null));
   // Evaluaciones
   $("ev-video").addEventListener("change",cargarPreguntas);
   $("ev-recargar").addEventListener("click",cargarEvaluaciones);
