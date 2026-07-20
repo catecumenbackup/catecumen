@@ -124,6 +124,19 @@
           };
           document.title = titles[lang] || titles.es;
         } catch (e) {}
+
+        // Precarga del fondo de pantalla completa: es el elemento LCP de la
+        // app. React lo pinta como background-image en un style, así que el
+        // navegador no lo descubría hasta montar (~620 ms tarde). Al declararlo
+        // aquí empieza a descargarse mientras aún se parsea el HTML.
+        // Debe coincidir con la lógica de tema de App.jsx (por defecto "light").
+        try {
+          var tema = localStorage.getItem("catecumen_theme") || "light";
+          var fondo = tema === "dark" ? "/fondocatecumen.webp" : "/fondocatecumen-claro.webp";
+          var l = document.createElement("link");
+          l.rel = "preload"; l.as = "image"; l.href = fondo;
+          document.head.appendChild(l);
+        } catch (e) {}
       })();
     </script>
   </head>
