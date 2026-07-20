@@ -9,8 +9,39 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { resolve } from "path";
 
+// ── Plugin: incrusta el CSS dentro del HTML ────────────────────────────────
+// El CSS del proyecto pesa <2 KB, pero al ir en archivo aparte bloquea el
+// pintado durante un viaje completo al servidor (~170 ms según Lighthouse).
+// Incrustado, desaparece esa petición. Si el <link> no se encuentra, no toca
+// nada: es seguro por diseño.
+function inlineCss() {
+  return {
+    name: "catecumen-inline-css",
+    apply: "build",
+    enforce: "post",
+    generateBundle(_opciones, bundle) {
+      const css = Object.keys(bundle).filter((f) => f.endsWith(".css"));
+      if (!css.length) return;
+      for (const archivo of Object.values(bundle)) {
+        if (archivo.type !== "asset" || !archivo.fileName.endsWith(".html")) continue;
+        let html = String(archivo.source);
+        for (const nombre of css) {
+          const hoja = bundle[nombre];
+          if (!hoja || hoja.type !== "asset") continue;
+          const base = nombre.split("/").pop();
+          const re = new RegExp(`<link[^>]+href="[^"]*${base}"[^>]*>`, "g");
+          if (re.test(html)) {
+            html = html.replace(re, `<style>${String(hoja.source)}</style>`);
+          }
+        }
+        archivo.source = html;
+      }
+    },
+  };
+}
+
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), inlineCss()],
   build: {
     // No publicar sourcemaps: evitan exponer el código fuente legible en producción.
     sourcemap: false,
