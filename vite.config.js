@@ -21,6 +21,23 @@ export default defineConfig({
         info: resolve(__dirname, "info/index.html"),
         admin: resolve(__dirname, "admin/index.html"),
       },
+      output: {
+        // ── Separación de dependencias (code splitting de vendor) ──────────
+        // React y Supabase no cambian entre despliegues. Al aislarlos en sus
+        // propios archivos, el navegador los guarda en caché (1 año, ver
+        // .htaccess) y en cada release el usuario solo vuelve a descargar
+        // TU código, no las librerías. Beneficia sobre todo a los alumnos
+        // que regresan a continuar el curso.
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return;
+          if (id.includes("react-dom") || id.includes("/react/") ||
+              id.includes("react/jsx") || id.includes("scheduler")) {
+            return "vendor-react";
+          }
+          if (id.includes("@supabase")) return "vendor-supabase";
+          return "vendor";
+        },
+      },
     },
   },
 });
