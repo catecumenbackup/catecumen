@@ -127,6 +127,7 @@
     <div class="tabs">
       <button class="tab active" data-tab="estadisticas">📊 Estadísticas</button>
       <button class="tab" data-tab="videos">🎬 Videos</button>
+      <button class="tab" data-tab="evaluaciones">📝 Evaluaciones</button>
       <button class="tab" data-tab="usuarios">👤 Usuarios</button>
       <button class="tab" data-tab="mensajes">✉️ Mensajes <span id="msg-badge" class="pill bad" style="display:none"></span></button>
       <button class="tab" data-tab="sesiones">📅 Sesiones</button>
@@ -236,6 +237,23 @@
         </div>
       </div>
       <p id="mensajes-msg" class="msg"></p>
+    </div>
+
+    <!-- TAB EVALUACIONES -->
+    <div id="tab-evaluaciones" class="tabpane hidden">
+      <div class="controls">
+        <label>Video:
+          <select id="ev-video" style="min-width:340px;display:inline-block"></select>
+        </label>
+        <button id="ev-nueva" class="btn">+ Nueva pregunta</button>
+        <button id="ev-recargar" class="btn ghost sm">Actualizar</button>
+      </div>
+      <p id="ev-resumen" style="color:var(--ivory-m);font-size:13px;margin-bottom:10px"></p>
+      <div class="scroll"><table><thead><tr>
+        <th class="num">#</th><th>Pregunta (ES)</th><th>Opciones</th>
+        <th class="num">Correcta</th><th class="num">Puntaje</th><th class="num">Estado</th><th>Acciones</th>
+      </tr></thead><tbody id="ev-body"></tbody></table></div>
+      <p id="ev-msg" class="msg"></p>
     </div>
 
     <!-- TAB CONSTANCIAS -->
@@ -551,6 +569,7 @@
     if(t.dataset.tab==="sesiones") cargarSesiones();
     if(t.dataset.tab==="atencion") cargarAtencion();
     if(t.dataset.tab==="precios") cargarCuotas();
+    if(t.dataset.tab==="evaluaciones") cargarEvaluaciones();
   }));
 
   // ---------- ESTADÍSTICAS ----------
@@ -1617,6 +1636,159 @@
     }catch(e){if(m){m.className="msg err";m.textContent="Error: "+(e.message||e);}console.error(e);}
   };
 
+  // ---------- EVALUACIONES (preguntas por video) ----------
+  const LANGS=[["es","Español"],["en","Inglés"],["fr","Francés"],["de","Alemán"],["pt","Portugués"],["it","Italiano"]];
+  let EV_VIDEOS=[], EV_PREGS=[];
+
+  async function cargarEvaluaciones(){
+    try{
+      const {data,error}=await sb.rpc("admin_videos_evaluacion");
+      if(error)throw error;
+      EV_VIDEOS=data||[];
+      const sel=$("ev-video"); const previo=sel.value;
+      // agrupar por sacramento con <optgroup>
+      const grupos={};
+      EV_VIDEOS.forEach(v=>{ (grupos[v.sacramento]=grupos[v.sacramento]||[]).push(v); });
+      sel.innerHTML=Object.keys(grupos).map(g=>
+        `<optgroup label="${esc(g)}">`+grupos[g].map(v=>
+          `<option value="${v.video_id}">${v.orden}. ${esc(v.titulo)} — ${v.num_preguntas} pregunta(s)${v.video_activo?"":" [inactivo]"}</option>`
+        ).join("")+`</optgroup>`).join("");
+      if(previo && EV_VIDEOS.some(v=>v.video_id===previo)) sel.value=previo;
+      if(sel.value) await cargarPreguntas();
+      else { $("ev-body").innerHTML=`<tr><td colspan="7" class="empty">No hay videos.</td></tr>`; $("ev-resumen").textContent=""; }
+      $("ev-msg").textContent="";
+    }catch(e){ $("ev-msg").className="msg err"; $("ev-msg").textContent="Error: "+(e.message||e); }
+  }
+
+  async function cargarPreguntas(){
+    const vid=$("ev-video").value; if(!vid)return;
+    try{
+      const {data,error}=await sb.rpc("admin_listar_preguntas",{p_video_id:vid});
+      if(error)throw error;
+      EV_PREGS=data||[];
+      renderPreguntas();
+    }catch(e){ $("ev-msg").className="msg err"; $("ev-msg").textContent="Error: "+(e.message||e); }
+  }
+
+  function renderPreguntas(){
+    const v=EV_VIDEOS.find(x=>x.video_id===$("ev-video").value);
+    const activas=EV_PREGS.filter(p=>p.activo);
+    const pts=activas.reduce((a,p)=>a+(p.puntaje||0),0);
+    $("ev-resumen").innerHTML=v
+      ? `<b style="color:var(--gold-l)">${esc(v.sacramento)}</b> · ${esc(v.titulo)} — `+
+        `${activas.length} pregunta(s) activa(s), <b>${pts} punto(s)</b> en total.`+
+        (pts!==10?` <span style="color:#E0A030">⚠ lo habitual son 10 puntos (5 × 2)</span>`:"")
+      : "";
+    $("ev-body").innerHTML=EV_PREGS.length?EV_PREGS.map(p=>{
+      const ops=["a","b","c","d"].map(l=>{
+        const t=p["opcion_"+l+"_es"]||"";
+        const ok=p.respuesta_correcta===l;
+        return `<div style="font-size:12px;${ok?"color:#5FBF7F;font-weight:600":"color:var(--ivory-m)"}">${l})&nbsp;${esc(t).slice(0,70)}${ok?" ✓":""}</div>`;
+      }).join("");
+      const faltan=LANGS.filter(([c])=>c!=="es"&&!(p["pregunta_"+c]||"").trim()).map(([c])=>c.toUpperCase());
+      return `<tr>
+        <td class="num">${p.orden}</td>
+        <td style="max-width:320px">${esc(p.pregunta_es||"—")}
+          ${faltan.length?`<br><span class="pill off" title="Idiomas sin traducir">falta: ${faltan.join(" ")}</span>`:""}</td>
+        <td>${ops}</td>
+        <td class="num"><b style="color:var(--gold-l)">${(p.respuesta_correcta||"").toUpperCase()}</b></td>
+        <td class="num">${p.puntaje}</td>
+        <td class="num">${p.activo?'<span class="pill ok">activa</span>':'<span class="pill off">inactiva</span>'}</td>
+        <td><div class="actions-cell">
+          <button class="btn ghost sm" onclick="window.__editarPregunta('${p.id}')">Editar</button>
+          <button class="btn ghost sm" onclick="window.__pregActivo('${p.id}',${p.activo?"false":"true"})">${p.activo?"Desactivar":"Activar"}</button>
+          <button class="btn danger sm" onclick="window.__borrarPregunta('${p.id}')">Borrar</button>
+        </div></td>
+      </tr>`;
+    }).join(""):`<tr><td colspan="7" class="empty">Este video aún no tiene preguntas. Usa “+ Nueva pregunta”.</td></tr>`;
+  }
+
+  // Modal de alta/edición con los 6 idiomas
+  window.__editarPregunta=(id)=>{
+    const p=id?EV_PREGS.find(x=>x.id===id):null;
+    const campo=(base,label)=>`
+      <div style="margin-bottom:8px">
+        <label class="fld">${label}</label>
+        ${LANGS.map(([c,n])=>`
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+            <span style="width:34px;font-size:11px;color:var(--ivory-m);text-transform:uppercase">${c}</span>
+            <input id="pq-${base}-${c}" type="text" value="${p?esc(p[base+"_"+c]||""):""}"
+                   placeholder="${n}${c==="es"?" (obligatorio)":""}" style="flex:1"/>
+          </div>`).join("")}
+      </div>`;
+    $("modal-mount").innerHTML=`<div class="overlay"><div class="modal" style="max-width:680px;max-height:88vh;overflow:auto">
+      <h3>${p?"Editar pregunta":"Nueva pregunta"}</h3>
+      ${campo("pregunta","Pregunta")}
+      ${campo("opcion_a","Opción A")}
+      ${campo("opcion_b","Opción B")}
+      ${campo("opcion_c","Opción C")}
+      ${campo("opcion_d","Opción D")}
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <div><label class="fld">Respuesta correcta</label>
+          <select id="pq-resp" style="width:90px">
+            ${["a","b","c","d"].map(l=>`<option value="${l}" ${p&&p.respuesta_correcta===l?"selected":""}>${l.toUpperCase()}</option>`).join("")}
+          </select></div>
+        <div><label class="fld">Puntaje</label>
+          <input id="pq-puntaje" type="number" min="1" max="10" value="${p?p.puntaje:2}" style="width:90px"/></div>
+        <div><label class="fld">Orden</label>
+          <input id="pq-orden" type="number" min="1" value="${p?p.orden:""}" placeholder="auto" style="width:90px"/></div>
+        <div><label class="fld">Activa</label>
+          <select id="pq-activo" style="width:110px">
+            <option value="true" ${!p||p.activo?"selected":""}>Sí</option>
+            <option value="false" ${p&&!p.activo?"selected":""}>No</option>
+          </select></div>
+      </div>
+      <label class="fld">Explicación (opcional, se muestra al responder)</label>
+      <textarea id="pq-expl" rows="2">${p?esc(p.explicacion||""):""}</textarea>
+      <p id="pq-msg" class="msg"></p>
+      <div class="modal-actions">
+        <button class="btn ghost" onclick="window.__closeModal()">Cancelar</button>
+        <button class="btn" onclick="window.__guardarPregunta(${p?`'${p.id}'`:"null"})">Guardar</button>
+      </div>
+    </div></div>`;
+  };
+
+  window.__guardarPregunta=async(id)=>{
+    const val=(base,c)=>($("pq-"+base+"-"+c)?.value||"").trim();
+    const datos={respuesta_correcta:$("pq-resp").value,
+                 puntaje:$("pq-puntaje").value, orden:$("pq-orden").value,
+                 activo:$("pq-activo").value==="true",
+                 explicacion:$("pq-expl").value.trim()};
+    ["pregunta","opcion_a","opcion_b","opcion_c","opcion_d"].forEach(b=>
+      LANGS.forEach(([c])=>{ datos[b+"_"+c]=val(b,c); }));
+    if(!datos.pregunta_es){ $("pq-msg").className="msg err"; $("pq-msg").textContent="La pregunta en español es obligatoria."; return; }
+    for(const l of ["a","b","c","d"]) if(!datos["opcion_"+l+"_es"]){
+      $("pq-msg").className="msg err"; $("pq-msg").textContent=`La opción ${l.toUpperCase()} en español es obligatoria.`; return; }
+    $("pq-msg").className="msg"; $("pq-msg").textContent="Guardando…";
+    try{
+      const {error}=await sb.rpc("admin_guardar_pregunta",
+        {p_id:id, p_video_id:$("ev-video").value, p_datos:datos});
+      if(error)throw error;
+      window.__closeModal();
+      await cargarEvaluaciones();
+      $("ev-msg").className="msg ok"; $("ev-msg").textContent=id?"Pregunta actualizada.":"Pregunta creada.";
+    }catch(e){ $("pq-msg").className="msg err"; $("pq-msg").textContent="Error: "+(e.message||e); }
+  };
+
+  window.__pregActivo=async(id,activo)=>{
+    try{
+      const {error}=await sb.rpc("admin_pregunta_activo",{p_id:id,p_activo:activo});
+      if(error)throw error;
+      await cargarEvaluaciones();
+    }catch(e){ $("ev-msg").className="msg err"; $("ev-msg").textContent="Error: "+(e.message||e); }
+  };
+
+  window.__borrarPregunta=async(id)=>{
+    const p=EV_PREGS.find(x=>x.id===id);
+    if(!confirm(`¿Borrar definitivamente esta pregunta?\n\n"${(p?.pregunta_es||"").slice(0,120)}"\n\nNo se puede deshacer. Si solo quieres ocultarla, usa Desactivar.`))return;
+    try{
+      const {error}=await sb.rpc("admin_borrar_pregunta",{p_id:id});
+      if(error)throw error;
+      await cargarEvaluaciones();
+      $("ev-msg").className="msg ok"; $("ev-msg").textContent="Pregunta borrada.";
+    }catch(e){ $("ev-msg").className="msg err"; $("ev-msg").textContent="Error: "+(e.message||e); }
+  };
+
   // ---------- AUDITORÍA ----------
   async function cargarLog(){
     try{
@@ -1644,6 +1816,13 @@
   $("f-coment").addEventListener("change",renderComentarios);
   $("f-buscar").addEventListener("input",renderComentarios);
   $("nuevo-video").addEventListener("click",()=>videoModal(null));
+  // Evaluaciones
+  $("ev-video").addEventListener("change",cargarPreguntas);
+  $("ev-recargar").addEventListener("click",cargarEvaluaciones);
+  $("ev-nueva").addEventListener("click",()=>{
+    if(!$("ev-video").value){ $("ev-msg").className="msg err"; $("ev-msg").textContent="Elige un video primero."; return; }
+    window.__editarPregunta(null);
+  });
   $("nueva-sesion").addEventListener("click",()=>window.__nuevaSesion());
   // Atención
   $("aten-recargar").addEventListener("click",cargarAtencion);
