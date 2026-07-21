@@ -373,7 +373,43 @@
   import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
   const SUPABASE_URL="https://jqlfjfamraavsbhdusuq.supabase.co";
   const SUPABASE_ANON="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxbGZqZmFtcmFhdnNiaGR1c3VxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyMDEwNjIsImV4cCI6MjA5Njc3NzA2Mn0.AFD2j0ERaNqx4gii8z3sOvdbkIJl3Kzs_qyDErm7SL8";
-  const sb=createClient(SUPABASE_URL, SUPABASE_ANON);
+  const sb=createClient(SUPABASE_URL, SUPABASE_ANON, {
+    auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:false },
+  });
+
+  // ── Resiliencia de sesión ────────────────────────────────────────────────
+  // Las RPC protegidas por es_admin() devuelven "no autorizado" cuando el token
+  // de acceso caducó (típico tras horas o con la pestaña en segundo plano, si el
+  // auto-refresh no alcanzó a renovarlo). Envolvemos sb.rpc para, ante un fallo
+  // de autorización, renovar la sesión y REINTENTAR una vez de forma transparente.
+  // Todas las llamadas del panel son `await sb.rpc(...)` sin encadenar, por lo
+  // que envolver es seguro.
+  const _rpcOriginal = sb.rpc.bind(sb);
+  const esFalloAuth = (res) => {
+    const m = res && res.error && (res.error.message || "");
+    return !!m && /no autorizado|jwt|not authenticated|401|expired/i.test(m);
+  };
+  let _avisoSesion = false;
+  sb.rpc = async (fn, args, opts) => {
+    let res = await _rpcOriginal(fn, args, opts);
+    if (esFalloAuth(res)) {
+      try {
+        const { data } = await sb.auth.refreshSession();
+        if (data && data.session) res = await _rpcOriginal(fn, args, opts);
+      } catch (e) { /* conserva el error original */ }
+    }
+    if (esFalloAuth(res) && !_avisoSesion) {
+      _avisoSesion = true; setTimeout(() => { _avisoSesion = false; }, 5000);
+      const a = document.getElementById("idle-aviso");
+      if (a) { a.style.display = ""; a.textContent = "Tu sesión expiró. Cierra sesión y vuelve a entrar para continuar."; }
+    }
+    return res;
+  };
+  // Al volver a la pestaña, renueva la sesión de forma proactiva.
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") { sb.auth.refreshSession().catch(() => {}); }
+  });
+
   const $=id=>document.getElementById(id);
   const esc=s=>String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
   const fmt=n=>(n===null||n===undefined)?"—":Number(n).toFixed(2);
