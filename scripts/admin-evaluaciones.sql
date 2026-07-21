@@ -36,14 +36,14 @@ BEGIN
   IF NOT public.es_admin() THEN RAISE EXCEPTION 'no autorizado'; END IF;
 
   RETURN QUERY
-  SELECT v.id, v.titulo, v.orden, v.activo,
+  SELECT v.id, COALESCE(v.titulo_es, v.titulo_en, '(sin título)'), v.orden, v.activo,
          s.id, COALESCE(s.nombre_es, s.slug), s.orden,
          COUNT(p.id) FILTER (WHERE p.activo),
          COALESCE(SUM(p.puntaje) FILTER (WHERE p.activo), 0)
   FROM public.videos v
   JOIN public.sacramentos s ON s.id = v.sacramento_id
   LEFT JOIN public.preguntas p ON p.video_id = v.id
-  GROUP BY v.id, v.titulo, v.orden, v.activo, s.id, s.nombre_es, s.slug, s.orden
+  GROUP BY v.id, v.titulo_es, v.titulo_en, v.orden, v.activo, s.id, s.nombre_es, s.slug, s.orden
   ORDER BY s.orden, v.orden;
 END;
 $$;

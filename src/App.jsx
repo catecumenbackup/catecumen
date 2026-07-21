@@ -3306,11 +3306,11 @@ function WelcomeModal({onContinue,onLogin}){
   );
 }
 
-// ─── FILTER MODAL ──────────────────────────────────────────────────
-function FilterModal({onSelect}){
-  const [showBecas,setShowBecas]=useState(true);
-  // Etiquetas configurables por opción (ej. "Próximamente"), administradas
-  // desde el panel. Si la BD no responde, simplemente no se muestra ninguna.
+// Hook: etiquetas configurables por opción (ej. "Próximamente"), administradas
+// desde el panel. Una opción con etiqueta ACTIVA queda además inhabilitada
+// (no permite registrarse) hasta que el admin retira la etiqueta. Si la BD no
+// responde, devuelve {} y todo funciona normal.
+function useEtiquetasOpciones(){
   const [etiquetas,setEtiquetas]=useState({});
   useEffect(()=>{
     let vivo=true;
@@ -3330,6 +3330,13 @@ function FilterModal({onSelect}){
     })();
     return()=>{vivo=false;};
   },[]);
+  return etiquetas;
+}
+
+// ─── FILTER MODAL ──────────────────────────────────────────────────
+function FilterModal({onSelect}){
+  const [showBecas,setShowBecas]=useState(true);
+  const etiquetas=useEtiquetasOpciones();
   const opts=[
     {k:"catecumeno", icon:"✝️", es:"Quiero recibir mis sacramentos",en:"I want to receive my sacraments",fr:"Je veux recevoir mes sacrements",de:"Ich möchte meine Sakramente empfangen",pt:"Quero receber meus sacramentos",it:"Voglio ricevere i miei sacramenti"},
     {k:"prebautismal",icon:"👨‍👩‍👧",es:"Soy papá/mamá y quiero formación pre-sacramental para que mi hijo reciba el Bautismo, Confirmación y/o Primera Comunión",en:"I'm a parent and want pre-sacramental formation for my child attending to receive the Baptism, Confirmation and/or Fist Communion",fr:"Je suis parent et je souhaite une formation pré-sacramentelle pour que mon enfant reçoive le Baptême, la Confirmation et/ou la Première Communion",de:"Ich bin Vater/Mutter und möchte eine vorsakramentale Bildung, damit mein Kind die Taufe, Firmung und/oder Erstkommunion empfängt",pt:"Sou pai/mãe e quero formação pré-sacramental para que meu filho receba o Batismo, a Crisma e/ou a Primeira Comunhão",it:"Sono genitore e desidero una formazione pre-sacramentale affinché mio figlio riceva il Battesimo, la Cresima e/o la Prima Comunione"},
@@ -3493,19 +3500,21 @@ function FilterModal({onSelect}){
             <Fragment key={o.k}>
               {mostrarFormacion&&<Encabezado texto={T("Formación","Formation","Formation","Bildung","Formação","Formazione")}/>}
               {mostrarAfiliacion&&<Encabezado texto={T("Afiliación","Affiliation","Affiliation","Anbindung","Afiliação","Affiliazione")}/>}
-            <button onClick={()=>onSelect(o.k)}
-              style={{cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",width:"100%",
+            <button onClick={etiquetas[o.k]?undefined:()=>onSelect(o.k)}
+              disabled={!!etiquetas[o.k]}
+              aria-disabled={!!etiquetas[o.k]}
+              style={{cursor:etiquetas[o.k]?"not-allowed":"pointer",textAlign:"left",display:"flex",alignItems:"center",width:"100%",
                 gap:16,padding:"14px 18px",borderRadius:14,transition:"all .22s ease",
                 background:`linear-gradient(145deg,${C.card} 0%,rgba(200,169,81,0.10) 100%)`,
-                border:`1px solid ${C.borderD}`,
+                border:`1px solid ${C.borderD}`,opacity:etiquetas[o.k]?0.55:1,
                 boxShadow:"0 2px 12px rgba(0,0,0,0.3)"}}
-              onMouseEnter={e=>{
+              onMouseEnter={etiquetas[o.k]?undefined:e=>{
                 e.currentTarget.style.background=`linear-gradient(145deg,${C.cardH} 0%,rgba(200,169,81,0.22) 100%)`;
                 e.currentTarget.style.border=`1px solid ${C.gold}50`;
                 e.currentTarget.style.transform="translateX(4px)";
                 e.currentTarget.style.boxShadow=`0 4px 20px rgba(200,169,81,0.15)`;
               }}
-              onMouseLeave={e=>{
+              onMouseLeave={etiquetas[o.k]?undefined:e=>{
                 e.currentTarget.style.background=`linear-gradient(145deg,${C.card} 0%,rgba(200,169,81,0.10) 100%)`;
                 e.currentTarget.style.border=`1px solid ${C.borderD}`;
                 e.currentTarget.style.transform="translateX(0)";
@@ -3528,7 +3537,7 @@ function FilterModal({onSelect}){
                   </span>
                 )}
               </div>
-              <span style={{marginLeft:"auto",color:C.gold,fontSize:16,opacity:0.5}}>›</span>
+              <span style={{marginLeft:"auto",color:C.gold,fontSize:16,opacity:0.5}}>{etiquetas[o.k]?"🔒":"›"}</span>
             </button>
             </Fragment>
           );})}
@@ -3541,6 +3550,7 @@ function FilterModal({onSelect}){
 // ─── SACRAMENTO SELECT MODAL ────────────────────────────────────────
 function SacSelectModal({onContinue,onBack}){
   const [sel,setSel]=useState([]);
+  const etiquetas=useEtiquetasOpciones();
   const toggle=s=>setSel(p=>p.includes(s)?p.filter(x=>x!==s):[...p,s]);
   const sacs=[
     {k:"bautismo",   icon:"__bautismo_img__", es:"Bautismo",        en:"Baptism",        fr:"Baptême",       de:"Taufe",             pt:"Batismo",           it:"Battesimo"},
@@ -3558,22 +3568,31 @@ function SacSelectModal({onContinue,onBack}){
           {T("Puedes elegir una, dos o las tres opciones","You may choose one, two, or all three","Vous pouvez choisir une, deux ou les trois options","Sie können eine, zwei oder alle drei Optionen wählen","Você pode escolher uma, duas ou as três opções","Puoi scegliere una, due o tutte e tre le opzioni")}
         </p>
         <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:24}}>
-          {sacs.map(s=>(
-            <button key={s.k} onClick={()=>toggle(s.k)}
-              style={{...CARD,cursor:"pointer",display:"flex",alignItems:"center",gap:14,
-                border:`1.5px solid ${sel.includes(s.k)?C.gold:C.borderD}`,
+          {sacs.map(s=>{
+            const etq=etiquetas[s.k];   // etiqueta activa → sacramento inhabilitado
+            return(
+            <button key={s.k} onClick={etq?undefined:()=>toggle(s.k)}
+              disabled={!!etq} aria-disabled={!!etq}
+              style={{...CARD,cursor:etq?"not-allowed":"pointer",display:"flex",alignItems:"center",gap:14,
+                border:`1.5px solid ${sel.includes(s.k)?C.gold:C.borderD}`,opacity:etq?0.55:1,
                 background:sel.includes(s.k)?"rgba(200,169,81,0.12)":C.card,transition:"all .2s"}}>
               {s.icon==="__caliz__"?<CalizIcon size={30}/>
                :s.icon==="__bautismo_img__"?<img src={iconoBautismo} width={30} height={30} style={{objectFit:"contain",filter:"sepia(1) saturate(3) brightness(0.95)"}} alt=""/>
                :s.icon==="__confirmacion_img__"?<img src={iconoConfirmacion} width={30} height={30} style={{objectFit:"contain",filter:"sepia(1) saturate(3) brightness(0.95)"}} alt=""/>
                :s.icon==="__flame__"?<FlameIcon size={28}/>
                :<span style={{fontSize:24}}>{s.icon}</span>}
-              <span style={{color:C.ivory,fontFamily:"'Crimson Text',serif",fontSize:17}}>
+              <span style={{color:C.ivory,fontFamily:"'Crimson Text',serif",fontSize:17,display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
                 {T(s.es,s.en,s.fr,s.de,s.pt,s.it)}
+                {etq&&(
+                  <span style={{background:etq.bg,color:etq.fg,fontFamily:"'Cinzel',serif",
+                    fontSize:10,fontWeight:700,letterSpacing:"0.12em",textTransform:"uppercase",
+                    padding:"3px 9px",borderRadius:99,border:`1px solid ${etq.fg}55`}}>{etq.txt}</span>
+                )}
               </span>
-              {sel.includes(s.k)&&<span style={{marginLeft:"auto",color:C.gold,fontSize:18}}>✓</span>}
+              {etq?<span style={{marginLeft:"auto",fontSize:16}}>🔒</span>
+               :sel.includes(s.k)&&<span style={{marginLeft:"auto",color:C.gold,fontSize:18}}>✓</span>}
             </button>
-          ))}
+          );})}
         </div>
         
         <div style={{display:"flex",gap:12}}>

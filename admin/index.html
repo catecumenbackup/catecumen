@@ -119,6 +119,7 @@
         <p class="sub" style="text-align:left;margin:0">Catecumen · <span id="whoami" class="whoami"></span></p>
       </div>
       <button id="seguridad" class="btn ghost" title="Verificación en dos pasos">🔐 Seguridad</button>
+      <button id="sesion-cfg" class="btn ghost" title="Cierre por inactividad">⏱️ Sesión</button>
       <button id="salir" class="btn ghost">Cerrar sesión</button>
     </div>
 
@@ -473,9 +474,37 @@
   }
   async function salir(){ await sb.auth.signOut(); location.reload(); }
 
-  // ─── CIERRE DE SESIÓN POR INACTIVIDAD (20 min, con aviso al minuto 19) ───
+  // ─── CIERRE DE SESIÓN POR INACTIVIDAD (configurable, por defecto 15 min) ───
   let tIdle=null, tAviso=null;
-  const IDLE_MIN=20;
+  function leerIdleMin(){
+    const v=parseInt(localStorage.getItem("catecumen_admin_idle_min"),10);
+    return (v && v>=1 && v<=120) ? v : 15;   // por defecto 15, rango 1–120
+  }
+  let IDLE_MIN=leerIdleMin();
+  window.__configSesion=()=>{
+    $("modal-mount").innerHTML=`<div class="overlay"><div class="modal" style="max-width:420px">
+      <h3>⏱️ Cierre por inactividad</h3>
+      <p style="color:var(--ivory-m);font-size:13px;margin-bottom:10px">
+        Tras este tiempo sin actividad, la sesión del panel se cierra sola por seguridad.
+        Se avisa 1 minuto antes. (Se guarda en este navegador.)</p>
+      <label class="fld">Minutos de inactividad (1–120)</label>
+      <input id="idle-min" type="number" min="1" max="120" value="${IDLE_MIN}" style="width:120px"/>
+      <p id="idle-cfg-msg" class="msg"></p>
+      <div class="modal-actions">
+        <button class="btn ghost" onclick="window.__closeModal()">Cancelar</button>
+        <button class="btn" onclick="window.__guardarIdle()">Guardar</button>
+      </div>
+    </div></div>`;
+  };
+  window.__guardarIdle=()=>{
+    const v=parseInt($("idle-min").value,10);
+    if(!v || v<1 || v>120){ $("idle-cfg-msg").className="msg err"; $("idle-cfg-msg").textContent="Elige un valor entre 1 y 120 minutos."; return; }
+    try{ localStorage.setItem("catecumen_admin_idle_min", String(v)); }catch(e){}
+    IDLE_MIN=v;
+    reiniciarTemporizadores();
+    window.__closeModal();
+    if($("idle-aviso")){ $("idle-aviso").style.display="none"; }
+  };
   function reiniciarTemporizadores(){
     clearTimeout(tIdle); clearTimeout(tAviso);
     const avisoEl=$("idle-aviso"); if(avisoEl) avisoEl.style.display="none";
@@ -1676,7 +1705,9 @@
   const ETQ_NOMBRES={catecumeno:"Quiero recibir mis sacramentos",
     prebautismal:"Papá/mamá — formación pre-sacramental", padrino:"Padrino/madrina",
     catequista:"Catequista — Neuropedagogía", parroquia:"Parroquia (afiliación)",
-    diocesis:"Diócesis (afiliación)", centroadiccion:"Centro de adicciones (afiliación)"};
+    diocesis:"Diócesis (afiliación)", centroadiccion:"Centro de adicciones (afiliación)",
+    bautismo:"Sacramento · Bautismo", confirmacion:"Sacramento · Confirmación",
+    primera_comunion:"Sacramento · Primera Comunión"};
   let ETQ=[];
   async function cargarEtiquetas(){
     try{
@@ -2019,6 +2050,7 @@
   $("pass").addEventListener("keydown",e=>{if(e.key==="Enter")entrar();});
   $("salir").addEventListener("click",salir);
   $("seguridad").addEventListener("click",()=>window.__configurar2FA());
+  $("sesion-cfg").addEventListener("click",()=>window.__configSesion());
   $("csv").addEventListener("click",exportarCSV);
   $("f-sacramento").addEventListener("change",renderTabla);
   $("f-umbral").addEventListener("input",()=>{renderAtencion();renderTabla();});

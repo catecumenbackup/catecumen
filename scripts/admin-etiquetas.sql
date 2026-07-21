@@ -25,13 +25,17 @@ CREATE TABLE IF NOT EXISTS public.opciones_etiquetas (
 -- ─────────────────────────────────────────────────────────────────────────
 INSERT INTO public.opciones_etiquetas
   (clave, texto_es, texto_en, texto_fr, texto_de, texto_pt, texto_it, activo) VALUES
-  ('catecumeno',     'Próximamente','Coming soon','Bientôt disponible','Demnächst','Em breve','Prossimamente', false),
-  ('prebautismal',   'Próximamente','Coming soon','Bientôt disponible','Demnächst','Em breve','Prossimamente', false),
-  ('padrino',        'Próximamente','Coming soon','Bientôt disponible','Demnächst','Em breve','Prossimamente', false),
-  ('catequista',     'Próximamente','Coming soon','Bientôt disponible','Demnächst','Em breve','Prossimamente', false),
-  ('parroquia',      'Próximamente','Coming soon','Bientôt disponible','Demnächst','Em breve','Prossimamente', false),
-  ('diocesis',       'Próximamente','Coming soon','Bientôt disponible','Demnächst','Em breve','Prossimamente', false),
-  ('centroadiccion', 'Próximamente','Coming soon','Bientôt disponible','Demnächst','Em breve','Prossimamente', false)
+  ('catecumeno',       'Próximamente','Coming soon','Bientôt disponible','Demnächst','Em breve','Prossimamente', false),
+  ('prebautismal',     'Próximamente','Coming soon','Bientôt disponible','Demnächst','Em breve','Prossimamente', false),
+  ('padrino',          'Próximamente','Coming soon','Bientôt disponible','Demnächst','Em breve','Prossimamente', false),
+  ('catequista',       'Próximamente','Coming soon','Bientôt disponible','Demnächst','Em breve','Prossimamente', false),
+  ('parroquia',        'Próximamente','Coming soon','Bientôt disponible','Demnächst','Em breve','Prossimamente', false),
+  ('diocesis',         'Próximamente','Coming soon','Bientôt disponible','Demnächst','Em breve','Prossimamente', false),
+  ('centroadiccion',   'Próximamente','Coming soon','Bientôt disponible','Demnächst','Em breve','Prossimamente', false),
+  -- Sacramentos del segundo modal (selección de sacramento):
+  ('bautismo',         'Próximamente','Coming soon','Bientôt disponible','Demnächst','Em breve','Prossimamente', false),
+  ('confirmacion',     'Próximamente','Coming soon','Bientôt disponible','Demnächst','Em breve','Prossimamente', false),
+  ('primera_comunion', 'Próximamente','Coming soon','Bientôt disponible','Demnächst','Em breve','Prossimamente', false)
 ON CONFLICT (clave) DO NOTHING;
 
 -- ─────────────────────────────────────────────────────────────────────────
