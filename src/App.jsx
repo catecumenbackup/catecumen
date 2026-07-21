@@ -6574,14 +6574,14 @@ export default function App(){
   useEffect(()=>{
     const handleBeforeUnload=e=>{
       if(bypassUnload) return; // redirección intencional al pago
-      if(phase==="video"||phase==="orgThankYou") return;
+      if(phase==="welcome"||phase==="orgThankYou") return;
       e.preventDefault();
       e.returnValue=T("¿Deseas abandonar la plataforma? Tu progreso podría no guardarse.","Do you want to leave the platform? Your progress may not be saved.","Voulez-vous quitter la plateforme ? Votre progression pourrait ne pas être enregistrée.","Möchten Sie die Plattform verlassen? Ihr Fortschritt wird möglicherweise nicht gespeichert.","Deseja sair da plataforma? Seu progresso pode não ser salvo.","Vuoi lasciare la piattaforma? I tuoi progressi potrebbero non essere salvati.");
       return e.returnValue;
     };
     const handlePopState=e=>{
       if(bypassUnload) return;
-      if(phase==="video"||phase==="orgThankYou") return;
+      if(phase==="welcome"||phase==="orgThankYou") return;
       const confirm=window.confirm(T("¿Deseas salir de la plataforma? Tu progreso podría no guardarse.","Do you want to leave the platform? Your progress may not be saved.","Voulez-vous quitter la plateforme ? Votre progression pourrait ne pas être enregistrée.","Möchten Sie die Plattform verlassen? Ihr Fortschritt wird möglicherweise nicht gespeichert.","Deseja sair da plataforma? Seu progresso pode não ser salvo.","Vuoi uscire dalla piattaforma? I tuoi progressi potrebbero non essere salvati."));
       if(!confirm){window.history.pushState(null,"",window.location.href);}
     };
