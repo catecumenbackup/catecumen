@@ -6500,7 +6500,11 @@ function InstallBar(){
 }
 
 export default function App(){
-  const [phase,setPhase]=useState("video");
+  // Arranca directo en el tour. La "intro" que ve el usuario es la pantalla de
+  // carga con el monograma y la barra (#cat-splash en index.html), que React
+  // reemplaza al montar. Se eliminó el video intro pesado (catecumenvideo.mp4,
+  // 2.2 MB): era el recurso más lento del arranque.
+  const [phase,setPhase]=useState("welcome");
   const [cuentaSuspendida,setCuentaSuspendida]=useState(null); // {motivo} si la cuenta está suspendida/eliminada
   const [msgNoLeidos,setMsgNoLeidos]=useState(0); // contador para la campana flotante
   const [dashTab,setDashTab]=useState(null); // pestaña inicial al abrir el dashboard (p.ej. "mensajes")
@@ -7194,8 +7198,6 @@ export default function App(){
         <LanguageSwitcher/>
       </div>
 
-      {/* INTRO VIDEO */}
-      {phase==="video"&&<IntroVideo onEnded={()=>setPhase("welcome")}/>}
 
       {/* MODALES DE FLUJO */}
       {cuentaSuspendida&&(
