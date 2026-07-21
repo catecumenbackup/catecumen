@@ -378,36 +378,45 @@
   });
 
   // ── Resiliencia de sesión ────────────────────────────────────────────────
-  // Las RPC protegidas por es_admin() devuelven "no autorizado" cuando el token
-  // de acceso caducó (típico tras horas o con la pestaña en segundo plano, si el
-  // auto-refresh no alcanzó a renovarlo). Envolvemos sb.rpc para, ante un fallo
-  // de autorización, renovar la sesión y REINTENTAR una vez de forma transparente.
-  // Todas las llamadas del panel son `await sb.rpc(...)` sin encadenar, por lo
-  // que envolver es seguro.
+  // Las RPC protegidas por es_admin() devuelven "no autorizado" cuando NO hay un
+  // token de acceso válido (sesión caducada o cerrada). Envolvemos sb.rpc para,
+  // ante ese fallo, intentar UNA renovación y reintentar; si la sesión ya no se
+  // puede renovar (refresh token muerto), mostramos el login para volver a entrar
+  // en vez de dejar el panel con datos obsoletos y errores crípticos.
+  // (No refrescamos en cada cambio de pestaña: con un refresh token inválido,
+  //  eso cerraba la sesión de forma prematura.)
   const _rpcOriginal = sb.rpc.bind(sb);
   const esFalloAuth = (res) => {
     const m = res && res.error && (res.error.message || "");
     return !!m && /no autorizado|jwt|not authenticated|401|expired/i.test(m);
   };
-  let _avisoSesion = false;
+  async function forzarReLogin(){
+    try{ await sb.auth.signOut(); }catch(e){}
+    const app=document.getElementById("app"), gate=document.getElementById("gate"), gm=document.getElementById("gate-msg");
+    if(app) app.classList.add("hidden");
+    if(gate) gate.classList.remove("hidden");
+    if(gm) gm.textContent="Tu sesión terminó. Vuelve a iniciar sesión para continuar.";
+  }
   sb.rpc = async (fn, args, opts) => {
     let res = await _rpcOriginal(fn, args, opts);
     if (esFalloAuth(res)) {
+      let renovada = false;
       try {
-        const { data } = await sb.auth.refreshSession();
-        if (data && data.session) res = await _rpcOriginal(fn, args, opts);
-      } catch (e) { /* conserva el error original */ }
-    }
-    if (esFalloAuth(res) && !_avisoSesion) {
-      _avisoSesion = true; setTimeout(() => { _avisoSesion = false; }, 5000);
-      const a = document.getElementById("idle-aviso");
-      if (a) { a.style.display = ""; a.textContent = "Tu sesión expiró. Cierra sesión y vuelve a entrar para continuar."; }
+        const { data, error } = await sb.auth.refreshSession();
+        if (!error && data && data.session) { renovada = true; res = await _rpcOriginal(fn, args, opts); }
+      } catch (e) { /* refresh token muerto */ }
+      // Si tras el intento sigue fallando por autorización, la sesión ya no sirve.
+      if (esFalloAuth(res)) { forzarReLogin(); }
+      void renovada;
     }
     return res;
   };
-  // Al volver a la pestaña, renueva la sesión de forma proactiva.
-  document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") { sb.auth.refreshSession().catch(() => {}); }
+  // Si Supabase cierra la sesión (token de refresco inválido), vuelve al login.
+  sb.auth.onAuthStateChange((evt) => {
+    if (evt === "SIGNED_OUT") {
+      const app=document.getElementById("app");
+      if (app && !app.classList.contains("hidden")) forzarReLogin();
+    }
   });
 
   const $=id=>document.getElementById(id);
