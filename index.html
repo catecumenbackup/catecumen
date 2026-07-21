@@ -26,6 +26,21 @@
          tiene el oscuro, el script de más abajo añade el suyo. -->
     <link rel="preload" as="image" href="/fondocatecumen-claro.webp" fetchpriority="high" />
 
+    <!-- Fuentes (Cinzel + Crimson Text). Iban dentro del bundle vía @import,
+         así que el navegador no las pedía hasta descargar 235 KB de JS
+         (eran el eslabón más lento: 651 ms de latencia de ruta crítica).
+         Aquí se descubren de inmediato; preconnect adelanta la conexión TLS a
+         los dos servidores de Google, y display=swap evita texto invisible. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preload" as="style"
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap"
+      onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript>
+      <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" />
+    </noscript>
+
     <!-- SEO -->
     <link rel="canonical" href="https://www.catecumen.com/" />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />

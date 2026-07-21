@@ -7103,7 +7103,6 @@ export default function App(){
   return(
     <div style={{minHeight:"100vh",backgroundImage:`url(${effectiveTheme==="light"?fondoBgClaro:fondoBg})`,backgroundRepeat:"repeat",backgroundSize:"650px auto",backgroundPosition:"top left",fontFamily:"'Crimson Text',serif"}}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
         :root, [data-theme="dark"]{
           --c-bg:#060D18; --c-surface:#0C1829; --c-card:#112038; --c-cardH:#162843;
           --c-border:rgba(200,169,81,0.18); --c-borderD:rgba(255,255,255,0.07);
