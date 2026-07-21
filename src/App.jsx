@@ -3263,12 +3263,16 @@ function WelcomeModal({onContinue,onLogin}){
           <div style={{display:window.innerWidth>560?"block":"none"}}>{arrowBtn(1,i===n-1)}</div>
         </div>
 
-        {/* Puntitos indicadores + contador */}
-        <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:7,margin:"14px 0 6px"}}>
+        {/* Puntitos indicadores + contador. El botón mide 24x24 (objetivo
+            táctil accesible) con el punto visible pequeño dentro. */}
+        <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:2,margin:"10px 0 4px"}}>
           {cards.map((_,k)=>(
-            <button key={k} aria-label={`Ir a ${k+1}`} onClick={()=>setI(k)}
-              style={{width:k===i?22:8,height:8,borderRadius:99,border:"none",cursor:"pointer",padding:0,
+            <button key={k} aria-label={`Ir a ${k+1}`} aria-current={k===i?"true":undefined} onClick={()=>setI(k)}
+              style={{width:24,height:24,padding:0,border:"none",background:"none",cursor:"pointer",
+                display:"flex",alignItems:"center",justifyContent:"center"}}>
+              <span style={{width:k===i?22:8,height:8,borderRadius:99,display:"block",
                 background:k===i?C.gold:`${C.gold}45`,transition:"all .25s"}}/>
+            </button>
           ))}
         </div>
         <p style={{color:C.ivoryM,fontSize:12.5,marginBottom:4}}>
@@ -7105,7 +7109,7 @@ export default function App(){
 
   // RENDER
   return(
-    <div style={{minHeight:"100vh",backgroundImage:`url(${effectiveTheme==="light"?fondoBgClaro:fondoBg})`,backgroundRepeat:"repeat",backgroundSize:"650px auto",backgroundPosition:"top left",fontFamily:"'Crimson Text',serif"}}>
+    <div role="main" style={{minHeight:"100vh",backgroundImage:`url(${effectiveTheme==="light"?fondoBgClaro:fondoBg})`,backgroundRepeat:"repeat",backgroundSize:"650px auto",backgroundPosition:"top left",fontFamily:"'Crimson Text',serif"}}>
       <style>{`
         :root, [data-theme="dark"]{
           --c-bg:#060D18; --c-surface:#0C1829; --c-card:#112038; --c-cardH:#162843;
