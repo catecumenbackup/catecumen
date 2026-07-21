@@ -80,6 +80,32 @@ serve(async (req: Request) => {
     const monto = Number(importe);
     if (!Number.isFinite(monto) || monto <= 0) throw new Error("importe inválido");
 
+    // ── Disponibilidad de la opción (refuerzo server-side de las etiquetas) ──
+    // Si el tipo de usuario o alguno de los sacramentos elegidos tiene una
+    // etiqueta ACTIVA en `opciones_etiquetas` (p.ej. "Próximamente"), la opción
+    // está deshabilitada y NO se permite el registro/pago. Esto hace infranqueable
+    // la restricción que el cliente solo oculta visualmente.
+    const clavesAValidar = [userType, ...(Array.isArray(selectedSacs) ? selectedSacs : [])]
+      .filter((k: unknown): k is string => typeof k === "string" && k.length > 0);
+    if (clavesAValidar.length) {
+      const { data: bloqueadas, error: etqErr } = await supabase
+        .from("opciones_etiquetas")
+        .select("clave")
+        .eq("activo", true)
+        .in("clave", clavesAValidar);
+      if (etqErr) {
+        // Falla ABIERTA: si no se puede leer la tabla (p.ej. aún no existe),
+        // no bloqueamos pagos legítimos; la restricción del cliente sigue activa.
+        console.error("[crear-sesion-pago] check etiquetas:", etqErr);
+      } else if (bloqueadas && bloqueadas.length) {
+        return new Response(
+          JSON.stringify({ error:
+            "Esta opción aún no está disponible para registro. Por favor elige otra o vuelve más adelante." }),
+          { status: 403, headers: { ...CORS, "Content-Type": "application/json" } },
+        );
+      }
+    }
+
     // ── Verificación de correo duplicado (autoridad real — el chequeo del
     //    frontend en PasswordModal es solo un aviso temprano, no la garantía) ──
     const { count, error: countErr } = await supabase
