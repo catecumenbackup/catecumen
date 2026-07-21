@@ -7120,7 +7120,7 @@ export default function App(){
         [data-theme="light"]{
           --c-bg:#FBF6EA; --c-surface:#F5EDDA; --c-card:#FFFFFF; --c-cardH:#FAF2DF;
           --c-border:rgba(139,107,33,0.28); --c-borderD:rgba(90,70,20,0.14);
-          --c-gold:#9C7A28; --c-goldL:#C8A951; --c-goldDeep:#8A6A22;
+          --c-gold:#8A6A22; --c-goldL:#C8A951; --c-goldDeep:#7A5E1E;
           --c-ivory:#2A2116; --c-ivoryM:#6B5D45; --c-tM:#7A7566;
           --c-wine:#8B1A2E; --c-green:#1F7A4E; --c-greenB:#1F7A4E;
           --c-blue:#1B4C8C; --c-blueB:#1B4C8C; --c-gray:#8891A0;
