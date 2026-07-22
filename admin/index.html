@@ -29,6 +29,11 @@
     width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:9px;
     padding:11px 13px;color:var(--ivory);font-size:15px;outline:none;margin:7px 0}
   input:focus,select:focus,textarea:focus{border-color:var(--gold)}
+  /* Menú desplegable de los <select>: al abrirse, el navegador usa fondo del
+     sistema (claro) pero conservaba el texto claro del select → ilegible.
+     Fijamos fondo oscuro sólido y texto claro en cada opción. */
+  select option{background-color:#112038;color:#F0EAD6}
+  select optgroup{background-color:#0A1524;color:#C8A951;font-weight:700;font-style:normal}
   label.fld{display:block;text-align:left;color:var(--ivory-m);font-size:13px;margin-top:8px}
   .btn{background:linear-gradient(135deg,var(--gold-l),var(--gold) 55%,#9A7A2A);color:var(--bg);
     border:none;border-radius:10px;padding:11px 20px;font-family:'Cinzel',serif;font-weight:700;
