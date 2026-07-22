@@ -374,7 +374,17 @@
   const SUPABASE_URL="https://jqlfjfamraavsbhdusuq.supabase.co";
   const SUPABASE_ANON="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxbGZqZmFtcmFhdnNiaGR1c3VxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyMDEwNjIsImV4cCI6MjA5Njc3NzA2Mn0.AFD2j0ERaNqx4gii8z3sOvdbkIJl3Kzs_qyDErm7SL8";
   const sb=createClient(SUPABASE_URL, SUPABASE_ANON, {
-    auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:false },
+    auth:{
+      // Llave de sesión PROPIA del panel, separada de la app principal.
+      // Sin esto, el panel y catecumen.com compartían la misma sesión en el
+      // navegador; con varias pestañas abiertas, la rotación del token de
+      // refresco de Supabase invalidaba el de las otras pestañas y cerraba la
+      // sesión al cambiar de pestaña. Aislándola, dejan de pisarse.
+      storageKey:"catecumen-admin-auth",
+      persistSession:true,
+      autoRefreshToken:true,
+      detectSessionInUrl:false,
+    },
   });
 
   // ── Resiliencia de sesión ────────────────────────────────────────────────
@@ -411,12 +421,18 @@
     }
     return res;
   };
-  // Si Supabase cierra la sesión (token de refresco inválido), vuelve al login.
+  // Si Supabase cierra la sesión de verdad, vuelve al login. Esperamos un poco
+  // y reconfirmamos con getSession: si la sesión reaparece (sincronización entre
+  // pestañas), no rebotamos al usuario innecesariamente.
   sb.auth.onAuthStateChange((evt) => {
-    if (evt === "SIGNED_OUT") {
-      const app=document.getElementById("app");
-      if (app && !app.classList.contains("hidden")) forzarReLogin();
-    }
+    if (evt !== "SIGNED_OUT") return;
+    const app = document.getElementById("app");
+    if (!app || app.classList.contains("hidden")) return;
+    setTimeout(async () => {
+      let hay = false;
+      try { const { data } = await sb.auth.getSession(); hay = !!(data && data.session); } catch (e) {}
+      if (!hay && app && !app.classList.contains("hidden")) forzarReLogin();
+    }, 900);
   });
 
   const $=id=>document.getElementById(id);
