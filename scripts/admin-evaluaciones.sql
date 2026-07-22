@@ -5,9 +5,9 @@
 -- Requiere: public.es_admin(), public.preguntas (con columnas i18n de
 -- etapa6_i18n_schema.sql) y public.videos.
 --
--- NOTA: la tabla preguntas conserva columnas heredadas NOT NULL
--- (pregunta, opcion_a..d, respuesta_correcta). Las rellenamos con el
--- contenido en español para no violar las restricciones.
+-- NOTA: la tabla preguntas ya está migrada a i18n; las columnas heredadas
+-- (pregunta, opcion_a..d) fueron eliminadas. Estas funciones trabajan solo
+-- con las columnas *_es/_en/_fr/_de/_pt/_it (+ respuesta_correcta, etc.).
 --
 -- Auditoría: escribe en public.admin_log (admin_id, admin_email, accion,
 -- entidad, entidad_id, detalle). OJO: entidad_id es TEXT, por eso los uuid
@@ -37,16 +37,9 @@ ALTER TABLE public.preguntas
   ADD COLUMN IF NOT EXISTS opcion_d_fr text, ADD COLUMN IF NOT EXISTS opcion_d_de text,
   ADD COLUMN IF NOT EXISTS opcion_d_pt text, ADD COLUMN IF NOT EXISTS opcion_d_it text;
 
--- Si _es/_en estaban vacíos (recién creados), sémbralos con el texto heredado
--- para que el idioma base nunca salga en blanco.
-UPDATE public.preguntas SET
-  pregunta_es = COALESCE(pregunta_es, pregunta),
-  opcion_a_es = COALESCE(opcion_a_es, opcion_a),
-  opcion_b_es = COALESCE(opcion_b_es, opcion_b),
-  opcion_c_es = COALESCE(opcion_c_es, opcion_c),
-  opcion_d_es = COALESCE(opcion_d_es, opcion_d)
-WHERE pregunta_es IS NULL OR opcion_a_es IS NULL OR opcion_b_es IS NULL
-   OR opcion_c_es IS NULL OR opcion_d_es IS NULL;
+-- Nota: la tabla `preguntas` ya fue migrada a i18n; las columnas heredadas
+-- (pregunta, opcion_a..d) fueron eliminadas. Por eso estas funciones NO las
+-- referencian: trabajan solo con las columnas *_es/_en/_fr/_de/_pt/_it.
 
 -- ─────────────────────────────────────────────────────────────────────────
 -- 1) Videos con su número de preguntas (para el selector del panel)
@@ -163,7 +156,6 @@ BEGIN
 
     INSERT INTO public.preguntas (
       video_id,
-      pregunta, opcion_a, opcion_b, opcion_c, opcion_d,   -- heredadas NOT NULL
       pregunta_es, pregunta_en, pregunta_fr, pregunta_de, pregunta_pt, pregunta_it,
       opcion_a_es, opcion_a_en, opcion_a_fr, opcion_a_de, opcion_a_pt, opcion_a_it,
       opcion_b_es, opcion_b_en, opcion_b_fr, opcion_b_de, opcion_b_pt, opcion_b_it,
@@ -172,8 +164,6 @@ BEGIN
       respuesta_correcta, explicacion, puntaje, orden, activo
     ) VALUES (
       p_video_id,
-      p_datos->>'pregunta_es', p_datos->>'opcion_a_es', p_datos->>'opcion_b_es',
-      p_datos->>'opcion_c_es', p_datos->>'opcion_d_es',
       p_datos->>'pregunta_es', p_datos->>'pregunta_en', p_datos->>'pregunta_fr',
       p_datos->>'pregunta_de', p_datos->>'pregunta_pt', p_datos->>'pregunta_it',
       p_datos->>'opcion_a_es', p_datos->>'opcion_a_en', p_datos->>'opcion_a_fr',
@@ -194,11 +184,6 @@ BEGIN
 
   ELSE
     UPDATE public.preguntas SET
-      pregunta    = p_datos->>'pregunta_es',
-      opcion_a    = p_datos->>'opcion_a_es',
-      opcion_b    = p_datos->>'opcion_b_es',
-      opcion_c    = p_datos->>'opcion_c_es',
-      opcion_d    = p_datos->>'opcion_d_es',
       pregunta_es = p_datos->>'pregunta_es', pregunta_en = p_datos->>'pregunta_en',
       pregunta_fr = p_datos->>'pregunta_fr', pregunta_de = p_datos->>'pregunta_de',
       pregunta_pt = p_datos->>'pregunta_pt', pregunta_it = p_datos->>'pregunta_it',
