@@ -15,6 +15,40 @@
 -- ============================================================================
 
 -- ─────────────────────────────────────────────────────────────────────────
+-- 0) Garantizar las columnas i18n en `preguntas` (idempotente).
+--    admin_listar_preguntas lee pregunta_fr/de/pt/it y opcion_*_fr/de/pt/it;
+--    si esas columnas no existen (migración i18n no aplicada), la función
+--    falla con 400. Este bloque las crea si faltan y no daña si ya están.
+-- ─────────────────────────────────────────────────────────────────────────
+ALTER TABLE public.preguntas
+  ADD COLUMN IF NOT EXISTS pregunta_es text, ADD COLUMN IF NOT EXISTS pregunta_en text,
+  ADD COLUMN IF NOT EXISTS pregunta_fr text, ADD COLUMN IF NOT EXISTS pregunta_de text,
+  ADD COLUMN IF NOT EXISTS pregunta_pt text, ADD COLUMN IF NOT EXISTS pregunta_it text,
+  ADD COLUMN IF NOT EXISTS opcion_a_es text, ADD COLUMN IF NOT EXISTS opcion_a_en text,
+  ADD COLUMN IF NOT EXISTS opcion_a_fr text, ADD COLUMN IF NOT EXISTS opcion_a_de text,
+  ADD COLUMN IF NOT EXISTS opcion_a_pt text, ADD COLUMN IF NOT EXISTS opcion_a_it text,
+  ADD COLUMN IF NOT EXISTS opcion_b_es text, ADD COLUMN IF NOT EXISTS opcion_b_en text,
+  ADD COLUMN IF NOT EXISTS opcion_b_fr text, ADD COLUMN IF NOT EXISTS opcion_b_de text,
+  ADD COLUMN IF NOT EXISTS opcion_b_pt text, ADD COLUMN IF NOT EXISTS opcion_b_it text,
+  ADD COLUMN IF NOT EXISTS opcion_c_es text, ADD COLUMN IF NOT EXISTS opcion_c_en text,
+  ADD COLUMN IF NOT EXISTS opcion_c_fr text, ADD COLUMN IF NOT EXISTS opcion_c_de text,
+  ADD COLUMN IF NOT EXISTS opcion_c_pt text, ADD COLUMN IF NOT EXISTS opcion_c_it text,
+  ADD COLUMN IF NOT EXISTS opcion_d_es text, ADD COLUMN IF NOT EXISTS opcion_d_en text,
+  ADD COLUMN IF NOT EXISTS opcion_d_fr text, ADD COLUMN IF NOT EXISTS opcion_d_de text,
+  ADD COLUMN IF NOT EXISTS opcion_d_pt text, ADD COLUMN IF NOT EXISTS opcion_d_it text;
+
+-- Si _es/_en estaban vacíos (recién creados), sémbralos con el texto heredado
+-- para que el idioma base nunca salga en blanco.
+UPDATE public.preguntas SET
+  pregunta_es = COALESCE(pregunta_es, pregunta),
+  opcion_a_es = COALESCE(opcion_a_es, opcion_a),
+  opcion_b_es = COALESCE(opcion_b_es, opcion_b),
+  opcion_c_es = COALESCE(opcion_c_es, opcion_c),
+  opcion_d_es = COALESCE(opcion_d_es, opcion_d)
+WHERE pregunta_es IS NULL OR opcion_a_es IS NULL OR opcion_b_es IS NULL
+   OR opcion_c_es IS NULL OR opcion_d_es IS NULL;
+
+-- ─────────────────────────────────────────────────────────────────────────
 -- 1) Videos con su número de preguntas (para el selector del panel)
 -- ─────────────────────────────────────────────────────────────────────────
 DROP FUNCTION IF EXISTS public.admin_videos_evaluacion();
@@ -60,7 +94,7 @@ RETURNS TABLE (
   opcion_b_es text, opcion_b_en text, opcion_b_fr text, opcion_b_de text, opcion_b_pt text, opcion_b_it text,
   opcion_c_es text, opcion_c_en text, opcion_c_fr text, opcion_c_de text, opcion_c_pt text, opcion_c_it text,
   opcion_d_es text, opcion_d_en text, opcion_d_fr text, opcion_d_de text, opcion_d_pt text, opcion_d_it text,
-  respuesta_correcta char(1),
+  respuesta_correcta text,
   explicacion text,
   puntaje smallint,
   orden smallint,
@@ -78,7 +112,7 @@ BEGIN
          p.opcion_b_es, p.opcion_b_en, p.opcion_b_fr, p.opcion_b_de, p.opcion_b_pt, p.opcion_b_it,
          p.opcion_c_es, p.opcion_c_en, p.opcion_c_fr, p.opcion_c_de, p.opcion_c_pt, p.opcion_c_it,
          p.opcion_d_es, p.opcion_d_en, p.opcion_d_fr, p.opcion_d_de, p.opcion_d_pt, p.opcion_d_it,
-         p.respuesta_correcta, p.explicacion, p.puntaje, p.orden, COALESCE(p.activo, true)
+         p.respuesta_correcta::text, p.explicacion, p.puntaje::smallint, p.orden::smallint, COALESCE(p.activo, true)
   FROM public.preguntas p
   WHERE p.video_id = p_video_id
   ORDER BY p.orden, p.id;
