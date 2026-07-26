@@ -161,6 +161,15 @@ const MODAL={background:`linear-gradient(160deg,var(--c-modalStart) 0%,${C.surfa
   maxWidth:700,width:"95%",maxHeight:"88vh",overflowY:"auto",padding:"32px 28px",
   boxShadow:"var(--c-modalShadow)",
   animation:"modalIn .28s cubic-bezier(.34,1.2,.64,1) both"};
+// Estilo de LECTURA para textos largos (encuadres, tarjetas, descripciones).
+// Aplica las 5 mejoras de legibilidad: (1) mayor tamaño e (2) interlineado,
+// (3) fuente sans del sistema —muy legible y SIN descarga extra— reservando
+// Cinzel/Crimson para títulos y acentos, (4) ancho de columna limitado (~66
+// caracteres) para no cansar la vista, (5) alto contraste (marfil), alineado a
+// la izquierda y sin mayúsculas sostenidas.
+const FONT_READ="-apple-system,'Segoe UI',Roboto,system-ui,'Helvetica Neue',Arial,sans-serif";
+const READ={fontFamily:FONT_READ,fontSize:17,lineHeight:1.75,color:C.ivory,
+  textAlign:"left",letterSpacing:"0.005em",maxWidth:"38em",marginLeft:"auto",marginRight:"auto"};
 const OVERLAY={
   position:"fixed",
   inset:0,
@@ -3293,7 +3302,7 @@ function WelcomeModal({onContinue,onLogin}){
               video={cur.video} webm={cur.webm} poster={cur.poster}/>
             <div style={{display:"flex",gap:9,alignItems:"flex-start",marginTop:12,textAlign:"left"}}>
               <span style={{color:C.gold,flexShrink:0,marginTop:2,fontSize:16}}>✦</span>
-              <span style={{color:C.ivory,fontFamily:"'Crimson Text',serif",fontSize:16,lineHeight:1.55}}>{cur.t}</span>
+              <span style={{color:C.ivory,fontFamily:FONT_READ,fontSize:16.5,lineHeight:1.7}}>{cur.t}</span>
             </div>
           </div>
           <div style={{display:window.innerWidth>560?"block":"none"}}>{arrowBtn(1,i===n-1)}</div>
@@ -3666,8 +3675,7 @@ function EncuadreModal({encKey,onRegister,onBack}){
           </div>
           <h2 style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:18}}>{title}</h2>
         </div>
-        <div style={{color:C.ivory,fontFamily:"'Crimson Text',serif",fontSize:15.5,
-          lineHeight:1.65,textAlign:"left",whiteSpace:"pre-line",marginBottom:20}}>
+        <div style={{...READ,whiteSpace:"pre-line",marginBottom:20}}>
           {body}
         </div>
         <p style={{marginTop:-6,marginBottom:20,color:C.goldL,textAlign:"center",fontSize:14}}>
