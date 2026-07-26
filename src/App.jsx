@@ -332,6 +332,14 @@ const TC2_UNCION=[
 ];
 
 // ─── CURSOS SACRAMENTOS ESPECÍFICOS ───────────────────────────────
+// ─── MÓDULO 0 · KERIGMA ───────────────────────────────────────────
+// Cimiento espiritual previo a TC1. Aplica SOLO a catecúmenos de Bautismo,
+// Confirmación y Primera Comunión (una sola vez, aunque cursen los 3). No
+// aplica a papás (prebautismal) ni padrinos. Por ahora 1 video con evaluación;
+// ampliable desde el panel admin.
+const KERIGMA=[
+  {id:"kg1",o:1,es:"El Kerigma: el primer anuncio del Evangelio",en:"The Kerygma: the first proclamation of the Gospel",fr:"Le Kérygme : la première annonce de l'Évangile",de:"Das Kerygma: die erste Verkündigung des Evangeliums",pt:"O Querigma: o primeiro anúncio do Evangelho",it:"Il Kerygma: il primo annuncio del Vangelo",dur:"30 min"},
+];
 const COURSES={
   bautismo:[
     {id:"bv1",o:1,es:"¿Qué es el Bautismo?",en:"What is Baptism?",dur:"30 min"},
@@ -607,7 +615,8 @@ A continuación te explicamos las características de esta formación:
 
 1. Esta formación tiene por propósito comprender la importancia del Bautismo en tu vida. Piensa en el Bautismo como la puerta de entrada real a Cristo y a su Iglesia y en el catecumenado como el inicio del camino de preparación: no solo para "saber qué creer", sino para aprender a vivir como nuevo cristiano, en comunión con la Iglesia y en un ambiente de oración y liturgia, hasta que llegas a recibir el primero de los sacramentos.
 
-2. Esta formación Bautismal se imparte mediante videos con duración promedio de 30 minutos cada uno y se integra por 3 módulos con el siguiente temario:
+2. Esta formación Bautismal se imparte mediante videos con duración promedio de 30 minutos cada uno y se integra por 4 módulos con el siguiente temario:
+Módulo Kerigma (Es el cimiento espiritual sobre el cual se construirá todo el resto de tu camino de fe)
 Módulo 1 (Tronco Común 1: Fundamentos de la Fe Católica)
 Módulo 2 (Sacramento del Bautismo)
 Módulo 3 (Tronco Común 2: Sacramentos de Salud)
@@ -629,7 +638,8 @@ The following explains the characteristics of this formation:
 
 1. The purpose of this formation is to help you understand the importance of Baptism in your life. Think of Baptism as the real gateway to Christ and His Church, and of the catechumenate as the beginning of the journey of preparation — not simply to "know what to believe," but to learn to live as a new Christian in communion with the Church and in an environment of prayer and liturgy, until you receive the first of the sacraments.
 
-2. This Baptismal formation is delivered through videos with an average duration of 30 minutes each, organized into 3 modules covering the following topics:
+2. This Baptismal formation is delivered through videos with an average duration of 30 minutes each, organized into 4 modules covering the following topics:
+Kerygma Module (The spiritual foundation upon which the whole rest of your journey of faith will be built)
 Module 1 (Common Core 1: Foundations of the Catholic Faith)
 Module 2 (Sacrament of Baptism)
 Module 3 (Common Core 2: Sacraments of Healing)
@@ -651,7 +661,8 @@ Voici les caractéristiques de cette formation :
 
 1. Cette formation a pour but de vous faire comprendre l'importance du Baptême dans votre vie. Pensez au Baptême comme la porte d'entrée réelle vers le Christ et son Église, et au catéchuménat comme le début du chemin de préparation : non seulement pour « savoir ce qu'il faut croire », mais pour apprendre à vivre comme un nouveau chrétien, en communion avec l'Église et dans un climat de prière et de liturgie, jusqu'à recevoir le premier des sacrements.
 
-2. Cette formation baptismale est dispensée au moyen de vidéos d'une durée moyenne de 30 minutes chacune, réparties en 3 modules selon le programme suivant :
+2. Cette formation baptismale est dispensée au moyen de vidéos d'une durée moyenne de 30 minutes chacune, réparties en 4 modules selon le programme suivant :
+Module Kérygme (C'est le fondement spirituel sur lequel se construira tout le reste de ton chemin de foi)
 Module 1 (Tronc Commun 1 : Fondements de la Foi Catholique)
 Module 2 (Sacrement du Baptême)
 Module 3 (Tronc Commun 2 : Sacrements de Guérison)
@@ -673,7 +684,8 @@ Im Folgenden erläutern wir Ihnen die Merkmale dieser Ausbildung:
 
 1. Diese Ausbildung soll Ihnen helfen, die Bedeutung der Taufe für Ihr Leben zu verstehen. Betrachten Sie die Taufe als das eigentliche Tor zu Christus und seiner Kirche und das Katechumenat als den Beginn des Vorbereitungsweges — nicht nur, um zu „wissen, was zu glauben ist", sondern um zu lernen, als neuer Christ in Gemeinschaft mit der Kirche und in einer Atmosphäre von Gebet und Liturgie zu leben, bis Sie das erste der Sakramente empfangen.
 
-2. Diese Taufbildung wird durch Videos mit einer durchschnittlichen Dauer von 30 Minuten vermittelt und gliedert sich in 3 Module mit folgenden Themen:
+2. Diese Taufbildung wird durch Videos mit einer durchschnittlichen Dauer von 30 Minuten vermittelt und gliedert sich in 4 Module mit folgenden Themen:
+Kerygma-Modul (Es ist das geistliche Fundament, auf dem der gesamte übrige Weg deines Glaubens aufgebaut wird)
 Modul 1 (Gemeinsamer Grundlagenkurs 1: Grundlagen des katholischen Glaubens)
 Modul 2 (Sakrament der Taufe)
 Modul 3 (Gemeinsamer Grundlagenkurs 2: Sakramente der Heilung)
@@ -695,7 +707,8 @@ A seguir explicamos as características desta formação:
 
 1. Esta formação tem como propósito compreender a importância do Batismo em sua vida. Pense no Batismo como a porta de entrada real para Cristo e sua Igreja, e no catecumenato como o início do caminho de preparação: não apenas para "saber o que crer", mas para aprender a viver como novo cristão, em comunhão com a Igreja e em um ambiente de oração e liturgia, até chegar a receber o primeiro dos sacramentos.
 
-2. Esta formação Batismal é ministrada por meio de vídeos com duração média de 30 minutos cada, organizados em 3 módulos com o seguinte conteúdo:
+2. Esta formação Batismal é ministrada por meio de vídeos com duração média de 30 minutos cada, organizados em 4 módulos com o seguinte conteúdo:
+Módulo Querigma (É o alicerce espiritual sobre o qual se construirá todo o restante do teu caminho de fé)
 Módulo 1 (Tronco Comum 1: Fundamentos da Fé Católica)
 Módulo 2 (Sacramento do Batismo)
 Módulo 3 (Tronco Comum 2: Sacramentos de Cura)
@@ -717,7 +730,8 @@ Di seguito ti spieghiamo le caratteristiche di questa formazione:
 
 1. Questa formazione ha lo scopo di farti comprendere l'importanza del Battesimo nella tua vita. Pensa al Battesimo come alla porta d'ingresso reale a Cristo e alla sua Chiesa, e al catecumenato come all'inizio del cammino di preparazione: non solo per "sapere cosa credere", ma per imparare a vivere da nuovo cristiano, in comunione con la Chiesa e in un clima di preghiera e liturgia, fino a ricevere il primo dei sacramenti.
 
-2. Questa formazione battesimale viene impartita attraverso video della durata media di 30 minuti ciascuno ed è composta da 3 moduli con il seguente programma:
+2. Questa formazione battesimale viene impartita attraverso video della durata media di 30 minuti ciascuno ed è composta da 4 moduli con il seguente programma:
+Modulo Kerygma (È il fondamento spirituale sul quale si costruirà tutto il resto del tuo cammino di fede)
 Modulo 1 (Tronco Comune 1: Fondamenti della Fede Cattolica)
 Modulo 2 (Sacramento del Battesimo)
 Modulo 3 (Tronco Comune 2: Sacramenti di Guarigione)
@@ -741,7 +755,8 @@ A continuación te explicamos las características de esta formación:
 
 1. En la Confirmación, Dios te da de manera más plena el Espíritu Santo para que la fe que recibiste en el Bautismo se vuelva más fuerte, más consciente y más valiente. No es un diploma, sino un envío; no es una despedida, sino una misión. El Espíritu te sella para que pertenezcas más profundamente a Cristo y a su Iglesia, y para que puedas vivir y defender la fe con tu palabra, tu conducta y tu servicio.
 
-2. Esta formación al Sacramento de la Confirmación se imparte mediante videos con duración promedio de 30 minutos cada uno y se integra por 3 módulos con el siguiente temario:
+2. Esta formación al Sacramento de la Confirmación se imparte mediante videos con duración promedio de 30 minutos cada uno y se integra por 4 módulos con el siguiente temario:
+Módulo Kerigma (Es el cimiento espiritual sobre el cual se construirá todo el resto de tu camino de fe)
 Módulo 1 (Tronco Común 1: Fundamentos de la Fe Católica)
 Módulo 2 (Sacramento de la Confirmación)
 Módulo 3 (Tronco Común 2: Sacramentos de Salud)
@@ -763,7 +778,8 @@ The following explains the characteristics of this formation:
 
 1. In Confirmation, God gives you the Holy Spirit more fully so that the faith you received at Baptism becomes stronger, more conscious, and more courageous. It is not a diploma but a sending forth; not a farewell but a mission. The Holy Spirit seals you so that you belong more deeply to Christ and His Church, and so that you can live and defend the faith through your words, your conduct, and your service.
 
-2. This formation for the Sacrament of Confirmation is delivered through videos with an average duration of 30 minutes each, organized into 3 modules covering the following topics:
+2. This formation for the Sacrament of Confirmation is delivered through videos with an average duration of 30 minutes each, organized into 4 modules covering the following topics:
+Kerygma Module (The spiritual foundation upon which the whole rest of your journey of faith will be built)
 Module 1 (Common Core 1: Foundations of the Catholic Faith)
 Module 2 (Sacrament of Confirmation)
 Module 3 (Common Core 2: Sacraments of Healing)
@@ -785,7 +801,8 @@ Voici les caractéristiques de cette formation :
 
 1. Dans la Confirmation, Dieu vous donne l'Esprit Saint de manière plus pleine afin que la foi reçue au Baptême devienne plus forte, plus consciente et plus courageuse. Ce n'est pas un diplôme, mais un envoi ; ce n'est pas un adieu, mais une mission. L'Esprit vous scelle afin que vous apparteniez plus profondément au Christ et à son Église, et que vous puissiez vivre et défendre la foi par votre parole, votre conduite et votre service.
 
-2. Cette formation au Sacrement de la Confirmation est dispensée au moyen de vidéos d'une durée moyenne de 30 minutes chacune, réparties en 3 modules selon le programme suivant :
+2. Cette formation au Sacrement de la Confirmation est dispensée au moyen de vidéos d'une durée moyenne de 30 minutes chacune, réparties en 4 modules selon le programme suivant :
+Module Kérygme (C'est le fondement spirituel sur lequel se construira tout le reste de ton chemin de foi)
 Module 1 (Tronc Commun 1 : Fondements de la Foi Catholique)
 Module 2 (Sacrement de la Confirmation)
 Module 3 (Tronc Commun 2 : Sacrements de Guérison)
@@ -807,7 +824,8 @@ Im Folgenden erläutern wir Ihnen die Merkmale dieser Ausbildung:
 
 1. In der Firmung schenkt Ihnen Gott den Heiligen Geist in noch reicherem Maße, damit der in der Taufe empfangene Glaube stärker, bewusster und mutiger wird. Sie ist kein Diplom, sondern eine Aussendung; kein Abschied, sondern eine Sendung. Der Geist besiegelt Sie, damit Sie tiefer zu Christus und seiner Kirche gehören und den Glauben mit Ihrem Wort, Ihrem Verhalten und Ihrem Dienst leben und verteidigen können.
 
-2. Diese Ausbildung zum Sakrament der Firmung wird durch Videos mit einer durchschnittlichen Dauer von 30 Minuten vermittelt und gliedert sich in 3 Module mit folgenden Themen:
+2. Diese Ausbildung zum Sakrament der Firmung wird durch Videos mit einer durchschnittlichen Dauer von 30 Minuten vermittelt und gliedert sich in 4 Module mit folgenden Themen:
+Kerygma-Modul (Es ist das geistliche Fundament, auf dem der gesamte übrige Weg deines Glaubens aufgebaut wird)
 Modul 1 (Gemeinsamer Grundlagenkurs 1: Grundlagen des katholischen Glaubens)
 Modul 2 (Sakrament der Firmung)
 Modul 3 (Gemeinsamer Grundlagenkurs 2: Sakramente der Heilung)
@@ -829,7 +847,8 @@ A seguir explicamos as características desta formação:
 
 1. Na Crisma, Deus lhe dá de maneira mais plena o Espírito Santo para que a fé recebida no Batismo se torne mais forte, mais consciente e mais corajosa. Não é um diploma, mas um envio; não é uma despedida, mas uma missão. O Espírito o(a) sela para que pertença mais profundamente a Cristo e à sua Igreja, e para que possa viver e defender a fé com sua palavra, sua conduta e seu serviço.
 
-2. Esta formação para o Sacramento da Crisma é ministrada por meio de vídeos com duração média de 30 minutos cada, organizados em 3 módulos com o seguinte conteúdo:
+2. Esta formação para o Sacramento da Crisma é ministrada por meio de vídeos com duração média de 30 minutos cada, organizados em 4 módulos com o seguinte conteúdo:
+Módulo Querigma (É o alicerce espiritual sobre o qual se construirá todo o restante do teu caminho de fé)
 Módulo 1 (Tronco Comum 1: Fundamentos da Fé Católica)
 Módulo 2 (Sacramento da Crisma)
 Módulo 3 (Tronco Comum 2: Sacramentos de Cura)
@@ -851,7 +870,8 @@ Di seguito ti spieghiamo le caratteristiche di questa formazione:
 
 1. Nella Cresima, Dio ti dona in modo più pieno lo Spirito Santo affinché la fede ricevuta nel Battesimo diventi più forte, più consapevole e più coraggiosa. Non è un diploma, ma un invio; non è un addio, ma una missione. Lo Spirito ti sigilla affinché tu appartenga più profondamente a Cristo e alla sua Chiesa, e affinché tu possa vivere e difendere la fede con la tua parola, la tua condotta e il tuo servizio.
 
-2. Questa formazione al Sacramento della Cresima viene impartita attraverso video della durata media di 30 minuti ciascuno ed è composta da 3 moduli con il seguente programma:
+2. Questa formazione al Sacramento della Cresima viene impartita attraverso video della durata media di 30 minuti ciascuno ed è composta da 4 moduli con il seguente programma:
+Modulo Kerygma (È il fondamento spirituale sul quale si costruirà tutto il resto del tuo cammino di fede)
 Modulo 1 (Tronco Comune 1: Fondamenti della Fede Cattolica)
 Modulo 2 (Sacramento della Cresima)
 Modulo 3 (Tronco Comune 2: Sacramenti di Guarigione)
@@ -875,7 +895,8 @@ A continuación te explicamos las características de esta formación:
 
 1. El Sacramento de la Eucaristía (Primera Comunión) es importante porque completa la iniciación cristiana, une íntimamente con Cristo, alimenta la vida de gracia y fortalece la comunión con la Iglesia. La catequesis que la prepara debe ser clara en la fe eucarística, incluir la Reconciliación, respetar la edad y la capacidad del catecúmeno. Es un verdadero encuentro con Jesús y el comienzo de una vida espiritual cristiana más profunda.
 
-2. Esta formación para la Primera Comunión se imparte mediante videos con duración promedio de 30 minutos cada uno y se integra por 3 módulos con el siguiente temario:
+2. Esta formación para la Primera Comunión se imparte mediante videos con duración promedio de 30 minutos cada uno y se integra por 4 módulos con el siguiente temario:
+Módulo Kerigma (Es el cimiento espiritual sobre el cual se construirá todo el resto de tu camino de fe)
 Módulo 1 (Tronco Común 1: Fundamentos de la Fe Católica)
 Módulo 2 (Sacramento de la Eucaristía)
 Módulo 3 (Tronco Común 2: Sacramentos de Salud)
@@ -897,7 +918,8 @@ The following explains the characteristics of this formation:
 
 1. The Sacrament of the Eucharist (First Communion) is important because it completes Christian initiation, creates an intimate union with Christ, nourishes the life of grace, and strengthens communion with the Church. The catechesis that prepares for it must be clear in Eucharistic faith, include Reconciliation, and respect the age and capacity of the catechumen. It is a true encounter with Jesus and the beginning of a deeper Christian spiritual life.
 
-2. This formation for First Communion is delivered through videos with an average duration of 30 minutes each, organized into 3 modules covering the following topics:
+2. This formation for First Communion is delivered through videos with an average duration of 30 minutes each, organized into 4 modules covering the following topics:
+Kerygma Module (The spiritual foundation upon which the whole rest of your journey of faith will be built)
 Module 1 (Common Core 1: Foundations of the Catholic Faith)
 Module 2 (Sacrament of the Eucharist)
 Module 3 (Common Core 2: Sacraments of Healing)
@@ -919,7 +941,8 @@ Voici les caractéristiques de cette formation :
 
 1. Le Sacrement de l'Eucharistie (Première Communion) est important car il achève l'initiation chrétienne, unit intimement au Christ, nourrit la vie de grâce et fortifie la communion avec l'Église. La catéchèse qui la prépare doit être claire sur la foi eucharistique, inclure la Réconciliation, et respecter l'âge et les capacités du catéchumène. C'est une véritable rencontre avec Jésus et le début d'une vie spirituelle chrétienne plus profonde.
 
-2. Cette formation à la Première Communion est dispensée au moyen de vidéos d'une durée moyenne de 30 minutes chacune, réparties en 3 modules selon le programme suivant :
+2. Cette formation à la Première Communion est dispensée au moyen de vidéos d'une durée moyenne de 30 minutes chacune, réparties en 4 modules selon le programme suivant :
+Module Kérygme (C'est le fondement spirituel sur lequel se construira tout le reste de ton chemin de foi)
 Module 1 (Tronc Commun 1 : Fondements de la Foi Catholique)
 Module 2 (Sacrement de l'Eucharistie)
 Module 3 (Tronc Commun 2 : Sacrements de Guérison)
@@ -941,7 +964,8 @@ Im Folgenden erläutern wir Ihnen die Merkmale dieser Ausbildung:
 
 1. Das Sakrament der Eucharistie (Erstkommunion) ist wichtig, weil es die christliche Initiation vollendet, innig mit Christus vereint, das Gnadenleben nährt und die Gemeinschaft mit der Kirche stärkt. Die Katechese, die darauf vorbereitet, muss im eucharistischen Glauben klar sein, die Versöhnung einschließen und das Alter und die Fähigkeiten des Katechumenen berücksichtigen. Es ist eine wahre Begegnung mit Jesus und der Beginn eines tieferen christlichen geistlichen Lebens.
 
-2. Diese Ausbildung zur Erstkommunion wird durch Videos mit einer durchschnittlichen Dauer von 30 Minuten vermittelt und gliedert sich in 3 Module mit folgenden Themen:
+2. Diese Ausbildung zur Erstkommunion wird durch Videos mit einer durchschnittlichen Dauer von 30 Minuten vermittelt und gliedert sich in 4 Module mit folgenden Themen:
+Kerygma-Modul (Es ist das geistliche Fundament, auf dem der gesamte übrige Weg deines Glaubens aufgebaut wird)
 Modul 1 (Gemeinsamer Grundlagenkurs 1: Grundlagen des katholischen Glaubens)
 Modul 2 (Sakrament der Eucharistie)
 Modul 3 (Gemeinsamer Grundlagenkurs 2: Sakramente der Heilung)
@@ -963,7 +987,8 @@ A seguir explicamos as características desta formação:
 
 1. O Sacramento da Eucaristia (Primeira Comunhão) é importante porque completa a iniciação cristã, une intimamente a Cristo, alimenta a vida de graça e fortalece a comunhão com a Igreja. A catequese que a prepara deve ser clara na fé eucarística, incluir a Reconciliação e respeitar a idade e a capacidade do catecúmeno. É um verdadeiro encontro com Jesus e o início de uma vida espiritual cristã mais profunda.
 
-2. Esta formação para a Primeira Comunhão é ministrada por meio de vídeos com duração média de 30 minutos cada, organizados em 3 módulos com o seguinte conteúdo:
+2. Esta formação para a Primeira Comunhão é ministrada por meio de vídeos com duração média de 30 minutos cada, organizados em 4 módulos com o seguinte conteúdo:
+Módulo Querigma (É o alicerce espiritual sobre o qual se construirá todo o restante do teu caminho de fé)
 Módulo 1 (Tronco Comum 1: Fundamentos da Fé Católica)
 Módulo 2 (Sacramento da Eucaristia)
 Módulo 3 (Tronco Comum 2: Sacramentos de Cura)
@@ -985,7 +1010,8 @@ Di seguito ti spieghiamo le caratteristiche di questa formazione:
 
 1. Il Sacramento dell'Eucaristia (Prima Comunione) è importante perché completa l'iniziazione cristiana, unisce intimamente a Cristo, nutre la vita di grazia e rafforza la comunione con la Chiesa. La catechesi che la prepara deve essere chiara nella fede eucaristica, includere la Riconciliazione, rispettare l'età e la capacità del catecumeno. È un vero incontro con Gesù e l'inizio di una vita spirituale cristiana più profonda.
 
-2. Questa formazione per la Prima Comunione viene impartita attraverso video della durata media di 30 minuti ciascuno ed è composta da 3 moduli con il seguente programma:
+2. Questa formazione per la Prima Comunione viene impartita attraverso video della durata media di 30 minuti ciascuno ed è composta da 4 moduli con il seguente programma:
+Modulo Kerygma (È il fondamento spirituale sul quale si costruirà tutto il resto del tuo cammino di fede)
 Modulo 1 (Tronco Comune 1: Fondamenti della Fede Cattolica)
 Modulo 2 (Sacramento dell'Eucaristia)
 Modulo 3 (Tronco Comune 2: Sacramenti di Guarigione)
@@ -1009,7 +1035,8 @@ A continuación te explicamos las características de esta formación:
 
 1. Los sacramentos de la iniciación cristiana (Bautismo, Confirmación y Eucaristía) son el camino completo por el cual Dios te hace entrar de verdad en la vida de Cristo y de la Iglesia: por el Bautismo se "entra" en la Iglesia como por una puerta y se te da una vida nueva; por la Confirmación recibes una unión más perfecta con la Iglesia y una fuerza especial del Espíritu Santo para ser testigo de Cristo con palabra y obra; y por la Eucaristía la iniciación queda completa, porque allí recibes el alimento de la vida nueva y participas del sacrificio de Cristo. Por eso, la catequesis del catecumenado no es solo información: es un proceso de formación para que tu conversión llegue a madurar y puedas recibir el don de Dios en estos sacramentos, viviendo ya como miembro de su Cuerpo y aprendiendo a relacionarte con Dios mediante la fe, la oración y la liturgia.
 
-2. Esta formación se imparte en 3 módulos mediante videos con duración promedio de 30 minutos cada uno con el siguiente temario:
+2. Esta formación se imparte en 4 módulos mediante videos con duración promedio de 30 minutos cada uno con el siguiente temario:
+Módulo Kerigma (Es el cimiento espiritual sobre el cual se construirá todo el resto de tu camino de fe)
 Módulo 1 (Tronco Común 1: Fundamentos de la Fe Católica)
 Módulo 2 (Sacramento que recibirás. Si piensas recibir más de 1 sacramento, sólo cursarás los módulos 1 y 2 una única vez y 1 módulo correspondiente a cada sacramento que recibirás)
 Módulo 3 (Tronco Común 2: Sacramentos de Salud)
@@ -1031,7 +1058,8 @@ The following explains the characteristics of this formation:
 
 1. The sacraments of Christian initiation — Baptism, Confirmation, and Eucharist — form the complete path through which God truly brings you into the life of Christ and the Church: through Baptism you "enter" the Church as through a door and receive new life; through Confirmation you receive a more perfect union with the Church and a special strength of the Holy Spirit to be a witness to Christ in word and deed; and through the Eucharist initiation is brought to completion, because there you receive the nourishment of new life and participate in the sacrifice of Christ. For this reason, catechesis during the catechumenate is not merely information: it is a process of formation so that your conversion may mature and you can receive God's gift in these sacraments, already living as a member of His Body and learning to relate to God through faith, prayer, and the liturgy.
 
-2. This formation is delivered in 3 modules through videos with an average duration of 30 minutes each, covering the following topics:
+2. This formation is delivered in 4 modules through videos with an average duration of 30 minutes each, covering the following topics:
+Kerygma Module (The spiritual foundation upon which the whole rest of your journey of faith will be built)
 Module 1 (Common Core 1: Foundations of the Catholic Faith)
 Module 2 (The Sacrament you will receive. If you plan to receive more than one sacrament, you will complete Modules 1 and 2 only once, plus one module corresponding to each sacrament you will receive.)
 Module 3 (Common Core 2: Sacraments of Healing)
@@ -1053,7 +1081,8 @@ Voici les caractéristiques de cette formation :
 
 1. Les sacrements de l'initiation chrétienne — Baptême, Confirmation et Eucharistie — forment le chemin complet par lequel Dieu vous fait véritablement entrer dans la vie du Christ et de l'Église : par le Baptême, vous « entrez » dans l'Église comme par une porte et recevez une vie nouvelle ; par la Confirmation, vous recevez une union plus parfaite avec l'Église et une force particulière de l'Esprit Saint pour être témoin du Christ en parole et en acte ; et par l'Eucharistie, l'initiation s'achève, car vous y recevez l'aliment de la vie nouvelle et participez au sacrifice du Christ. C'est pourquoi la catéchèse du catéchuménat n'est pas seulement une information : c'est un processus de formation pour que votre conversion parvienne à maturité et que vous puissiez recevoir le don de Dieu dans ces sacrements, en vivant déjà comme membre de son Corps et en apprenant à vous relier à Dieu par la foi, la prière et la liturgie.
 
-2. Cette formation est dispensée en 3 modules au moyen de vidéos d'une durée moyenne de 30 minutes chacune, selon le programme suivant :
+2. Cette formation est dispensée en 4 modules au moyen de vidéos d'une durée moyenne de 30 minutes chacune, selon le programme suivant :
+Module Kérygme (C'est le fondement spirituel sur lequel se construira tout le reste de ton chemin de foi)
 Module 1 (Tronc Commun 1 : Fondements de la Foi Catholique)
 Module 2 (Le sacrement que vous recevrez. Si vous prévoyez de recevoir plus d'un sacrement, vous ne suivrez les modules 1 et 2 qu'une seule fois, plus un module correspondant à chaque sacrement que vous recevrez.)
 Module 3 (Tronc Commun 2 : Sacrements de Guérison)
@@ -1075,7 +1104,8 @@ Im Folgenden erläutern wir Ihnen die Merkmale dieser Ausbildung:
 
 1. Die Sakramente der christlichen Initiation — Taufe, Firmung und Eucharistie — bilden den vollständigen Weg, auf dem Gott Sie wirklich in das Leben Christi und der Kirche hineinführt: durch die Taufe „treten Sie ein" in die Kirche wie durch eine Tür und empfangen neues Leben; durch die Firmung empfangen Sie eine vollkommenere Vereinigung mit der Kirche und eine besondere Kraft des Heiligen Geistes, um Zeuge Christi in Wort und Tat zu sein; und durch die Eucharistie wird die Initiation vollendet, denn dort empfangen Sie die Nahrung des neuen Lebens und nehmen am Opfer Christi teil. Deshalb ist die Katechese des Katechumenats nicht nur Information: Sie ist ein Bildungsprozess, damit Ihre Bekehrung reifen kann und Sie das Geschenk Gottes in diesen Sakramenten empfangen können, bereits als Glied seines Leibes lebend und lernend, sich durch Glauben, Gebet und Liturgie auf Gott zu beziehen.
 
-2. Diese Ausbildung wird in 3 Modulen durch Videos mit einer durchschnittlichen Dauer von 30 Minuten vermittelt, mit folgenden Themen:
+2. Diese Ausbildung wird in 4 Modulen durch Videos mit einer durchschnittlichen Dauer von 30 Minuten vermittelt, mit folgenden Themen:
+Kerygma-Modul (Es ist das geistliche Fundament, auf dem der gesamte übrige Weg deines Glaubens aufgebaut wird)
 Modul 1 (Gemeinsamer Grundlagenkurs 1: Grundlagen des katholischen Glaubens)
 Modul 2 (Das Sakrament, das Sie empfangen werden. Wenn Sie mehr als ein Sakrament empfangen möchten, absolvieren Sie die Module 1 und 2 nur einmal, zusätzlich zu einem Modul für jedes Sakrament, das Sie empfangen werden.)
 Modul 3 (Gemeinsamer Grundlagenkurs 2: Sakramente der Heilung)
@@ -1097,7 +1127,8 @@ A seguir explicamos as características desta formação:
 
 1. Os sacramentos da iniciação cristã (Batismo, Crisma e Eucaristia) são o caminho completo pelo qual Deus faz você entrar de verdade na vida de Cristo e da Igreja: pelo Batismo você "entra" na Igreja como por uma porta e recebe uma vida nova; pela Crisma você recebe uma união mais perfeita com a Igreja e uma força especial do Espírito Santo para ser testemunha de Cristo em palavra e obra; e pela Eucaristia a iniciação fica completa, porque ali você recebe o alimento da vida nova e participa do sacrifício de Cristo. Por isso, a catequese do catecumenato não é apenas informação: é um processo de formação para que sua conversão amadureça e você possa receber o dom de Deus nesses sacramentos, já vivendo como membro do seu Corpo e aprendendo a se relacionar com Deus por meio da fé, da oração e da liturgia.
 
-2. Esta formação é ministrada em 3 módulos por meio de vídeos com duração média de 30 minutos cada, com o seguinte conteúdo:
+2. Esta formação é ministrada em 4 módulos por meio de vídeos com duração média de 30 minutos cada, com o seguinte conteúdo:
+Módulo Querigma (É o alicerce espiritual sobre o qual se construirá todo o restante do teu caminho de fé)
 Módulo 1 (Tronco Comum 1: Fundamentos da Fé Católica)
 Módulo 2 (O Sacramento que você receberá. Se você pretende receber mais de 1 sacramento, cursará os módulos 1 e 2 apenas uma vez, mais 1 módulo correspondente a cada sacramento que receberá)
 Módulo 3 (Tronco Comum 2: Sacramentos de Cura)
@@ -1119,7 +1150,8 @@ Di seguito ti spieghiamo le caratteristiche di questa formazione:
 
 1. I sacramenti dell'iniziazione cristiana (Battesimo, Cresima ed Eucaristia) sono il cammino completo attraverso il quale Dio ti fa entrare veramente nella vita di Cristo e della Chiesa: attraverso il Battesimo "entri" nella Chiesa come attraverso una porta e ricevi una vita nuova; attraverso la Cresima ricevi un'unione più perfetta con la Chiesa e una forza speciale dello Spirito Santo per essere testimone di Cristo con la parola e con l'opera; e attraverso l'Eucaristia l'iniziazione si completa, perché lì ricevi il nutrimento della vita nuova e partecipi al sacrificio di Cristo. Per questo, la catechesi del catecumenato non è solo informazione: è un processo di formazione affinché la tua conversione giunga a maturazione e tu possa ricevere il dono di Dio in questi sacramenti, vivendo già come membro del suo Corpo e imparando a relazionarti con Dio mediante la fede, la preghiera e la liturgia.
 
-2. Questa formazione viene impartita in 3 moduli attraverso video della durata media di 30 minuti ciascuno con il seguente programma:
+2. Questa formazione viene impartita in 4 moduli attraverso video della durata media di 30 minuti ciascuno con il seguente programma:
+Modulo Kerygma (È il fondamento spirituale sul quale si costruirà tutto il resto del tuo cammino di fede)
 Modulo 1 (Tronco Comune 1: Fondamenti della Fede Cattolica)
 Modulo 2 (Il Sacramento che riceverai. Se pensi di ricevere più di 1 sacramento, frequenterai i moduli 1 e 2 una sola volta, più 1 modulo corrispondente a ciascun sacramento che riceverai)
 Modulo 3 (Tronco Comune 2: Sacramenti di Guarigione)
@@ -2349,6 +2381,7 @@ const videoPruebaUrls=(section)=>({
   pt:`/videos-prueba/pt/${section}.mp4`, it:`/videos-prueba/it/${section}.mp4`,
 });
 const SEC_META={
+  kerigma:   {es:"Kerigma",                       en:"Kerygma",                    icon:"__flame__", cert:false, videos:KERIGMA, videoPrueba:videoPruebaUrls("tc1")},
   tc1:       {es:"Tronco Común 1",               en:"Common Core 1",              icon:"✝️",  cert:false, videos:TC1_ALL, videoPrueba:videoPruebaUrls("tc1")},
   bautismo:  {es:"Bautismo",                      en:"Baptism",                    icon:"__bautismo_img__",cert:true,videos:COURSES.bautismo, videoPrueba:videoPruebaUrls("bautismo")},
   confirmacion:{es:"Confirmación",                en:"Confirmation",               icon:"__confirmacion_img__",cert:true,videos:COURSES.confirmacion, videoPrueba:videoPruebaUrls("confirmacion")},
@@ -2388,6 +2421,9 @@ function buildSeq(uType, sacs){
   if(uType==="catequista") return ["catequista"];
   const s=["tc1"];
   if(uType==="catecumeno"){
+    // Módulo 0: el Kerigma va ANTES de TC1 y una sola vez, sin importar cuántos
+    // sacramentos elija. No aplica a papás ni padrinos.
+    s.unshift("kerigma");
     ["bautismo","confirmacion","primera_comunion"].forEach(x=>{if(sacs.includes(x))s.push(x);});
   } else if(uType==="prebautismal") s.push("prebautismal");
   else if(uType==="padrino") s.push("bautismo");
