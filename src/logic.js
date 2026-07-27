@@ -96,3 +96,33 @@ export function formatSerie(iso, sac, anio, consecutivo) {
   const n  = String(Math.abs(Math.trunc(Number(consecutivo) || 0)) % 1000000).padStart(6, "0");
   return `CAT-${p2}-${p3}-${y}-${n}`;
 }
+
+// ─── Selector de país → cuota ────────────────────────────────────────────
+// Coerción numérica segura: null/""/inválido → 0 (evita que un NaN llegue al
+// precio mostrado o cobrado).
+function num(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
+
+// Normaliza una fila de la tabla `cuotasporpais` de Supabase al objeto de cuota
+// interno { b, c, p, pre, cat, pad, cur }. Los importes se parsean de forma
+// segura; la moneda cae a "USD" si falta.
+export function cuotaFromRow(row) {
+  return {
+    b:   num(row?.bautismo),
+    c:   num(row?.confirmacion),
+    p:   num(row?.primera_comunion),
+    pre: num(row?.prebautismal),
+    cat: num(row?.catequista),
+    pad: num(row?.padrino),
+    cur: row?.moneda || "USD",
+  };
+}
+
+// Resuelve la cuota de un país desde una tabla de cuotas; null si no existe
+// (el registro no puede continuar sin una cuota válida para el país).
+export function resolverCuota(country, cuotas) {
+  if (!country || !cuotas) return null;
+  return cuotas[country] ?? null;
+}

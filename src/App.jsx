@@ -22,7 +22,7 @@ const iconoBautismo = "/iconobautismo.svg";
 const iconoConfirmacion = "/iconoconfirmacion.svg";
 import { createClient } from "@supabase/supabase-js";
 import { buildSeq as buildSeqCore, translate as translateCore, pick as pickCore,
-  calcularCuotaPais, aplicarBeca, formatSerie } from "./logic.js";
+  calcularCuotaPais, aplicarBeca, formatSerie, cuotaFromRow, resolverCuota } from "./logic.js";
 
 // ─── SUPABASE (producción) ─────────────────────────────────────────
 // Configura VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY en tu archivo .env
@@ -3735,7 +3735,7 @@ function RegisterForm({userType,sacraments,onNext,onBack}){
 
   const country=d.country||"";
   const docInfo=CDOCS[country]||{l:T("Documento Oficial","Official Document","Document officiel","Amtliches Dokument","Documento Oficial","Documento ufficiale"),f:"",ph:""};
-  const cuota=CUOTAS[country];
+  const cuota=resolverCuota(country,CUOTAS);
   
   const getPriceBreakdown=()=>{
     if(!cuota) return null;
@@ -6685,10 +6685,7 @@ export default function App(){
     try{
       const {data,error}=await supabase.from("cuotasporpais").select("*").eq("activo",true);
       if(error||!data?.length){console.error("Catecumen: usando cuotas de respaldo local",error);return;}
-      data.forEach(r=>{
-        CUOTAS[r.pais]={b:+r.bautismo,c:+r.confirmacion,p:+r.primera_comunion,
-          pre:+r.prebautismal,cat:+r.catequista,pad:+r.padrino,cur:r.moneda};
-      });
+      data.forEach(r=>{ CUOTAS[r.pais]=cuotaFromRow(r); });
     }catch(e){console.error("Catecumen: usando cuotas de respaldo local",e);}
   })();},[]);
 

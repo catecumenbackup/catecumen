@@ -1,7 +1,8 @@
 // Pruebas de la lógica pura del curso (Vitest).  Ejecutar: npm run test
 import { describe, it, expect } from "vitest";
 import { buildSeq, translate, pick,
-  redondearCuota, calcularCuotaPais, aplicarBeca, PPP_TIER_USD, formatSerie } from "./logic.js";
+  redondearCuota, calcularCuotaPais, aplicarBeca, PPP_TIER_USD, formatSerie,
+  cuotaFromRow, resolverCuota } from "./logic.js";
 
 describe("buildSeq — secuencia del curso", () => {
   it("catequista solo cursa su módulo, sin TC1/TC2/Kerigma", () => {
@@ -186,5 +187,39 @@ describe("formatSerie — serie de la constancia (CAT-ISO-SAC-AÑO-NNNNNN)", () 
     expect(s.startsWith("CAT-")).toBe(true);
     expect(s.split("-")).toHaveLength(5);
     expect(s).toBe("CAT-BR-EUC-2027-999999");
+  });
+});
+
+describe("cuotaFromRow — normaliza fila de cuotasporpais (Supabase)", () => {
+  it("mapea los campos y parsea a número", () => {
+    const q = cuotaFromRow({
+      pais: "México", bautismo: "1160", confirmacion: "1160", primera_comunion: "1160",
+      prebautismal: "700", catequista: "890", padrino: "700", moneda: "MXN",
+    });
+    expect(q).toEqual({ b: 1160, c: 1160, p: 1160, pre: 700, cat: 890, pad: 700, cur: "MXN" });
+  });
+  it("campos faltantes o inválidos → 0 (nunca NaN)", () => {
+    const q = cuotaFromRow({ pais: "X", bautismo: null, confirmacion: undefined, primera_comunion: "" });
+    expect(q.b).toBe(0);
+    expect(q.c).toBe(0);
+    expect(q.p).toBe(0);
+    expect(Number.isNaN(q.b)).toBe(false);
+  });
+  it("moneda ausente cae a USD", () => {
+    expect(cuotaFromRow({ pais: "X" }).cur).toBe("USD");
+  });
+});
+
+describe("resolverCuota — país seleccionado → cuota", () => {
+  const tabla = { "México": { b: 1160, cur: "MXN" }, "Estados Unidos": { b: 130, cur: "USD" } };
+  it("devuelve la cuota del país existente", () => {
+    expect(resolverCuota("México", tabla)).toEqual({ b: 1160, cur: "MXN" });
+  });
+  it("país no listado → null (no se puede continuar sin cuota)", () => {
+    expect(resolverCuota("Narnia", tabla)).toBeNull();
+  });
+  it("país vacío o tabla nula → null", () => {
+    expect(resolverCuota("", tabla)).toBeNull();
+    expect(resolverCuota("México", null)).toBeNull();
   });
 });
