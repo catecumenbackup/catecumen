@@ -251,7 +251,7 @@ export function ConsultarDudasButton({contexto="Consulta de dudas",size="sec"}){
   return(
     <div style={{display:"inline-block"}}>
       <button onClick={()=>setOpen(true)} style={{...BTN(size),fontSize:12}}>
-        💬 {T("Consultar dudas","Ask a question","Poser une question","Frage stellen","Tirar dúvidas","Fai una domanda")}
+        💬 {T("Consultar a tu catequista","Ask your catechist","Consulter votre catéchiste","Deinen Katecheten fragen","Consultar seu catequista","Consulta il tuo catechista")}
       </button>
       {open&&<SoporteModal contexto={contexto} onClose={()=>setOpen(false)}/>}
     </div>
@@ -264,7 +264,7 @@ export function ConsultarIAButton({contexto="",size="sec"}){
   return(
     <div style={{display:"inline-block"}}>
       <button onClick={()=>setOpen(true)} style={{...BTN(size),fontSize:12}}>
-        ✨ {T("Consultar IA","Ask AI","Consulter l'IA","KI fragen","Consultar IA","Consulta IA")}
+        ✨ {T("Consultar a Magisterium AI","Ask Magisterium AI","Consulter Magisterium AI","Magisterium AI fragen","Consultar o Magisterium AI","Consulta Magisterium AI")}
       </button>
       {open&&(
         <Suspense fallback={<div style={OVERLAY}><div style={{color:C.gold,fontFamily:"'Cinzel',serif"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div></div>}>
