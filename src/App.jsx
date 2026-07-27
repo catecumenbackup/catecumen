@@ -29,11 +29,12 @@ import { FlameIcon, CalizIcon, iconoBautismo, iconoConfirmacion } from "./compon
 import SecIcon from "./components/SecIcon.jsx";
 import { SoporteLink } from "./components/support.jsx";
 import { SEC_META, Q, TEST_MODE, isSectionDone, videoState } from "./data/course.js";
-import { FRow, Input, PasswordInput } from "./components/fields.jsx";
+import { FRow, Input, PasswordInput, PhoneField, CountrySelect } from "./components/fields.jsx";
+import { CDOCS, COUNTRIES } from "./data/countries.js";
 // Carga diferida: estas pantallas solo se descargan al abrir su pestaña
 // (quedan fuera del bundle inicial, sin añadir peticiones a la ruta crítica).
-const AgendaTab = lazy(() => import("./components/AgendaTab.jsx"));
-const MensajesTab = lazy(() => import("./components/MensajesTab.jsx"));
+// AgendaTab y MensajesTab ahora se cargan (lazy) dentro de Dashboard.jsx,
+// su único consumidor; ya no se importan aquí.
 const EncuadreModal = lazy(() => import("./components/EncuadreModal.jsx"));
 const LoginModal = lazy(() => import("./components/LoginModal.jsx"));
 const ValidarConstanciaModal = lazy(() => import("./components/ValidarConstanciaModal.jsx"));
@@ -43,6 +44,8 @@ const VideoModal = lazy(() => import("./components/VideoModal.jsx"));
 const EncuestaVideoModal = lazy(() => import("./components/EncuestaVideoModal.jsx"));
 const EvalModal = lazy(() => import("./components/EvalModal.jsx"));
 const ResultModal = lazy(() => import("./components/ResultModal.jsx"));
+const CertificatesModal = lazy(() => import("./components/CertificatesModal.jsx"));
+const Dashboard = lazy(() => import("./components/Dashboard.jsx"));
 import { C, BTN, INP, LBL, checkStyle, radioStyle, CARD, MODAL, FONT_READ, READ, OVERLAY } from "./ui.js";
 
 // El cliente Supabase vive en ./supabaseClient.js y el runtime i18n
@@ -100,97 +103,13 @@ function FlagImg({code,size=18}){
 
 // Estilos base (tema, botones, tarjetas, modales, lectura…) en src/ui.js.
 // Se importan arriba junto con el resto de módulos.
-const genCode=()=>[...Array(24)].map(()=>"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[Math.floor(Math.random()*36)]).join("").match(/.{6}/g).join("-");
-
-// Carga perezosa de una librería externa (UMD) por CDN. Devuelve una promesa.
-function cargarScript(src){
-  return new Promise((resolve,reject)=>{
-    if([...document.scripts].some(s=>s.src===src)) return resolve();
-    const s=document.createElement("script");
-    s.src=src; s.async=true; s.onload=()=>resolve(); s.onerror=()=>reject(new Error("No se pudo cargar "+src));
-    document.head.appendChild(s);
-  });
-}
-const JSPDF_CDN="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
-// Convierte una imagen (URL del sitio) a dataURL para incrustarla en el PDF.
-async function imgToDataURL(src){
-  try{
-    const res=await fetch(src); const blob=await res.blob();
-    return await new Promise((resolve,reject)=>{
-      const r=new FileReader(); r.onload=()=>resolve(r.result); r.onerror=reject; r.readAsDataURL(blob);
-    });
-  }catch(e){ console.error("imgToDataURL:",e); return ""; }
-}
-const QRCODE_CDN="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";
-// Genera un dataURL PNG de un código QR usando la librería qrcodejs (UMD).
-async function generarQRDataURL(texto,size=140){
-  await cargarScript(QRCODE_CDN);
-  return new Promise((resolve)=>{
-    const cont=document.createElement("div"); cont.style.display="none"; document.body.appendChild(cont);
-    /* global QRCode */
-    new QRCode(cont,{text:texto,width:size,height:size,correctLevel:QRCode.CorrectLevel.M});
-    setTimeout(()=>{
-      const img=cont.querySelector("img"), cv=cont.querySelector("canvas");
-      const url=img?.src||cv?.toDataURL("image/png")||"";
-      document.body.removeChild(cont); resolve(url);
-    },120);
-  });
-}
+// genCode/cargarScript/imgToDataURL/generarQRDataURL + CDNs viven en
+// ./components/CertificatesModal.jsx (su único consumidor).
 
 // ─── CLAVES TELEFÓNICAS INTERNACIONALES ───────────────────────────
-const PHONE_CODES=[
-  {c:"Antigua y Barbuda",code:"+1 268"},{c:"Argentina",code:"+54"},
-  {c:"Aruba",code:"+297"},{c:"Bahamas",code:"+1 242"},
-  {c:"Barbados",code:"+1 246"},{c:"Belice",code:"+501"},
-  {c:"Bolivia",code:"+591"},{c:"Brasil",code:"+55"},
-  {c:"Canadá",code:"+1"},{c:"Chile",code:"+56"},
-  {c:"Colombia",code:"+57"},{c:"Costa Rica",code:"+506"},
-  {c:"Cuba",code:"+53"},{c:"Curaçao",code:"+599"},
-  {c:"Dominica",code:"+1 767"},{c:"Ecuador",code:"+593"},
-  {c:"El Salvador",code:"+503"},{c:"España",code:"+34"},
-  {c:"Estados Unidos",code:"+1"},{c:"Granada",code:"+1 473"},
-  {c:"Guatemala",code:"+502"},{c:"Guyana",code:"+592"},
-  {c:"Haití",code:"+509"},{c:"Honduras",code:"+504"},
-  {c:"Jamaica",code:"+1 876"},{c:"México",code:"+52"},
-  {c:"Nicaragua",code:"+505"},{c:"Panamá",code:"+507"},
-  {c:"Paraguay",code:"+595"},{c:"Perú",code:"+51"},
-  {c:"Puerto Rico",code:"+1 787"},{c:"Rep. Dominicana",code:"+1 809"},
-  {c:"San Cristóbal y Nieves",code:"+1 869"},{c:"San Vicente",code:"+1 784"},
-  {c:"Santa Lucía",code:"+1 758"},{c:"Surinam",code:"+597"},
-  {c:"Trinidad y Tobago",code:"+1 868"},{c:"Uruguay",code:"+598"},
-  {c:"Venezuela",code:"+58"},
-];
 
 // ─── DOCUMENTOS POR PAÍS ──────────────────────────────────────────
-const CDOCS={
-  "México":{l:"CURP",f:"Clave Única de Registro de Población",ph:"LOAM931018HDFRRS01"},
-  "Argentina":{l:"DNI",f:"Documento Nacional de Identidad",ph:"12.345.678"},
-  "España":{l:"DNI/NIE",f:"Documento Nacional de Identidad / NIE",ph:"12345678Z"},
-  "Colombia":{l:"Cédula",f:"Cédula de Ciudadanía",ph:"1234567890"},
-  "Chile":{l:"RUT",f:"Rol Único Tributario",ph:"12.345.678-9"},
-  "Perú":{l:"DNI",f:"Documento Nacional de Identidad",ph:"12345678"},
-  "Venezuela":{l:"CI",f:"Cédula de Identidad",ph:"V-12345678"},
-  "Ecuador":{l:"CI",f:"Cédula de Identidad",ph:"1234567890"},
-  "Bolivia":{l:"CI",f:"Cédula de Identidad",ph:"1234567"},
-  "Paraguay":{l:"CI",f:"Cédula de Identidad",ph:"1234567"},
-  "Uruguay":{l:"CI",f:"Cédula de Identidad",ph:"1.234.567-8"},
-  "Brasil":{l:"CPF",f:"Cadastro de Pessoas Físicas",ph:"123.456.789-09"},
-  "Cuba":{l:"CI",f:"Carnet de Identidad",ph:"90123456789"},
-  "Rep. Dominicana":{l:"CIE",f:"Cédula de Identidad y Electoral",ph:"001-1234567-1"},
-  "Guatemala":{l:"DPI",f:"Documento Personal de Identificación",ph:"1234 12345 1234"},
-  "Honduras":{l:"DNI",f:"Tarjeta de Identidad Nacional",ph:"0101-1990-12345"},
-  "El Salvador":{l:"DUI",f:"Documento Único de Identidad",ph:"00123456-7"},
-  "Nicaragua":{l:"CI",f:"Cédula de Identidad Ciudadana",ph:"001-010190-0001X"},
-  "Costa Rica":{l:"CI",f:"Cédula de Identidad",ph:"1-0123-0456"},
-  "Panamá":{l:"CI",f:"Cédula de Identidad Personal",ph:"8-123-4567"},
-  "Estados Unidos":{l:"SSN",f:"Social Security Number o State ID",ph:"123-45-6789"},
-  "Canadá":{l:"SIN",f:"Social Insurance Number",ph:"123 456 789"},
-  "Puerto Rico":{l:"SSN",f:"Social Security Number",ph:"123-45-6789"},
-  "Haití":{l:"CIN",f:"Carte d'Identification Nationale",ph:"123-456-789-0"},
-  "Jamaica":{l:"TRN",f:"Tax Registration Number",ph:"123-456-789"},
-  "Trinidad y Tobago":{l:"ID Card",f:"National ID Card",ph:"12345678901"},
-};
-const COUNTRIES=Object.keys(CDOCS).sort();
+// PHONE_CODES, CDOCS y COUNTRIES viven en ./data/countries.js (importados abajo).
 
 // ─── CONTENIDO TRONCO COMÚN 1 (5 módulos, 21 temas + repaso) ─────
 // Contenido del curso (TC1_MODULES, TC2_*, KERIGMA, COURSES) y preguntas (Q)
@@ -1151,30 +1070,8 @@ function SacSelectModal({onContinue,onBack}){
 // ─── HELPERS DE FORMULARIO ─────────────────────────────────────────
 // FRow, Input y PasswordInput → ./components/fields.jsx (importados arriba).
 
-function PhoneField({phoneCode,phone,onChange}){
-  return(
-    <div style={{display:"flex",gap:8}}>
-      <select value={phoneCode||""} onChange={e=>onChange("phoneCode",e.target.value)}
-        style={{...INP,width:140,flex:"none"}}>
-        <option value="">{T("País","Country","Pays","Land","País","Paese")}</option>
-        {PHONE_CODES.map(p=>(
-          <option key={p.code+p.c} value={p.code}>{p.code} {p.c}</option>
-        ))}
-      </select>
-      <Input value={phone} onChange={v=>onChange("phone",v)}
-        placeholder={T("Número telefónico","Phone number","Numéro de téléphone","Telefonnummer","Número de telefone","Numero di telefono")} style={{flex:1}}/>
-    </div>
-  );
-}
 
-function CountrySelect({value,onChange}){
-  return(
-    <select value={value||""} onChange={e=>onChange(e.target.value)} style={INP}>
-      <option value="">{T("Selecciona tu país","Select your country","Sélectionnez votre pays","Wählen Sie Ihr Land","Selecione seu país","Seleziona il tuo paese")}</option>
-      {COUNTRIES.map(c=><option key={c} value={c}>{c}</option>)}
-    </select>
-  );
-}
+// PhoneField y CountrySelect viven en ./components/fields.jsx.
 
 
 function pwdStrength(pw){
@@ -2556,201 +2453,6 @@ function OrgThankYouModal({orgType,formData,onClose}){
 // ─── COURSE SECTION VIEW ───────────────────────────────────────────
 
 // ─── CERTIFICATES MODAL ────────────────────────────────────────────
-function CertificatesModal({formData,sequence,progress,insBySec,onClose}){
-  const certSecs=sequence.filter(s=>SEC_META[s]?.cert&&isSectionDone(s,progress));
-  const today=new Date().toLocaleDateString({es:"es-MX",en:"en-US",fr:"fr-FR",de:"de-DE",pt:"pt-BR",it:"it-IT"}[LANG]||"es-MX",{year:"numeric",month:"long",day:"numeric"});
-  const [downloading,setDownloading]=useState(null);
-  const [series,setSeries]=useState({}); // {secId:{serie,codigo,vigencia}}
-
-  const fmtFecha=(d)=>new Date(d).toLocaleDateString({es:"es-MX",en:"en-US",fr:"fr-FR",de:"de-DE",pt:"pt-BR",it:"it-IT"}[LANG]||"es-MX",{year:"numeric",month:"long",day:"numeric"});
-
-  const downloadCert=async(secId)=>{
-    setDownloading(secId);
-    try{
-      const sec=SEC_META[secId];
-      const nombreSac=PICK(sec);
-      const nombreCompleto=`${formData.nombre||""} ${formData.apellido||""}`.trim();
-      // 1) Registrar (o recuperar) la constancia y su serie en Supabase.
-      let serie="", codigo="", vigencia=null, emision=new Date().toISOString();
-      try{
-        const {data,error}=await supabase.rpc("registrar_constancia",{
-          p_inscripcion_id: insBySec?.[secId]||null,
-          p_slug: secId,
-          p_nombre_sacramento: nombreSac,
-          p_nombre: nombreCompleto,
-          p_tipo_doc: formData.tipoDocumento||formData.tipo_documento||"ID",
-          p_num_doc: formData.docNum||"",
-          p_pais_origen: formData.country||"",
-          p_pais_residencia: formData.country||"",
-          p_estado: formData.parEstado||formData.estado||"",
-          p_fecha_inicio: null,
-          p_fecha_conclusion: null,
-          p_horas: sec?.videos?.length? (sec.videos.length*1):10,
-          p_puntaje: null,
-        });
-        if(error) throw error;
-        const row=Array.isArray(data)?data[0]:data;
-        if(row){ serie=row.serie; codigo=row.codigo_validacion; vigencia=row.fecha_vigencia; emision=row.fecha_emision||emision; }
-      }catch(e){
-        console.error("registrar_constancia:",e);
-        // Respaldo: serie local si la RPC no está disponible (no bloquea la descarga).
-        // formatSerie (logic.js, probado) garantiza el formato CAT-ISO-SAC-AÑO-NNNNNN.
-        serie=formatSerie(formData.country, secId, new Date().getFullYear(), Math.floor(Math.random()*1000000));
-        codigo=genCode().replace(/-/g,"").toLowerCase();
-        vigencia=new Date(Date.now()+182*864e5).toISOString().slice(0,10);
-      }
-      setSeries(p=>({...p,[secId]:{serie,codigo,vigencia}}));
-
-      // 2) Generar el QR de verificación.
-      const urlVerif=`https://www.catecumen.com/?validar=${encodeURIComponent(codigo)}`;
-      let qrDataUrl="";
-      try{ qrDataUrl=await generarQRDataURL(urlVerif,150); }catch(e){ console.error("QR:",e); }
-
-      // 3) Construir el PDF (A4 horizontal) con jsPDF.
-      await cargarScript(JSPDF_CDN);
-      const { jsPDF } = window.jspdf;
-      const doc=new jsPDF({orientation:"landscape",unit:"mm",format:"a4"});
-      const W=297, H=210, cx=W/2;
-      const gold=[156,122,40], goldL=[200,169,81], ink=[42,36,24], soft=[90,83,66];
-
-      // Fondo y marcos
-      doc.setFillColor(252,249,242); doc.rect(0,0,W,H,"F");
-      doc.setDrawColor(...goldL); doc.setLineWidth(1.4); doc.rect(10,10,W-20,H-20);
-      doc.setLineWidth(0.4); doc.rect(13,13,W-26,H-26);
-
-      // Encabezado con LOGO (catecumenlogo.png). Si no carga, cae al texto.
-      const logoData=await imgToDataURL("/catecumenlogo.png");
-      if(logoData){
-        try{ doc.addImage(logoData,"PNG",cx-30,15,60,20); }catch(e){ console.error("logo pdf:",e); }
-      }else{
-        doc.setTextColor(...gold); doc.setFont("times","bold"); doc.setFontSize(13);
-        doc.text("CATECUMEN",cx,26,{align:"center"});
-      }
-      doc.setFont("times","italic"); doc.setFontSize(10); doc.setTextColor(...soft);
-      doc.text(T("El Aula Global de la Catequesis","The Global Classroom of Catechesis","La Salle de Classe Mondiale de la Catéchèse","Das globale Klassenzimmer der Katechese","A Sala de Aula Global da Catequese","L'Aula Globale della Catechesi"),cx,40,{align:"center"});
-
-      doc.setFont("times","bold"); doc.setFontSize(24); doc.setTextColor(...gold);
-      doc.text(T("CONSTANCIA DE FORMACIÓN","CERTIFICATE OF FORMATION","ATTESTATION DE FORMATION","AUSBILDUNGSBESCHEINIGUNG","CERTIFICADO DE FORMAÇÃO","ATTESTATO DI FORMAZIONE"),cx,50,{align:"center"});
-      doc.setDrawColor(...goldL); doc.setLineWidth(0.6); doc.line(cx-45,54,cx+45,54);
-
-      // Cuerpo
-      doc.setFont("times","normal"); doc.setFontSize(12); doc.setTextColor(...soft);
-      doc.text(T("Se otorga la presente constancia a","This certificate is awarded to","La présente attestation est décernée à","Diese Bescheinigung wird verliehen an","O presente certificado é concedido a","Il presente attestato è conferito a"),cx,66,{align:"center"});
-
-      doc.setFont("times","bold"); doc.setFontSize(22); doc.setTextColor(...ink);
-      doc.text(nombreCompleto||"—",cx,78,{align:"center"});
-
-      // Identificación + residencia
-      doc.setFont("times","normal"); doc.setFontSize(10.5); doc.setTextColor(...soft);
-      const idLinea=`${T("Documento de identificación","Identification document","Document d'identification","Ausweisdokument","Documento de identificação","Documento di identificazione")}: ${formData.docNum||"—"}`;
-      doc.text(idLinea,cx,86,{align:"center"});
-      const resid=[formData.parEstado||formData.estado||"", formData.country||""].filter(Boolean).join(", ");
-      if(resid) doc.text(`${T("Residencia","Residence","Résidence","Wohnsitz","Residência","Residenza")}: ${resid}`,cx,92,{align:"center"});
-
-      doc.setFontSize(12); doc.setTextColor(...soft);
-      doc.text(T("por haber completado satisfactoriamente la formación de:","for having satisfactorily completed the formation of:","pour avoir suivi avec succès la formation de :","für den erfolgreichen Abschluss der Ausbildung von:","por ter concluído satisfatoriamente a formação de:","per aver completato con successo la formazione di:"),cx,102,{align:"center"});
-
-      doc.setFont("times","bold"); doc.setFontSize(17); doc.setTextColor(...gold);
-      doc.text(nombreSac,cx,112,{align:"center"});
-
-      // Firma catequista
-      doc.setDrawColor(...soft); doc.setLineWidth(0.3); doc.line(cx-40,150,cx+40,150);
-      doc.setFont("times","bold"); doc.setFontSize(11); doc.setTextColor(...ink);
-      doc.text("Mtra. Nelly Rocio Montoya Freyre",cx,156,{align:"center"});
-      doc.setFont("times","italic"); doc.setFontSize(9.5); doc.setTextColor(...soft);
-      doc.text(T("Catequista que autoriza","Authorizing catechist","Catéchiste autorisant","Autorisierende Katechetin","Catequista que autoriza","Catechista che autorizza"),cx,161,{align:"center"});
-
-      // Fechas (izquierda)
-      doc.setFont("times","normal"); doc.setFontSize(9.5); doc.setTextColor(...soft);
-      doc.text(`${T("Fecha de expedición","Date of issue","Date de délivrance","Ausstellungsdatum","Data de expedição","Data di rilascio")}: ${fmtFecha(emision)}`,20,180);
-      doc.text(`${T("Vigencia (6 meses)","Valid until (6 months)","Validité (6 mois)","Gültig bis (6 Monate)","Validade (6 meses)","Validità (6 mesi)")}: ${vigencia?fmtFecha(vigencia):"—"}`,20,186);
-      doc.setFont("times","bold"); doc.setTextColor(...gold);
-      doc.text(`${T("N.º de serie","Serial No.","N° de série","Seriennr.","N.º de série","N. di serie")}: ${serie}`,20,192);
-      // Número de identificación de la plataforma (registro_id del usuario)
-      if(formData.registrationId){
-        doc.text(`${T("N.º de identificación","ID number","N° d'identification","Ausweisnummer","N.º de identificação","N. di identificazione")}: ${formData.registrationId}`,20,198);
-      }
-
-      // QR (derecha) + leyenda
-      if(qrDataUrl){ try{ doc.addImage(qrDataUrl,"PNG",W-52,168,28,28); }catch(e){} }
-      doc.setFont("times","normal"); doc.setFontSize(7.5); doc.setTextColor(...soft);
-      doc.text(T("Verifica su autenticidad","Verify its authenticity","Vérifiez son authenticité","Echtheit überprüfen","Verifique sua autenticidade","Verifica l'autenticità"),W-38,198,{align:"center"});
-
-      // 4) Descargar
-      doc.save(`Constancia_${(nombreCompleto||"Catecumen").replace(/\s+/g,"_")}_${serie}.pdf`);
-    }catch(e){
-      console.error("downloadCert:",e);
-      alert(T("No se pudo generar la constancia. Intenta de nuevo.","Could not generate the certificate. Please try again.","Impossible de générer l'attestation. Réessayez.","Die Bescheinigung konnte nicht erstellt werden. Bitte erneut versuchen.","Não foi possível gerar o certificado. Tente novamente.","Impossibile generare l'attestato. Riprova."));
-    }
-    setDownloading(null);
-  };
-  return(
-    <div style={OVERLAY}>
-      <div style={{...MODAL,maxWidth:680}}>
-        <div style={{textAlign:"center",marginBottom:24}}>
-          <div style={{fontSize:40,marginBottom:8}}>🏆</div>
-          <h2 style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:20}}>
-            {T("Mis Constancias","My Certificates","Mes attestations","Meine Bescheinigungen","Meus Certificados","I miei attestati")}
-          </h2>
-          <p style={{color:C.ivoryM,fontSize:13,marginTop:4}}>
-            {T("Descarga cada constancia de formación sacramental","Download each sacramental formation certificate","Téléchargez chaque attestation de formation sacramentelle","Laden Sie jede Bescheinigung der sakramentalen Ausbildung herunter","Baixe cada certificado de formação sacramental","Scarica ogni attestato di formazione sacramentale")}
-          </p>
-        </div>
-        {certSecs.length===0&&(
-          <p style={{color:C.ivoryM,textAlign:"center",fontFamily:"'Crimson Text',serif",fontSize:16,marginBottom:20}}>
-            {T("Aún no hay constancias disponibles. Completa tu formación para obtenerlas.","No certificates available yet. Complete your formation to receive them.","Aucune attestation disponible pour l'instant. Terminez votre formation pour les obtenir.","Noch keine Bescheinigungen verfügbar. Schließen Sie Ihre Ausbildung ab, um sie zu erhalten.","Ainda não há certificados disponíveis. Complete sua formação para obtê-los.","Nessun attestato disponibile ancora. Completa la tua formazione per ottenerli.")}
-          </p>
-        )}
-        <div style={{display:"flex",flexDirection:"column",gap:14,marginBottom:20}}>
-          {certSecs.map(secId=>{
-            const sec=SEC_META[secId];
-            return(
-              <div key={secId} style={{...CARD,display:"flex",alignItems:"center",gap:16,
-                background:"rgba(200,169,81,0.06)",border:`1px solid ${C.gold}30`}}>
-                <SecIcon id={secId} size={28}/>
-                <div style={{flex:1}}>
-                  <p style={{color:C.ivory,fontFamily:"'Cinzel',serif",fontSize:14}}>
-                    {PICK(sec)}
-                  </p>
-                  <p style={{color:C.ivoryM,fontSize:12,marginTop:2}}>
-                    {formData.nombre} {formData.apellido}
-                  <span style={{color:C.gold,margin:"0 6px"}}>·</span>
-                  {formData.docNum}
-                  <span style={{color:C.gold,margin:"0 6px"}}>·</span>
-                  {today}
-                  </p>
-                  {series[secId]?.serie&&(
-                    <p style={{color:C.gold,fontSize:11,marginTop:3,fontFamily:"monospace",letterSpacing:"0.02em"}}>
-                      {T("Serie","Serial","Série","Seriennr.","Série","Serie")}: {series[secId].serie}
-                    </p>
-                  )}
-                  {!formData.isAdult&&(
-                    <p style={{color:"#F87171",fontSize:11,marginTop:2}}>
-                      ⚠️ {T("Solo válida para mayores de 18 años","Valid only for persons 18+","Valable uniquement pour les personnes de plus de 18 ans","Nur gültig für Personen über 18 Jahre","Válida apenas para maiores de 18 anos","Valido solo per i maggiori di 18 anni")}
-                    </p>
-                  )}
-                </div>
-                <button onClick={()=>downloadCert(secId)}
-                  disabled={downloading===secId}
-                  style={{...BTN("pri"),fontSize:12,padding:"8px 16px",whiteSpace:"nowrap"}}>
-                  {downloading===secId?T("Generando…","Generating…","Génération…","Wird erstellt…","Gerando…","Generazione in corso…"):"⬇ "+T("Descargar","Download","Télécharger","Herunterladen","Baixar","Scarica")}
-                </button>
-              </div>
-            );
-          })}
-        </div>
-        <div style={{...CARD,background:"rgba(200,169,81,0.05)",marginBottom:20}}>
-          <p style={{color:C.ivoryM,fontSize:12,lineHeight:1.6}}>
-            🔐 {T("Cada constancia incluye un código QR único para verificar su autenticidad. La validez es de 6 meses a partir de la fecha de emisión. Válida únicamente para mayores de 18 años.","Each certificate includes a unique QR code for authenticity verification. Valid for 6 months from the date of issue. Valid only for persons 18 years of age or older.","Chaque attestation comprend un code QR unique pour vérifier son authenticité. Elle est valable 6 mois à compter de la date d'émission. Valable uniquement pour les personnes de plus de 18 ans.","Jede Bescheinigung enthält einen eindeutigen QR-Code zur Echtheitsprüfung. Die Gültigkeit beträgt 6 Monate ab Ausstellungsdatum. Nur gültig für Personen über 18 Jahre.","Cada certificado inclui um código QR único para verificar sua autenticidade. A validade é de 6 meses a partir da data de emissão. Válido apenas para maiores de 18 anos.","Ogni attestato include un codice QR unico per verificarne l'autenticità. La validità è di 6 mesi dalla data di emissione. Valido solo per i maggiori di 18 anni.")}
-          </p>
-        </div>
-        <button onClick={onClose} style={{...BTN("sec"),width:"100%",justifyContent:"center"}}>
-          {T("Cerrar","Close","Fermer","Schließen","Fechar","Chiudi")}
-        </button>
-      </div>
-    </div>
-  );
-}
 
 // ─── DASHBOARD ─────────────────────────────────────────────────────
 // ═══════════════════════════════════════════════════════════════════════════
@@ -2763,228 +2465,6 @@ function CertificatesModal({formData,sequence,progress,insBySec,onClose}){
 // ════════════════════════════════════════════════════════════════════════════
 
 
-function Dashboard({formData,sequence,progress,onUpdate,onClose,initialTab}){
-  const [tab,setTab]=useState(initialTab||"progress");
-  const [edit,setEdit]=useState({});
-  const [saved,setSaved]=useState(false);
-  const [agendaPend,setAgendaPend]=useState(0); // sesiones próximas sin responder
-  useEffect(()=>{
-    let vivo=true;
-    (async()=>{
-      try{
-        const {data}=await supabase.rpc("mi_agenda");
-        if(!vivo) return;
-        const ahora=new Date();
-        const pend=(Array.isArray(data)?data:[]).filter(s=>!s.mi_estado && new Date(s.inicio)>ahora).length;
-        setAgendaPend(pend);
-      }catch(e){/* silencioso */}
-    })();
-    return ()=>{ vivo=false; };
-  },[]);
-  const setE=(k,v)=>setEdit(p=>({...p,[k]:v}));
-  const handleSave=()=>{
-    onUpdate(edit);
-    setSaved(true);
-    setTimeout(()=>setSaved(false),2000);
-  };
-  const totalItems=sequence.reduce((a,s)=>(SEC_META[s]?.videos?.length||0)+a,0);
-  const doneItems=sequence.reduce((a,s)=>{
-    const vids=SEC_META[s]?.videos||[];
-    return a+vids.filter(v=>progress?.[s]?.[v.id]?.passed).length;
-  },0);
-  const pct=totalItems?Math.round((doneItems/totalItems)*100):0;
-  const tabs=[
-    {k:"progress",es:"Mi Progreso",en:"My Progress",fr:"Ma Progression",de:"Mein Fortschritt",pt:"Meu Progresso",it:"I Miei Progressi",icon:"📊"},
-    {k:"account",es:"Mi Cuenta",en:"My Account",fr:"Mon Compte",de:"Mein Konto",pt:"Minha Conta",it:"Il Mio Account",icon:"👤"},
-    {k:"certs",es:"Constancias",en:"Certificates",fr:"Attestations",de:"Bescheinigungen",pt:"Certificados",it:"Attestati",icon:"🏆"},
-    {k:"agenda",es:"Agenda",en:"Agenda",fr:"Agenda",de:"Termine",pt:"Agenda",it:"Agenda",icon:"📅"},
-    {k:"mensajes",es:"Mensajes",en:"Messages",fr:"Messages",de:"Nachrichten",pt:"Mensagens",it:"Messaggi",icon:"✉️"},
-  ];
-  return(
-    <div style={{minHeight:"100vh",background:"rgba(250,247,240,0.82)",padding:"24px 16px",
-      display:"flex",justifyContent:"center",alignItems:"flex-start"}}>
-      <div className="catePanel" style={{maxWidth:700,width:"100%",
-        background:`linear-gradient(160deg,var(--c-modalStart) 0%,${C.surface} 55%,var(--c-modalEnd) 100%)`,
-        border:"1px solid rgba(200,169,81,0.18)",borderRadius:20,
-        boxShadow:"0 24px 64px rgba(0,0,0,0.65)",
-        padding:"26px clamp(14px,3vw,30px)",
-        maxHeight:"calc(100dvh - 48px)",overflowY:"auto"}}>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24}}>
-          <h1 style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:20}}>👤 {T("Mi Cuenta","My Account","Mon compte","Mein Konto","Minha Conta","Il mio account")}</h1>
-          <button onClick={onClose} style={{...BTN("sec"),fontSize:12}}>✕ {T("Cerrar","Close","Fermer","Schließen","Fechar","Chiudi")}</button>
-        </div>
-        {/* Tabs */}
-        <div style={{display:"flex",gap:8,marginBottom:24}}>
-          {tabs.map(t=>(
-            <button key={t.k} onClick={()=>setTab(t.k)}
-              style={{...BTN(tab===t.k?"pri":"sec"),flex:1,justifyContent:"center",fontSize:12,position:"relative"}}>
-              {t.icon} {T(t.es,t.en,t.fr,t.de,t.pt,t.it)}
-              {t.k==="agenda"&&agendaPend>0&&(
-                <span style={{position:"absolute",top:-6,right:-6,background:"#D64545",color:"#fff",
-                  borderRadius:"50%",minWidth:18,height:18,fontSize:11,fontWeight:700,
-                  display:"flex",alignItems:"center",justifyContent:"center",padding:"0 5px"}}>{agendaPend}</span>
-              )}
-            </button>
-          ))}
-        </div>
-        
-        {/* PROGRESS TAB */}
-        {tab==="progress"&&(
-          <div>
-            <div style={{...CARD,marginBottom:20}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-                <div>
-                  <p style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:16}}>
-                    {T("Progreso Global","Global Progress","Progression globale","Gesamtfortschritt","Progresso Global","Progresso Globale")}
-                  </p>
-                  <p style={{color:C.ivoryM,fontSize:13,marginTop:2}}>
-                    {doneItems}/{totalItems} {T("temas completados","topics completed","sujets terminés","abgeschlossene Themen","temas concluídos","argomenti completati")}
-                  </p>
-                </div>
-                <div style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:28,fontWeight:700}}>
-                  {pct}%
-                </div>
-              </div>
-              <div style={{background:"rgba(255,255,255,0.07)",borderRadius:8,height:10}}>
-                <div style={{background:`linear-gradient(90deg,${C.gold},${C.goldL})`,
-                  borderRadius:8,height:"100%",width:`${pct}%`,transition:"width .5s"}}/>
-              </div>
-            </div>
-            {sequence.map(secId=>{
-              const sec=SEC_META[secId];
-              if(!sec) return null;
-              const vids=sec.videos||[];
-              const done=vids.filter(v=>progress?.[secId]?.[v.id]?.passed).length;
-              const sPct=vids.length?Math.round((done/vids.length)*100):0;
-              return(
-                <div key={secId} style={{...CARD,marginBottom:12}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-                    <div style={{display:"flex",alignItems:"center",gap:10}}>
-                      <SecIcon id={secId} size={20}/>
-                      <span style={{color:C.ivory,fontFamily:"'Crimson Text',serif",fontSize:15}}>
-                        {PICK(sec)}
-                      </span>
-                    </div>
-                    <span style={{color:done===vids.length?C.green:C.ivoryM,fontSize:13}}>
-                      {done}/{vids.length}
-                    </span>
-                  </div>
-                  <div style={{background:"rgba(255,255,255,0.07)",borderRadius:4,height:6}}>
-                    <div style={{background:done===vids.length?C.green:C.gold,
-                      borderRadius:4,height:"100%",width:`${sPct}%`,transition:"width .5s"}}/>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-        
-        {/* ACCOUNT TAB */}
-        {tab==="account"&&(
-          <div>
-            {saved&&(
-              <div style={{...CARD,background:"rgba(45,122,90,0.2)",marginBottom:16,textAlign:"center"}}>
-                <p style={{color:C.green}}>✓ {T("Cambios guardados","Changes saved","Modifications enregistrées","Änderungen gespeichert","Alterações salvas","Modifiche salvate")}</p>
-              </div>
-            )}
-            <div style={{...CARD,marginBottom:20}}>
-              <p style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:14,marginBottom:16}}>
-                {T("Información registrada","Registered information","Informations enregistrées","Registrierte Informationen","Informações registradas","Informazioni registrate")}
-              </p>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-                <div>
-                  <span style={LBL}>{T("Nombre","Name","Nom","Name","Nome","Nome")}</span>
-                  <p style={{color:C.ivory,fontFamily:"'Crimson Text',serif"}}>{formData.nombre} {formData.apellido}</p>
-                </div>
-                <div>
-                  <span style={LBL}>{T("País","Country","Pays","Land","País","Paese")}</span>
-                  <p style={{color:C.ivory,fontFamily:"'Crimson Text',serif"}}>{formData.country}</p>
-                </div>
-                <div>
-                  <span style={LBL}>{T("Edad","Age","Âge","Alter","Idade","Età")}</span>
-                  <p style={{color:C.ivory,fontFamily:"'Crimson Text',serif"}}>{formData.age} {T("años","years","ans","Jahre","anos","anni")}</p>
-                </div>
-                <div>
-                  <span style={LBL}>{T("Catequista asignada","Assigned catechist","Catéchiste assignée","Zugewiesene Katechetin","Catequista designada","Catechista assegnata")}</span>
-                  <p style={{color:C.ivory,fontFamily:"'Crimson Text',serif"}}>Nelly Montoya</p>
-                </div>
-              </div>
-            </div>
-            <div style={{display:"flex",flexDirection:"column",gap:14}}>
-              <FRow label={T("Correo electrónico","Email","E-mail","E-Mail","E-mail","Email")}>
-                <Input value={edit.email!==undefined?edit.email:formData.email}
-                  onChange={v=>setE("email",v)} placeholder="nuevo@correo.com"/>
-              </FRow>
-              <FRow label={T("Teléfono","Phone","Téléphone","Telefon","Telefone","Telefono")}>
-                <PhoneField phoneCode={edit.phoneCode||formData.phoneCode} phone={edit.phone!==undefined?edit.phone:formData.phone}
-                  onChange={setE}/>
-              </FRow>
-              <FRow label={T("Parroquia","Parish","Paroisse","Pfarrei","Paróquia","Parrocchia")}>
-                <Input value={edit.parroquia!==undefined?edit.parroquia:formData.parroquia}
-                  onChange={v=>setE("parroquia",v)} placeholder={T("Nombre de la parroquia","Parish name","Nom de la paroisse","Name der Pfarrei","Nome da paróquia","Nome della parrocchia")}/>
-              </FRow>
-              <FRow label={T("Nueva contraseña (opcional)","New password (optional)","Nouveau mot de passe (facultatif)","Neues Passwort (optional)","Nova senha (opcional)","Nuova password (facoltativa)")}>
-                <PasswordInput value={edit.newPassword||""}
-                  onChange={v=>setE("newPassword",v)} placeholder={T("Dejar vacío para no cambiar","Leave blank to keep current","Laisser vide pour ne pas changer","Leer lassen, um nichts zu ändern","Deixe em branco para não alterar","Lascia vuoto per non modificare")}/>
-              </FRow>
-            </div>
-            <button onClick={handleSave}
-              style={{...BTN("pri"),width:"100%",justifyContent:"center",marginTop:16}}>
-              💾 {T("Guardar cambios","Save changes","Enregistrer les modifications","Änderungen speichern","Salvar alterações","Salva modifiche")}
-            </button>
-          </div>
-        )}
-        
-        {/* CERTS TAB */}
-        {tab==="certs"&&(
-          <div>
-            <p style={{color:C.ivoryM,fontFamily:"'Crimson Text',serif",fontSize:15,marginBottom:16}}>
-              {T("Descarga tus constancias de formación completadas.","Download your completed formation certificates.","Téléchargez vos attestations de formation terminées.","Laden Sie Ihre abgeschlossenen Ausbildungsbescheinigungen herunter.","Baixe seus certificados de formação concluídos.","Scarica i tuoi attestati di formazione completati.")}
-            </p>
-            {sequence.filter(s=>SEC_META[s]?.cert&&isSectionDone(s,progress)).map(secId=>(
-              <div key={secId} style={{...CARD,display:"flex",alignItems:"center",gap:14,marginBottom:10,
-                background:"rgba(200,169,81,0.06)",border:`1px solid ${C.gold}30`}}>
-                <SecIcon id={secId} size={24}/>
-                <span style={{color:C.ivory,fontFamily:"'Crimson Text',serif",fontSize:15,flex:1}}>
-                  {PICK(SEC_META[secId])}
-                </span>
-                <button onClick={()=>alert(T("Constancia generada (demo)","Certificate generated (demo)","Attestation générée (démo)","Bescheinigung erstellt (Demo)","Certificado gerado (demo)","Attestato generato (demo)"))}
-                  style={{...BTN("pri"),fontSize:12,padding:"8px 14px"}}>
-                  ⬇ {T("Descargar","Download","Télécharger","Herunterladen","Baixar","Scarica")}
-                </button>
-              </div>
-            ))}
-            {sequence.filter(s=>SEC_META[s]?.cert&&isSectionDone(s,progress)).length===0&&(
-              <p style={{color:C.ivoryM,fontFamily:"'Crimson Text',serif",fontSize:15,textAlign:"center"}}>
-                {T("Completa tu formación para obtener tus constancias.","Complete your formation to receive your certificates.","Terminez votre formation pour obtenir vos attestations.","Schließen Sie Ihre Ausbildung ab, um Ihre Bescheinigungen zu erhalten.","Complete sua formação para obter seus certificados.","Completa la tua formazione per ottenere i tuoi attestati.")}
-              </p>
-            )}
-          </div>
-        )}
-        {tab==="agenda"&&(
-          <div>
-            <p style={{color:C.ivoryM,fontFamily:"'Crimson Text',serif",fontSize:15,marginBottom:16}}>
-              {T("Tus sesiones y reuniones programadas. Confirma tu asistencia o avisa si no podrás asistir.","Your scheduled sessions and meetings. Confirm your attendance or let us know if you can't make it.","Vos sessions et réunions programmées. Confirmez votre présence ou signalez votre absence.","Deine geplanten Sitzungen und Treffen. Bestätige deine Teilnahme oder sag ab.","Suas sessões e reuniões agendadas. Confirme sua presença ou avise se não poderá comparecer.","Le tue sessioni e riunioni programmate. Conferma la presenza o avvisa se non potrai partecipare.")}
-            </p>
-            <Suspense fallback={<div style={{color:C.ivoryM,padding:20,textAlign:"center"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div>}>
-              <AgendaTab/>
-            </Suspense>
-          </div>
-        )}
-        {tab==="mensajes"&&(
-          <div>
-            <p style={{color:C.ivoryM,fontFamily:"'Crimson Text',serif",fontSize:15,marginBottom:16}}>
-              {T("Mensajes de la administración de Catecumen. Puedes responder aquí.","Messages from Catecumen administration. You can reply here.","Messages de l'administration de Catecumen. Vous pouvez répondre ici.","Nachrichten der Catecumen-Verwaltung. Sie können hier antworten.","Mensagens da administração do Catecumen. Você pode responder aqui.","Messaggi dall'amministrazione di Catecumen. Puoi rispondere qui.")}
-            </p>
-            <Suspense fallback={<div style={{color:C.ivoryM,padding:20,textAlign:"center"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div>}>
-              <MensajesTab/>
-            </Suspense>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
 
 
 
@@ -4218,17 +3698,21 @@ export default function App(){
       )}
 
       {showCerts&&(
-        <CertificatesModal formData={formData} sequence={sequence} progress={progress} insBySec={insBySec}
-          onClose={()=>{setShowCerts(false);setPhase("course");}}/>
+        <Suspense fallback={<div style={OVERLAY}><div style={{color:C.gold,fontFamily:"'Cinzel',serif"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div></div>}>
+          <CertificatesModal formData={formData} sequence={sequence} progress={progress} insBySec={insBySec}
+            onClose={()=>{setShowCerts(false);setPhase("course");}}/>
+        </Suspense>
       )}
 
       {showDash&&(
-        <Dashboard formData={formData} sequence={sequence} progress={progress}
-          initialTab={dashTab}
-          onUpdate={updates=>setFormData(p=>({...p,...updates}))}
-          onClose={()=>{setShowDash(false);setDashTab(null);
-            supabase.rpc("mis_mensajes_no_leidos").then(({data})=>setMsgNoLeidos(typeof data==="number"?data:0)).catch(()=>{});
-          }}/>
+        <Suspense fallback={<div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(250,247,240,0.82)"}}><div style={{color:C.gold,fontFamily:"'Cinzel',serif"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div></div>}>
+          <Dashboard formData={formData} sequence={sequence} progress={progress}
+            initialTab={dashTab}
+            onUpdate={updates=>setFormData(p=>({...p,...updates}))}
+            onClose={()=>{setShowDash(false);setDashTab(null);
+              supabase.rpc("mis_mensajes_no_leidos").then(({data})=>setMsgNoLeidos(typeof data==="number"?data:0)).catch(()=>{});
+            }}/>
+        </Suspense>
       )}
       {/* Campana flotante de mensajes (solo en el área de estudio) */}
       {phase==="course"&&!showDash&&(
