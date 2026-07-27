@@ -23,6 +23,7 @@ const iconoConfirmacion = "/iconoconfirmacion.svg";
 import { createClient } from "@supabase/supabase-js";
 import { buildSeq as buildSeqCore, translate as translateCore, pick as pickCore,
   calcularCuotaPais, aplicarBeca, formatSerie, cuotaFromRow, resolverCuota } from "./logic.js";
+import EstrellasInput from "./components/EstrellasInput.jsx";
 
 // ─── SUPABASE (producción) ─────────────────────────────────────────
 // Configura VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY en tu archivo .env
@@ -5231,22 +5232,6 @@ function VideoModal({secId,vid,bridge,onWatched,onClose}){
 //  EncuestaVideoModal — encuesta de calidad OBLIGATORIA al terminar cada video,
 //  antes de la evaluación. 4 parámetros (1–5 estrellas) + comentario opcional.
 // ═══════════════════════════════════════════════════════════════════════════
-function EstrellasInput({valor,onChange}){
-  const [hover,setHover]=useState(0);
-  return(
-    <div style={{display:"flex",gap:4}}>
-      {[1,2,3,4,5].map(n=>(
-        <span key={n} role="button" aria-label={`${n}`}
-          onMouseEnter={()=>setHover(n)} onMouseLeave={()=>setHover(0)}
-          onClick={()=>onChange(n)}
-          style={{cursor:"pointer",fontSize:26,lineHeight:1,transition:"transform .1s",
-            transform:(hover===n)?"scale(1.15)":"scale(1)",
-            color:(hover||valor)>=n?"#E5C97A":"rgba(200,169,81,0.28)",
-            filter:(hover||valor)>=n?"drop-shadow(0 0 4px rgba(200,169,81,0.6))":"none"}}>★</span>
-      ))}
-    </div>
-  );
-}
 
 function EncuestaVideoModal({secId,vid,insBySec,bridge,onDone}){
   const [claridad,setClaridad]=useState(0);
