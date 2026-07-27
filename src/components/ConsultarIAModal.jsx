@@ -123,6 +123,7 @@ export default function ConsultarIAModal({ onClose, contexto = "" }) {
                 borderRadius: 14, padding: "10px 14px",
                 color: C.ivory, fontFamily: "'Crimson Text',serif", fontSize: 15, lineHeight: 1.6,
                 whiteSpace: "pre-wrap", wordBreak: "break-word",
+                textAlign: m.role === "user" ? "left" : "justify",
               }}>
                 {m.content}
               </div>
