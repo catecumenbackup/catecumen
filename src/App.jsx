@@ -53,6 +53,12 @@ const FilterModal = lazy(() => import("./components/FilterModal.jsx"));
 const SacSelectModal = lazy(() => import("./components/SacSelectModal.jsx"));
 const PaymentModal = lazy(() => import("./components/PaymentModal.jsx"));
 const RegisterForm = lazy(() => import("./components/RegisterForm.jsx"));
+const RegisterParroquiaForm = lazy(() => import("./components/RegisterParroquiaForm.jsx"));
+const RegisterDiocesisForm = lazy(() => import("./components/RegisterDiocesisForm.jsx"));
+const RegisterCentroForm = lazy(() => import("./components/RegisterCentroForm.jsx"));
+const PasswordModal = lazy(() => import("./components/PasswordModal.jsx"));
+const ThankYouModal = lazy(() => import("./components/ThankYouModal.jsx"));
+const OrgThankYouModal = lazy(() => import("./components/OrgThankYouModal.jsx"));
 import { C, BTN, INP, LBL, checkStyle, radioStyle, CARD, MODAL, FONT_READ, READ, OVERLAY } from "./ui.js";
 
 // El cliente Supabase vive en ./supabaseClient.js y el runtime i18n
@@ -668,310 +674,23 @@ function WelcomeModal({onContinue,onLogin}){
 // PhoneField y CountrySelect viven en ./components/fields.jsx.
 
 
-function pwdStrength(pw){
-  let s=0;
-  if(pw.length>=8)s++;
-  if(/[A-Z]/.test(pw))s++;
-  if(/[0-9]/.test(pw))s++;
-  if(/[^A-Za-z0-9]/.test(pw))s++;
-  return s; // 0-4
-}
+// pwdStrength vive en ./components/PasswordModal.jsx (su único consumidor).
 
 // ─── REGISTRO CATECÚMENO / PAPÁS / PADRINO / CATEQUISTA ────────────
 
 // ─── REGISTRO PARROQUIA ─────────────────────────────────────────────
-function RegisterParroquiaForm({onNext,onBack}){
-  const [d,setD]=useState({});
-  const set=(k,v)=>setD(p=>({...p,[k]:v}));
-
-  const can=d.nombre&&d.country&&d.calle&&d.pastor&&d.banco&&d.cuenta&&d.titular&&d.contacto&&d.email&&d.phone&&d.phoneCode;
-  // emiteFactura puede ser true/false; no bloquea el envío pero se guarda
-  return(
-    <div style={OVERLAY}>
-      <div style={{...MODAL,maxWidth:680}}>
-        <h2 style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:17,marginBottom:20}}>
-          ⛪ {T("Registro de Parroquia","Parish Registration","Inscription de la paroisse","Pfarreiregistrierung","Registro de Paróquia","Registrazione della parrocchia")}
-        </h2>
-        <FRow label={T("Nombre de la Parroquia","Parish Name","Nom de la paroisse","Name der Pfarrei","Nome da Paróquia","Nome della parrocchia")}>
-          <Input value={d.nombre} onChange={v=>set("nombre",v)} placeholder={T("Nombre completo de la parroquia","Full parish name","Nom complet de la paroisse","Vollständiger Name der Pfarrei","Nome completo da paróquia","Nome completo della parrocchia")}/>
-        </FRow>
-        <FRow label={T("País","Country","Pays","Land","País","Paese")}>
-          <select value={d.country||""} onChange={e=>set("country",e.target.value)} style={INP}>
-            <option value="">{T("Selecciona el país","Select country","Sélectionnez le pays","Land auswählen","Selecione o país","Seleziona il paese")}</option>
-            {COUNTRIES.map(c=><option key={c} value={c}>{c}</option>)}
-          </select>
-        </FRow>
-        <FRow label={T("Dirección completa","Full address","Adresse complète","Vollständige Adresse","Endereço completo","Indirizzo completo")}>
-          <Input value={d.calle} onChange={v=>set("calle",v)}
-            placeholder={T("Calle, número, municipio/alcaldía, estado/provincia","Street, number, municipality, state","Rue, numéro, municipalité, état/province","Straße, Nummer, Gemeinde, Bundesland/Provinz","Rua, número, município, estado/província","Via, numero, comune, stato/provincia")}/>
-        </FRow>
-        <FRow label={T("Nombre completo del Párroco","Full name of Parish Priest","Nom complet du curé","Vollständiger Name des Pfarrers","Nome completo do Pároco","Nome completo del parroco")}>
-          <Input value={d.pastor} onChange={v=>set("pastor",v)} placeholder="P. Juan Ejemplo García"/>
-        </FRow>
-        <div style={{...CARD,background:"rgba(200,169,81,0.06)",border:`1px solid ${C.gold}30`,marginBottom:16}}>
-          <p style={{...LBL,marginBottom:12,fontSize:13}}>{T("Datos bancarios para depósito de participación económica","Bank details for economic participation deposit","Coordonnées bancaires pour le dépôt de la contribution financière","Bankverbindung für die Einzahlung des finanziellen Beitrags","Dados bancários para depósito da contribuição econômica","Dati bancari per il deposito del contributo economico")}</p>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-            <FRow label={T("Banco","Bank","Banque","Bank","Banco","Banca")}>
-              <Input value={d.banco} onChange={v=>set("banco",v)} placeholder={T("Nombre del banco","Bank name","Nom de la banque","Name der Bank","Nome do banco","Nome della banca")}/>
-            </FRow>
-            <FRow label={T("Número de cuenta","Account number","Numéro de compte","Kontonummer","Número da conta","Numero di conto")}>
-              <Input value={d.cuenta} onChange={v=>set("cuenta",v)} placeholder="1234567890"/>
-            </FRow>
-            <FRow label="CLABE / SWIFT">
-              <Input value={d.clabe} onChange={v=>set("clabe",v)} placeholder="18 dígitos / SWIFT code"/>
-            </FRow>
-            <FRow label={T("Titular de la cuenta","Account holder","Titulaire du compte","Kontoinhaber","Titular da conta","Titolare del conto")}>
-              <Input value={d.titular} onChange={v=>set("titular",v)} placeholder={T("Nombre del titular","Account holder name","Nom du titulaire","Name des Inhabers","Nome do titular","Nome del titolare")}/>
-            </FRow>
-          </div>
-        </div>
-        <FRow label={T("Persona de contacto","Contact person","Personne de contact","Kontaktperson","Pessoa de contato","Persona di contatto")}>
-          <Input value={d.contacto} onChange={v=>set("contacto",v)} placeholder={T("Nombre completo","Full name","Nom complet","Vollständiger Name","Nome completo","Nome completo")}/>
-        </FRow>
-        <FRow label={T("Correo electrónico de contacto","Contact email","E-mail de contact","Kontakt-E-Mail","E-mail de contato","Email di contatto")}>
-          <Input type="email" value={d.email} onChange={v=>set("email",v)} placeholder="correo@parroquia.org"/>
-        </FRow>
-        <FRow label={T("Teléfono de contacto","Contact phone","Téléphone de contact","Kontakttelefon","Telefone de contato","Telefono di contatto")}>
-          <PhoneField phoneCode={d.phoneCode} phone={d.phone} onChange={set}/>
-        </FRow>
-        {/* ─── Comprobante fiscal deducible ─── */}
-        <div style={{...CARD,background:"rgba(200,169,81,0.06)",
-          border:`1px solid ${C.gold}30`,marginBottom:16,padding:"14px 16px"}}>
-          <label style={{display:"flex",alignItems:"flex-start",gap:12,cursor:"pointer"}}>
-            <input type="checkbox" checked={!!d.emiteFactura}
-              onChange={e=>set("emiteFactura",e.target.checked)}
-              style={{...checkStyle(!!d.emiteFactura,18),marginTop:3}}/>
-            <span style={{color:C.ivory,fontFamily:"'Crimson Text',serif",fontSize:15,lineHeight:1.6}}>
-              {T("Nuestra parroquia emitirá a favor de Catecumen un comprobante fiscal deducible de impuestos por concepto de la ofrenda económica que Catecumen nos depositará.","Our parish will issue Catecumen a tax-deductible fiscal receipt for the economic offering that Catecumen will deposit to us.","Notre paroisse délivrera à Catecumen un reçu fiscal déductible pour l'offrande économique que Catecumen nous versera.","Unsere Pfarrei stellt Catecumen eine steuerlich absetzbare Quittung für die wirtschaftliche Spende aus, die Catecumen uns überweist.","Nossa paróquia emitirá em favor da Catecumen um comprovante fiscal dedutível de impostos referente à oferta econômica que a Catecumen nos depositará.","La nostra parrocchia emetterà a favore di Catecumen una ricevuta fiscale deducibile per l'offerta economica che Catecumen ci depositerà.")}
-            </span>
-          </label>
-          {d.emiteFactura&&(
-            <p style={{color:"#3DA070",fontFamily:"'Crimson Text',serif",
-              fontSize:13.5,lineHeight:1.6,marginTop:10}}>
-              🎉 {T("¡Excelente! Al emitir el comprobante fiscal, la ofrenda económica que Catecumen deposita a su parroquia se incrementa del 30% al 40% del importe total que cada catecúmeno o fiel pague a la plataforma.","Excellent! By issuing the fiscal receipt, the economic offering Catecumen deposits to your parish increases from 30% to 40% of the total amount paid by each catechumen or faithful person.","Excellent ! En délivrant le reçu fiscal, l'offrande économique que Catecumen verse à votre paroisse passe de 30 % à 40 % du montant total payé par chaque catéchumène ou fidèle à la plateforme.","Ausgezeichnet! Durch die Ausstellung der Steuerquittung erhöht sich die wirtschaftliche Spende, die Catecumen an Ihre Pfarrei überweist, von 30 % auf 40 % des Gesamtbetrags, den jeder Katechumene oder Gläubige an die Plattform zahlt.","Excelente! Ao emitir o comprovante fiscal, a oferta econômica que a Catecumen deposita à sua paróquia aumenta de 30% para 40% do valor total que cada catecúmeno ou fiel paga à plataforma.","Ottimo! Emettendo la ricevuta fiscale, l'offerta economica che Catecumen deposita alla tua parrocchia aumenta dal 30% al 40% dell'importo totale pagato da ogni catecumeno o fedele alla piattaforma.")}
-            </p>
-          )}
-        </div>
-        <div style={{display:"flex",gap:12}}>
-          <button onClick={onBack} style={{...BTN("sec"),flex:1,justifyContent:"center"}}>
-            ← {T("Regresar","Back","Retour","Zurück","Voltar","Indietro")}
-          </button>
-          <button onClick={()=>can&&onNext(d)} disabled={!can}
-            style={{...BTN("pri"),flex:2,justifyContent:"center",opacity:can?1:0.4,cursor:can?"pointer":"not-allowed"}}>
-            {T("Enviar Solicitud de Afiliación","Send Affiliation Request","Envoyer la demande d'affiliation","Antrag auf Anschluss senden","Enviar Solicitação de Afiliação","Invia richiesta di affiliazione")} →
-          </button>
-        </div>
-        <SoporteLink contexto={T("Registro de Parroquia","Parish registration","Inscription de la paroisse","Pfarreiregistrierung","Registro de paróquia","Registrazione della parrocchia")}/>
-      </div>
-    </div>
-  );
-}
 
 // ─── REGISTRO DIÓCESIS ──────────────────────────────────────────────
-function RegisterDiocesisForm({onNext,onBack}){
-  const [d,setD]=useState({});
-  const set=(k,v)=>setD(p=>({...p,[k]:v}));
-
-  const can=d.nombre&&d.country&&d.curia&&d.obispo&&d.contacto&&d.email&&d.phone&&d.phoneCode;
-  return(
-    <div style={OVERLAY}>
-      <div style={{...MODAL,maxWidth:680}}>
-        <h2 style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:17,marginBottom:20}}>
-          🏛️ {T("Registro de Diócesis","Diocese Registration","Inscription du diocèse","Diözesenregistrierung","Registro de Diocese","Registrazione della diocesi")}
-        </h2>
-        <FRow label={T("Nombre de la Diócesis","Diocese Name","Nom du diocèse","Name der Diözese","Nome da Diocese","Nome della diocesi")}>
-          <Input value={d.nombre} onChange={v=>set("nombre",v)} placeholder={T("Nombre completo de la diócesis","Full diocese name","Nom complet du diocèse","Vollständiger Name der Diözese","Nome completo da diocese","Nome completo della diocesi")}/>
-        </FRow>
-        <FRow label={T("País","Country","Pays","Land","País","Paese")}>
-          <select value={d.country||""} onChange={e=>set("country",e.target.value)} style={INP}>
-            <option value="">{T("Selecciona el país","Select country","Sélectionnez le pays","Land auswählen","Selecione o país","Seleziona il paese")}</option>
-            {COUNTRIES.map(c=><option key={c} value={c}>{c}</option>)}
-          </select>
-        </FRow>
-        <FRow label={T("Dirección de la Curia Diocesana","Address of the Diocesan Curia","Adresse de la Curie diocésaine","Adresse der Diözesankurie","Endereço da Cúria Diocesana","Indirizzo della Curia diocesana")}>
-          <Input value={d.curia} onChange={v=>set("curia",v)}
-            placeholder={T("Calle, número, municipio, estado","Street, number, municipality, state","Rue, numéro, municipalité, état","Straße, Nummer, Gemeinde, Bundesland","Rua, número, município, estado","Via, numero, comune, stato")}/>
-        </FRow>
-        <FRow label={T("Nombre completo del Señor Obispo","Full name of the Bishop","Nom complet de Monseigneur l'Évêque","Vollständiger Name des Bischofs","Nome completo do Senhor Bispo","Nome completo di Sua Eccellenza il Vescovo")}>
-          <Input value={d.obispo} onChange={v=>set("obispo",v)} placeholder="Mons. Juan Ejemplo García"/>
-        </FRow>
-                <FRow label={T("Persona de contacto","Contact person","Personne de contact","Kontaktperson","Pessoa de contato","Persona di contatto")}>
-          <Input value={d.contacto} onChange={v=>set("contacto",v)} placeholder={T("Nombre completo","Full name","Nom complet","Vollständiger Name","Nome completo","Nome completo")}/>
-        </FRow>
-        <FRow label={T("Correo electrónico","Email","E-mail","E-Mail","E-mail","Email")}>
-          <Input type="email" value={d.email} onChange={v=>set("email",v)} placeholder="cancilleria@diocesis.org"/>
-        </FRow>
-        <FRow label={T("Teléfono","Phone","Téléphone","Telefon","Telefone","Telefono")}>
-          <PhoneField phoneCode={d.phoneCode} phone={d.phone} onChange={set}/>
-        </FRow>
-        <div style={{display:"flex",gap:12}}>
-          <button onClick={onBack} style={{...BTN("sec"),flex:1,justifyContent:"center"}}>← {T("Regresar","Back","Retour","Zurück","Voltar","Indietro")}</button>
-          <button onClick={()=>can&&onNext(d)} disabled={!can}
-            style={{...BTN("pri"),flex:2,justifyContent:"center",opacity:can?1:0.4,cursor:can?"pointer":"not-allowed"}}>
-            {T("Enviar Solicitud de Afiliación","Send Affiliation Request","Envoyer la demande d'affiliation","Antrag auf Anschluss senden","Enviar Solicitação de Afiliação","Invia richiesta di affiliazione")} →
-          </button>
-        </div>
-        <SoporteLink contexto={T("Registro de Diócesis","Diocese registration","Inscription du diocèse","Diözesenregistrierung","Registro de diocese","Registrazione della diocesi")}/>
-      </div>
-    </div>
-  );
-}
 
 // ─── PASSWORD MODAL ─────────────────────────────────────────────────
-function PasswordModal({onNext,onBack,email}){
-  const [pw,setPw]=useState("");
-  const [pw2,setPw2]=useState("");
-  const [checking,setChecking]=useState(false);
-  const [dupErr,setDupErr]=useState("");
-  const str=pwdStrength(pw);
-  const strLabels=[T("Muy débil","Very weak","Très faible","Sehr schwach","Muito fraca","Molto debole"),T("Débil","Weak","Faible","Schwach","Fraca","Debole"),T("Regular","Fair","Moyen","Mittel","Regular","Discreta"),T("Buena","Good","Bon","Gut","Boa","Buona"),T("Excelente","Excellent","Excellent","Ausgezeichnet","Excelente","Eccellente")];
-  const strColors=["#EF4444","#F97316","#EAB308","#22C55E","#10B981"];
-  const match=pw&&pw2&&pw===pw2;
-  const valid=str>=3&&match;
-  const handleNext=async()=>{
-    if(!valid)return;
-    setChecking(true);setDupErr("");
-    try{
-      if(email){
-        const{data,error}=await supabase.rpc("email_registrado",{p_email:email});
-        if(!error&&data===true){
-          setDupErr(T("Ya existe una cuenta con este correo. Inicia sesión o recupera tu contraseña.","An account with this email already exists. Sign in or reset your password.","Un compte existe déjà avec cet e-mail. Connectez-vous ou réinitialisez votre mot de passe.","Es existiert bereits ein Konto mit dieser E-Mail-Adresse. Melden Sie sich an oder setzen Sie Ihr Passwort zurück.","Já existe uma conta com este e-mail. Faça login ou recupere sua senha.","Esiste già un account con questa email. Accedi oppure recupera la password."));
-          setChecking(false);
-          return;
-        }
-      }
-      onNext(pw);
-    }catch{
-      onNext(pw); // si la verificación falla por red, no bloqueamos el flujo —
-                  // crear-sesion-pago vuelve a comprobarlo de todas formas.
-    }
-    setChecking(false);
-  };
-  return(
-    <div style={OVERLAY}>
-      <div style={{...MODAL,maxWidth:460}}>
-        <div style={{textAlign:"center",marginBottom:20}}>
-          <div style={{fontSize:32,marginBottom:8}}>🔐</div>
-          <h2 style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:17}}>
-            {T("Crea tu contraseña","Create your password","Créez votre mot de passe","Erstellen Sie Ihr Passwort","Crie sua senha","Crea la tua password")}
-          </h2>
-          <p style={{color:C.ivoryM,fontSize:13,marginTop:6}}>
-            {T("Mínimo 8 caracteres, 1 mayúscula, 1 número y 1 carácter especial","Minimum 8 characters, 1 uppercase, 1 number, 1 special character","Minimum 8 caractères, 1 majuscule, 1 chiffre et 1 caractère spécial","Mindestens 8 Zeichen, 1 Großbuchstabe, 1 Zahl und 1 Sonderzeichen","Mínimo de 8 caracteres, 1 maiúscula, 1 número e 1 caractere especial","Minimo 8 caratteri, 1 maiuscola, 1 numero e 1 carattere speciale")}
-          </p>
-        </div>
-        <FRow label={T("Contraseña","Password","Mot de passe","Passwort","Senha","Password")}>
-          <PasswordInput value={pw} onChange={setPw} placeholder={T("Ingresa tu contraseña","Enter your password","Saisissez votre mot de passe","Geben Sie Ihr Passwort ein","Digite sua senha","Inserisci la tua password")}/>
-          {pw&&(
-            <div style={{marginTop:8}}>
-              <div style={{display:"flex",gap:4,marginBottom:4}}>
-                {[0,1,2,3].map(i=>(
-                  <div key={i} style={{flex:1,height:4,borderRadius:2,
-                    background:str>i?strColors[str]:"rgba(255,255,255,0.1)"}}/>
-                ))}
-              </div>
-              <p style={{color:strColors[str],fontSize:12}}>{strLabels[str]}</p>
-            </div>
-          )}
-        </FRow>
-        <FRow label={T("Confirmar contraseña","Confirm password","Confirmer le mot de passe","Passwort bestätigen","Confirmar senha","Conferma password")}>
-          <PasswordInput value={pw2} onChange={setPw2} placeholder={T("Repite tu contraseña","Repeat your password","Répétez votre mot de passe","Wiederholen Sie Ihr Passwort","Repita sua senha","Ripeti la password")}/>
-          {pw2&&!match&&<p style={{color:"#F87171",fontSize:12,marginTop:4}}>
-            {T("Las contraseñas no coinciden","Passwords do not match","Les mots de passe ne correspondent pas","Die Passwörter stimmen nicht überein","As senhas não coincidem","Le password non corrispondono")}
-          </p>}
-          {match&&<p style={{color:"#22C55E",fontSize:12,marginTop:4}}>
-            ✓ {T("Las contraseñas coinciden","Passwords match","Les mots de passe correspondent","Die Passwörter stimmen überein","As senhas coincidem","Le password corrispondono")}
-          </p>}
-        </FRow>
-        {dupErr&&<p style={{color:"#F87171",fontFamily:"'Crimson Text',serif",
-          fontSize:14,marginTop:4,marginBottom:4}}>⚠️ {dupErr}</p>}
-        <div style={{display:"flex",gap:12,marginTop:8}}>
-          <button onClick={onBack} style={{...BTN("sec"),flex:1,justifyContent:"center"}}>← {T("Regresar","Back","Retour","Zurück","Voltar","Indietro")}</button>
-          <button onClick={handleNext} disabled={!valid||checking}
-            style={{...BTN("pri"),flex:2,justifyContent:"center",opacity:(valid&&!checking)?1:0.4,cursor:(valid&&!checking)?"pointer":"not-allowed"}}>
-            {checking?T("Verificando…","Checking…","Vérification…","Wird geprüft…","Verificando…","Verifica in corso…"):T("Proceder al Pago","Proceed to Payment","Procéder au paiement","Zur Zahlung fortfahren","Prosseguir para o Pagamento","Procedi al pagamento")} →
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // ─── ALTA DE CUENTA Y PERFIL EN SUPABASE ──────────────────────────
 // crearCuentaUsuario vive en ./components/PaymentModal.jsx (su único consumidor).
 
 // ─── PAYMENT MODAL (Stripe Checkout vía Supabase Edge Function) ────
 // ─── THANK YOU MODAL ───────────────────────────────────────────────
-function ThankYouModal({formData,onClose}){
-  return(
-    <div style={OVERLAY}>
-      <div style={{...MODAL,maxWidth:500,textAlign:"center"}}>
-        <div style={{fontSize:48,marginBottom:12}}>🙏</div>
-        <h2 style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:22,marginBottom:12}}>
-          {T("¡Bienvenido/a!","Welcome!","Bienvenue !","Willkommen!","Bem-vindo/a!","Benvenuto/a!")}
-        </h2>
-        <p style={{color:C.ivory,fontFamily:"'Crimson Text',serif",fontSize:17,lineHeight:1.7,marginBottom:16}}>
-          {T(
-            `Gracias por tu inscripción, ${formData.nombre||""}. Tu pago ha sido procesado exitosamente. Hemos enviado la confirmación y tus datos de registro al correo ${formData.email||""}. Tu catequista asignada es Nelly Montoya.`,
-            `Thank you for registering, ${formData.nombre||""}. Your payment was processed successfully. We sent confirmation to ${formData.email||""}. Your assigned catechist is Nelly Montoya.`,
-            `Merci pour votre inscription, ${formData.nombre||""}. Votre paiement a été traité avec succès. Nous avons envoyé la confirmation et vos données d'inscription à l'adresse ${formData.email||""}. Votre catéchiste assignée est Nelly Montoya.`,
-            `Vielen Dank für Ihre Anmeldung, ${formData.nombre||""}. Ihre Zahlung wurde erfolgreich verarbeitet. Wir haben die Bestätigung und Ihre Anmeldedaten an ${formData.email||""} gesendet. Ihre zugewiesene Katechetin ist Nelly Montoya.`,
-            `Obrigado pela sua inscrição, ${formData.nombre||""}. Seu pagamento foi processado com sucesso. Enviamos a confirmação e seus dados de registro para o e-mail ${formData.email||""}. Sua catequista designada é Nelly Montoya.`,
-            `Grazie per la tua iscrizione, ${formData.nombre||""}. Il tuo pagamento è stato elaborato con successo. Abbiamo inviato la conferma e i tuoi dati di registrazione all'indirizzo ${formData.email||""}. La tua catechista assegnata è Nelly Montoya.`
-          )}
-        </p>
-        <div style={{...CARD,background:"rgba(200,169,81,0.08)",marginBottom:20,textAlign:"left"}}>
-          <p style={{color:C.goldL,fontFamily:"'Cinzel',serif",fontSize:14,marginBottom:8}}>
-            {T("Tu catequista asignada:","Your assigned catechist:","Votre catéchiste assignée :","Ihre zugewiesene Katechetin:","Sua catequista designada:","La tua catechista assegnata:")}
-          </p>
-          <p style={{color:C.ivory,fontFamily:"'Crimson Text',serif",fontSize:17}}>🧑‍🏫 Nelly Montoya</p>
-          {formData.registrationId&&(
-            <div style={{marginTop:12,borderTop:`1px solid ${C.borderD}`,paddingTop:10}}>
-              <p style={{color:C.goldL,fontFamily:"'Cinzel',serif",fontSize:12,letterSpacing:"0.08em",marginBottom:4}}>
-                {T("IDENTIFICADOR DE REGISTRO","REGISTRATION ID","IDENTIFIANT D'INSCRIPTION","REGISTRIERUNGSKENNUNG","IDENTIFICADOR DE REGISTRO","IDENTIFICATIVO DI REGISTRAZIONE")}
-              </p>
-              <p style={{color:C.gold,fontFamily:"'Cinzel',serif",fontSize:16,fontWeight:700,letterSpacing:"0.12em"}}>
-                {formData.registrationId}
-              </p>
-              <p style={{color:C.ivoryM,fontSize:11,marginTop:4}}>
-                {T("Este identificador se ha enviado a tu correo junto con los datos de tu registro.","This ID has been sent to your email along with your registration details.","Cet identifiant a été envoyé à votre e-mail avec les données de votre inscription.","Diese Kennung wurde zusammen mit Ihren Anmeldedaten an Ihre E-Mail gesendet.","Este identificador foi enviado ao seu e-mail junto com os dados do seu registro.","Questo identificativo è stato inviato alla tua email insieme ai dati della tua registrazione.")}
-              </p>
-            </div>
-          )}
-        </div>
-        <button onClick={onClose} style={{...BTN("pri"),width:"100%",justifyContent:"center"}}>
-          {T("Comenzar mi formación en Tronco Común 1","Begin my formation in Common Core 1","Commencer ma formation en Tronc Commun 1","Meine Ausbildung in Gemeinsamer Grundlagenkurs 1 beginnen","Começar minha formação no Tronco Comum 1","Inizia la mia formazione nel Tronco Comune 1")} →
-        </button>
-      </div>
-    </div>
-  );
-}
 
 // ─── ORG THANK YOU (Parroquia / Diócesis) ─────────────────────────
-function OrgThankYouModal({orgType,formData,onClose}){
-  return(
-    <div style={OVERLAY}>
-      <div style={{...MODAL,maxWidth:500,textAlign:"center"}}>
-        <div style={{fontSize:48,marginBottom:12}}>{orgType==="parroquia"?"⛪":orgType==="centroadiccion"?"🏥":"🏛️"}</div>
-        <h2 style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:20,marginBottom:12}}>
-          {T("¡Solicitud Recibida!","Request Received!","Demande reçue !","Antrag erhalten!","Solicitação Recebida!","Richiesta ricevuta!")}
-        </h2>
-        <p style={{color:C.ivory,fontFamily:"'Crimson Text',serif",fontSize:16,lineHeight:1.7}}>
-          {T(
-            `Hemos recibido la solicitud de afiliación de ${formData.nombre||""}. En breve nos pondremos en contacto al correo ${formData.email||""} para finalizar el proceso.`,
-            `We have received the affiliation request for ${formData.nombre||""}. We will contact you at ${formData.email||""} shortly to complete the process.`,
-            `Nous avons reçu la demande d'affiliation de ${formData.nombre||""}. Nous vous contacterons sous peu à l'adresse ${formData.email||""} pour finaliser le processus.`,
-            `Wir haben den Antrag auf Anschluss von ${formData.nombre||""} erhalten. Wir werden Sie in Kürze unter ${formData.email||""} kontaktieren, um den Vorgang abzuschließen.`,
-            `Recebemos a solicitação de afiliação de ${formData.nombre||""}. Em breve entraremos em contato pelo e-mail ${formData.email||""} para finalizar o processo.`,
-            `Abbiamo ricevuto la richiesta di affiliazione di ${formData.nombre||""}. Ti contatteremo a breve all'indirizzo ${formData.email||""} per completare il processo.`
-          )}
-        </p>
-        <button onClick={onClose} style={{...BTN("pri"),marginTop:24,width:"100%",justifyContent:"center"}}>
-          {T("Cerrar","Close","Fermer","Schließen","Fechar","Chiudi")}
-        </button>
-      </div>
-    </div>
-  );
-}
 
 // ─── SECTION COMPLETE MODAL ────────────────────────────────────────
 
@@ -1006,96 +725,6 @@ function OrgThankYouModal({orgType,formData,onClose}){
 
 
 // ─── REGISTRO CENTRO DE TRATAMIENTO DE ADICCIONES ────────────────
-function RegisterCentroForm({onNext,onBack}){
-  const [d,setD]=useState({});
-  const set=(k,v)=>setD(p=>({...p,[k]:v}));
-
-  const can=d.nombre&&d.contacto&&d.email&&d.phone&&d.phoneCode&&
-            d.country&&d.estado&&d.municipio&&d.calle&&d.numero;
-  return(
-    <div style={OVERLAY}>
-      <div style={{...MODAL,maxWidth:680}}>
-        <h2 style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:17,marginBottom:20}}>
-          🏥 {T("Registro de Centro de Tratamiento de Adicciones","Addiction Treatment Center Registration","Inscription du Centre de Traitement des Addictions","Registrierung des Suchtbehandlungszentrums","Registro de Centro de Tratamento de Dependências","Registrazione del Centro di Trattamento delle Dipendenze")}
-        </h2>
-
-        <FRow label={T("Nombre completo de la Institución","Full name of the Institution","Nom complet de l'établissement","Vollständiger Name der Einrichtung","Nome completo da Instituição","Nome completo dell'istituzione")}>
-          <Input value={d.nombre} onChange={v=>set("nombre",v)}
-            placeholder={T("Nombre completo y oficial de la Institución","Full official name of the Institution","Nom complet et officiel de l'établissement","Vollständiger und offizieller Name der Einrichtung","Nome completo e oficial da Instituição","Nome completo e ufficiale dell'istituzione")}/>
-        </FRow>
-
-        <FRow label={T("Nombre de la persona de contacto","Name of the contact person","Nom de la personne de contact","Name der Kontaktperson","Nome da pessoa de contato","Nome della persona di contatto")}>
-          <Input value={d.contacto} onChange={v=>set("contacto",v)}
-            placeholder={T("Nombre completo","Full name","Nom complet","Vollständiger Name","Nome completo","Nome completo")}/>
-        </FRow>
-
-        <FRow label={T("Correo electrónico de contacto","Contact email","E-mail de contact","Kontakt-E-Mail","E-mail de contato","Email di contatto")}>
-          <Input type="email" value={d.email} onChange={v=>set("email",v)}
-            placeholder="contacto@centro.org"/>
-        </FRow>
-
-        <FRow label={T("Número telefónico de contacto","Contact phone number","Numéro de téléphone de contact","Kontakttelefonnummer","Número de telefone de contato","Numero di telefono di contatto")}>
-          <PhoneField phoneCode={d.phoneCode} phone={d.phone} onChange={set}/>
-        </FRow>
-
-        {/* ─── Ubicación ─── */}
-        <div style={{...CARD,background:"rgba(200,169,81,0.06)",
-          border:`1px solid ${C.gold}30`,marginBottom:16,padding:"14px 16px"}}>
-          <p style={{...LBL,marginBottom:12,fontSize:13}}>
-            {T("Ubicación de la Institución","Location of the Institution","Emplacement de l'établissement","Standort der Einrichtung","Localização da Instituição","Ubicazione dell'istituzione")}
-          </p>
-          <FRow label={T("País","Country","Pays","Land","País","Paese")}>
-            <select value={d.country||""} onChange={e=>set("country",e.target.value)} style={INP}>
-              <option value="">{T("Selecciona el país","Select country","Sélectionnez le pays","Land auswählen","Selecione o país","Seleziona il paese")}</option>
-              {COUNTRIES.map(c=><option key={c} value={c}>{c}</option>)}
-            </select>
-          </FRow>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-            <FRow label={T("Estado / Provincia","State / Province","État / Province","Bundesland / Provinz","Estado / Província","Stato / Provincia")}>
-              <Input value={d.estado} onChange={v=>set("estado",v)}
-                placeholder={T("Estado o Provincia","State or Province","État ou Province","Bundesland oder Provinz","Estado ou Província","Stato o Provincia")}/>
-            </FRow>
-            <FRow label={T("Municipalidad / Alcaldía","Municipality / Borough","Municipalité / Arrondissement","Gemeinde / Bezirk","Município / Distrito","Comune / Circoscrizione")}>
-              <Input value={d.municipio} onChange={v=>set("municipio",v)}
-                placeholder={T("Municipalidad o Alcaldía","Municipality or Borough","Municipalité ou Arrondissement","Gemeinde oder Bezirk","Município ou Distrito","Comune o Circoscrizione")}/>
-            </FRow>
-            <FRow label={T("Calle","Street","Rue","Straße","Rua","Via")}>
-              <Input value={d.calle} onChange={v=>set("calle",v)}
-                placeholder={T("Nombre de la calle","Street name","Nom de la rue","Straßenname","Nome da rua","Nome della via")}/>
-            </FRow>
-            <FRow label={T("Número","Number","Numéro","Nummer","Número","Numero")}>
-              <Input value={d.numero} onChange={v=>set("numero",v)} placeholder="123"/>
-            </FRow>
-          </div>
-        </div>
-
-        {/* Nota: afiliación sin costo + beneficio del 20% */}
-        <div style={{...CARD,background:"rgba(200,169,81,0.06)",
-          border:`1px solid ${C.gold}30`,marginBottom:16,padding:"12px 16px"}}>
-          <p style={{color:C.goldL,fontFamily:"'Crimson Text',serif",fontSize:14,
-            lineHeight:1.65,marginBottom:8}}>
-            ✅ {T("La afiliación de su Centro no tiene costo alguno. Este registro no genera ningún pago.","Affiliating your Center is completely free of charge. This registration involves no payment.","L'affiliation de votre Centre est entièrement gratuite. Cette inscription n'entraîne aucun paiement.","Der Anschluss Ihres Zentrums ist völlig kostenlos. Diese Registrierung erfordert keine Zahlung.","A afiliação do seu Centro não tem custo algum. Este registro não gera nenhum pagamento.","L'affiliazione del tuo Centro è completamente gratuita. Questa registrazione non comporta alcun pagamento.")}
-          </p>
-          <p style={{color:C.goldL,fontFamily:"'Crimson Text',serif",fontSize:14,lineHeight:1.65}}>
-            💊 {T("Al completar la afiliación, todos sus pacientes en tratamiento activo podrán acceder a la formación sacramental con un 20% de descuento sobre la cuota de recuperación habitual.","Upon completing affiliation, all your active patients will access sacramental formation with a 20% discount on the standard recovery fee.","Une fois l'affiliation terminée, tous vos patients en traitement actif pourront accéder à la formation sacramentelle avec une réduction de 20 % sur la contribution habituelle.","Nach Abschluss des Anschlusses erhalten alle Ihre Patienten in aktiver Behandlung Zugang zur sakramentalen Ausbildung mit einem Rabatt von 20 % auf den üblichen Genesungsbeitrag.","Ao concluir a afiliação, todos os seus pacientes em tratamento ativo poderão acessar a formação sacramental com 20% de desconto na taxa de recuperação habitual.","Al completamento dell'affiliazione, tutti i tuoi pazienti in trattamento attivo potranno accedere alla formazione sacramentale con uno sconto del 20% sulla quota di recupero abituale.")}
-          </p>
-        </div>
-
-        <div style={{display:"flex",gap:12}}>
-          <button onClick={onBack} style={{...BTN("sec"),flex:1,justifyContent:"center"}}>
-            ← {T("Regresar","Back","Retour","Zurück","Voltar","Indietro")}
-          </button>
-          <button onClick={()=>can&&onNext(d)} disabled={!can}
-            style={{...BTN("pri"),flex:2,justifyContent:"center",
-              opacity:can?1:0.4,cursor:can?"pointer":"not-allowed"}}>
-            {T("Enviar Solicitud de Afiliación","Send Affiliation Request","Envoyer la demande d'affiliation","Antrag auf Anschluss senden","Enviar Solicitação de Afiliação","Invia richiesta di affiliazione")} →
-          </button>
-        </div>
-        <SoporteLink contexto={T("Registro de Centro de Tratamiento de Adicciones","Addiction Treatment Center registration","Inscription du Centre de Traitement des Addictions","Registrierung des Suchtbehandlungszentrums","Registro de Centro de Tratamento de Dependências","Registrazione del Centro di Trattamento delle Dipendenze")}/>
-      </div>
-    </div>
-  );
-}
 
 
 // ─── APP PRINCIPAL ─────────────────────────────────────────────────
@@ -2160,14 +1789,12 @@ export default function App(){
       )}
 
       {/* REGISTRO */}
-      {phase==="register"&&isOrgFlow&&orgType==="parroquia"&&(
-        <RegisterParroquiaForm onNext={handleOrgRegisterNext} onBack={()=>setPhase("encuadre")}/>
-      )}
-      {phase==="register"&&isOrgFlow&&orgType==="diocesis"&&(
-        <RegisterDiocesisForm onNext={handleOrgRegisterNext} onBack={()=>setPhase("encuadre")}/>
-      )}
-      {phase==="register"&&isOrgFlow&&orgType==="centroadiccion"&&(
-        <RegisterCentroForm onNext={handleOrgRegisterNext} onBack={()=>setPhase("encuadre")}/>
+      {phase==="register"&&isOrgFlow&&(
+        <Suspense fallback={<div style={OVERLAY}><div style={{color:C.gold,fontFamily:"'Cinzel',serif"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div></div>}>
+          {orgType==="parroquia"&&<RegisterParroquiaForm onNext={handleOrgRegisterNext} onBack={()=>setPhase("encuadre")}/>}
+          {orgType==="diocesis"&&<RegisterDiocesisForm onNext={handleOrgRegisterNext} onBack={()=>setPhase("encuadre")}/>}
+          {orgType==="centroadiccion"&&<RegisterCentroForm onNext={handleOrgRegisterNext} onBack={()=>setPhase("encuadre")}/>}
+        </Suspense>
       )}
       {phase==="register"&&!isOrgFlow&&(
         <Suspense fallback={<div style={OVERLAY}><div style={{color:C.gold,fontFamily:"'Cinzel',serif"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div></div>}>
@@ -2177,7 +1804,9 @@ export default function App(){
       )}
 
       {phase==="password"&&!isOrgFlow&&(
-        <PasswordModal email={formData.email} onNext={handlePasswordNext} onBack={()=>setPhase("register")}/>
+        <Suspense fallback={<div style={OVERLAY}><div style={{color:C.gold,fontFamily:"'Cinzel',serif"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div></div>}>
+          <PasswordModal email={formData.email} onNext={handlePasswordNext} onBack={()=>setPhase("register")}/>
+        </Suspense>
       )}
 
       {phase==="payment"&&!isOrgFlow&&(
@@ -2187,13 +1816,14 @@ export default function App(){
         </Suspense>
       )}
 
-      {phase==="thankYou"&&!isOrgFlow&&(
-        <ThankYouModal formData={formData} onClose={handleThankYouClose}/>
-      )}
-
-      {phase==="orgThankYou"&&(
-        <OrgThankYouModal orgType={orgType} formData={formData}
-          onClose={()=>{setOrgType(null);setPhase("filter");}}/>
+      {(phase==="thankYou"&&!isOrgFlow||phase==="orgThankYou")&&(
+        <Suspense fallback={<div style={OVERLAY}><div style={{color:C.gold,fontFamily:"'Cinzel',serif"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div></div>}>
+          {phase==="thankYou"&&!isOrgFlow&&<ThankYouModal formData={formData} onClose={handleThankYouClose}/>}
+          {phase==="orgThankYou"&&(
+            <OrgThankYouModal orgType={orgType} formData={formData}
+              onClose={()=>{setOrgType(null);setPhase("filter");}}/>
+          )}
+        </Suspense>
       )}
 
       <ScrollbarStyle/>
