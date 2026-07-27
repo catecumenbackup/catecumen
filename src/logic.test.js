@@ -1,6 +1,7 @@
 // Pruebas de la lógica pura del curso (Vitest).  Ejecutar: npm run test
 import { describe, it, expect } from "vitest";
-import { buildSeq, translate, pick } from "./logic.js";
+import { buildSeq, translate, pick,
+  redondearCuota, calcularCuotaPais, aplicarBeca, PPP_TIER_USD } from "./logic.js";
 
 describe("buildSeq — secuencia del curso", () => {
   it("catequista solo cursa su módulo, sin TC1/TC2/Kerigma", () => {
@@ -100,5 +101,63 @@ describe("pick — selector de objeto multiidioma", () => {
   it("devuelve cadena vacía con objeto nulo o vacío", () => {
     expect(pick("es", null)).toBe("");
     expect(pick("es", {})).toBe("");
+  });
+});
+
+describe("redondearCuota — redondeo amigable por magnitud", () => {
+  it("montos pequeños (<100): al entero", () => {
+    expect(redondearCuota(10)).toBe(10);
+    expect(redondearCuota(66.4)).toBe(66);
+    expect(redondearCuota(29.6)).toBe(30);
+  });
+  it("cientos (100–999): al múltiplo de 5", () => {
+    expect(redondearCuota(132)).toBe(130);
+    expect(redondearCuota(133)).toBe(135);
+  });
+  it("miles (1000–9999): al múltiplo de 10", () => {
+    expect(redondearCuota(1164)).toBe(1160);
+    expect(redondearCuota(1166)).toBe(1170);
+  });
+  it("decenas de miles (≥10000): al múltiplo de 100", () => {
+    expect(redondearCuota(75040)).toBe(75000);
+    expect(redondearCuota(75060)).toBe(75100);
+  });
+});
+
+describe("calcularCuotaPais — cuotas PPP por país", () => {
+  it("EE.UU. (nivel 1, USD, fx 1): cuota completa 130, y ratios", () => {
+    const q = calcularCuotaPais({ tier: 1, cur: "USD", fx: 1 });
+    expect(q.b).toBe(130);
+    expect(q.c).toBe(130);
+    expect(q.p).toBe(130);
+    expect(q.pre).toBe(redondearCuota(130 * 0.60)); // presacramental/padrino
+    expect(q.cat).toBe(redondearCuota(130 * 0.77)); // catequista
+    expect(q.cur).toBe("USD");
+    expect(q.tier).toBe(1);
+    expect(q.chargeInUSD).toBe(false);
+  });
+  it("los 3 sacramentos cuestan igual (b=c=p)", () => {
+    const q = calcularCuotaPais({ tier: 2, cur: "MXN", fx: 17.58 });
+    expect(q.b).toBe(q.c);
+    expect(q.c).toBe(q.p);
+  });
+  it("marca chargeInUSD cuando el país lo indica (p.ej. Argentina)", () => {
+    const q = calcularCuotaPais({ tier: 4, cur: "USD", fx: 1, chargeInUSD: true });
+    expect(q.chargeInUSD).toBe(true);
+    expect(q.b).toBe(PPP_TIER_USD[4]); // 10 USD
+  });
+});
+
+describe("aplicarBeca — Beca de Esperanza (20%)", () => {
+  it("sin beca: devuelve el monto base (redondeado)", () => {
+    expect(aplicarBeca(130, false)).toBe(130);
+    expect(aplicarBeca(66, false)).toBe(66);
+  });
+  it("con beca: aplica 20% de descuento", () => {
+    expect(aplicarBeca(130, true)).toBe(104); // 130 * 0.8
+    expect(aplicarBeca(1160, true)).toBe(928); // 1160 * 0.8
+  });
+  it("redondea a entero montos con decimales", () => {
+    expect(aplicarBeca(66, true)).toBe(53); // 52.8 → 53
   });
 });

@@ -21,7 +21,8 @@ const imgBienvenida2 = "/bienvenida-comunidad.webp";
 const iconoBautismo = "/iconobautismo.svg";
 const iconoConfirmacion = "/iconoconfirmacion.svg";
 import { createClient } from "@supabase/supabase-js";
-import { buildSeq as buildSeqCore, translate as translateCore, pick as pickCore } from "./logic.js";
+import { buildSeq as buildSeqCore, translate as translateCore, pick as pickCore,
+  calcularCuotaPais, aplicarBeca } from "./logic.js";
 
 // ─── SUPABASE (producción) ─────────────────────────────────────────
 // Configura VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY en tu archivo .env
@@ -2236,12 +2237,8 @@ Ora potrai procedere con la registrazione e l'affiliazione del tuo Centro e pren
 // cada 1-3 meses para monedas estables, cada 2-4 semanas para las volátiles
 // (ARS, VES, CUP). Ver justificación de los casos chargeInUSD (AR/VE/CU/HT)
 // en sistema-precios-ppp/precios-ppp.js.
-const PPP_TIER_USD={1:130,2:66,3:30,4:10};
-
-// Ratios internos entre tipos de cuota, derivados del patrón ya usado en
-// producción (bautismo=confirmación=primera comunión = cuota completa;
-// presacramental/padrino ≈60% de la cuota completa; catequista ≈77%).
-const RATIO_PRE=0.60, RATIO_CAT=0.77, RATIO_PAD=0.60;
+// PPP_TIER_USD, RATIO_*, redondearCuota y calcularCuotaPais viven en logic.js
+// (probados con Vitest). Aquí solo el mapa de países y la tabla derivada.
 
 // País → { tier, moneda ISO a cobrar, tasa local por 1 USD, chargeInUSD }
 // NOTA sobre monedas: la plataforma usa un solo campo `cur` tanto para mostrar
@@ -2285,24 +2282,6 @@ const PPP_PAISES={
   "Cuba":{tier:4,cur:"USD",fx:1,chargeInUSD:true},
   "Haití":{tier:4,cur:"USD",fx:1,chargeInUSD:true},
 };
-
-// Redondeo "amigable" según la magnitud del monto en moneda local.
-function redondearCuota(monto){
-  if(monto>=10000) return Math.round(monto/100)*100;
-  if(monto>=1000)  return Math.round(monto/10)*10;
-  if(monto>=100)   return Math.round(monto/5)*5;
-  return Math.round(monto);
-}
-function calcularCuotaPais(info){
-  const full=redondearCuota(PPP_TIER_USD[info.tier]*info.fx);
-  return{
-    b:full,c:full,p:full,
-    pre:redondearCuota(full*RATIO_PRE),
-    cat:redondearCuota(full*RATIO_CAT),
-    pad:redondearCuota(full*RATIO_PAD),
-    cur:info.cur, tier:info.tier, chargeInUSD:!!info.chargeInUSD,
-  };
-}
 
 // ─── CUOTAS POR PAÍS (respaldo local; al iniciar se sobreescribe con Supabase cuotasporpais) ─
 // Generadas a partir del sistema PPP de arriba (ya no son montos manuales fijos).
@@ -3765,13 +3744,13 @@ function RegisterForm({userType,sacraments,onNext,onBack}){
       const map={bautismo:{k:"b",es:"Bautismo",en:"Baptism",fr:"Baptême",de:"Taufe",pt:"Batismo",it:"Battesimo"},
                  confirmacion:{k:"c",es:"Confirmación",en:"Confirmation",fr:"Confirmation",de:"Firmung",pt:"Crisma",it:"Cresima"},
                  primera_comunion:{k:"p",es:"Primera Comunión",en:"First Communion",fr:"Première Communion",de:"Erstkommunion",pt:"Primeira Comunhão",it:"Prima Comunione"}};
-      const disc=d.esPacienteRehabilitacion?0.8:1.0;
+      const esRehab=!!d.esPacienteRehabilitacion;
       const lines=sacraments.map(s=>{
         const m=map[s];
         if(!m) return null;
         const base=cuota[m.k];
-        return{label:T(m.es,m.en,m.fr,m.de,m.pt,m.it),amt:Math.round(base*disc),cur:cuota.cur,
-               original:disc<1?base:undefined};
+        return{label:T(m.es,m.en,m.fr,m.de,m.pt,m.it),amt:aplicarBeca(base,esRehab),cur:cuota.cur,
+               original:esRehab?base:undefined};
       }).filter(Boolean);
       const total=lines.reduce((a,l)=>a+l.amt,0);
       return{lines,total,cur:cuota.cur,becaDesc:d.esPacienteRehabilitacion?20:0};
@@ -3787,11 +3766,11 @@ function RegisterForm({userType,sacraments,onNext,onBack}){
         ? selSacs.map(k=>PICK(sacMap[k])||k).join(" · ")
         : T("Formación","Formation","Formation","Ausbildung","Formação","Formazione");
       const lineLabel=T(`Cuota única — ${sacLabel}`,`Flat fee — ${sacLabel}`,`Tarif unique — ${sacLabel}`,`Einmalige Gebühr — ${sacLabel}`,`Taxa única — ${sacLabel}`,`Tariffa unica — ${sacLabel}`);
-      const disc=d.esPacienteRehabilitacion?0.8:1.0;
+      const esRehab=!!d.esPacienteRehabilitacion;
       const base=cuota.pre||0;
-      const monto=Math.round(base*disc);
+      const monto=aplicarBeca(base,esRehab);
       return{
-        lines:[{label:lineLabel,amt:monto,cur:cuota.cur,original:disc<1?base:undefined}],
+        lines:[{label:lineLabel,amt:monto,cur:cuota.cur,original:esRehab?base:undefined}],
         total:monto, cur:cuota.cur, flatFee:true,
         becaDesc:d.esPacienteRehabilitacion?20:0,
       };

@@ -186,6 +186,15 @@ pantalla a la vez (constancias, mensajería, panel de cuenta, registro), proband
 el flujo de pago entre cada paso. Es la intervención de mayor riesgo del
 proyecto: abordarla como proyecto propio, no al final de una sesión.
 
+## Pruebas automatizadas (Vitest)
+
+Existe suite de pruebas con **Vitest**: `npm run test` (una pasada) y `npm run test:watch`. La lógica **pura** vive en **`src/logic.js`** (fuente única; `App.jsx` la importa y delega, no se duplica). Probado en `src/logic.test.js`:
+- `buildSeq(uType, sacs, testMode)` — secuencia del curso; el Módulo 0 `kerigma` solo para catecúmenos, una vez, antes de `tc1`; papás/padrinos/catequista sin Kerigma.
+- `translate` / `pick` — i18n con respaldo es→en→"".
+- `redondearCuota`, `calcularCuotaPais`, `aplicarBeca` (Beca de Esperanza 20%) — precios PPP.
+
+Al extraer más lógica de `App.jsx` (siguiente paso de modularización), moverla a `logic.js` y añadir pruebas. Es la red de seguridad para el pendiente grande (troceo del bundle).
+
 ## Control de versiones (git)
 
 El proyecto usa **git** (rama `main`, repo local en `C:\catecumen\.git`). Flujo: `git add -A` → `git commit -m "..."` tras cada cambio que funciona; commitear **antes** de subir `dist/` a Hostinger para tener punto de retorno. El `.gitignore` excluye `node_modules`, `dist`, `.env`/`.env.*` (claves) y `_archivo`.

@@ -44,3 +44,40 @@ export function translate(lang, es, en = es, fr = es, de = es, pt = es, it = es)
 export function pick(lang, obj) {
   return obj?.[lang] ?? obj?.es ?? obj?.en ?? "";
 }
+
+// ─── Precios PPP (paridad de poder adquisitivo) ──────────────────────────
+// Cuota completa en USD por nivel de país.
+export const PPP_TIER_USD = { 1: 130, 2: 66, 3: 30, 4: 10 };
+// Ratios internos entre tipos de cuota (derivados del patrón en producción):
+// sacramentos = cuota completa; presacramental/padrino ≈60%; catequista ≈77%.
+export const RATIO_PRE = 0.60, RATIO_CAT = 0.77, RATIO_PAD = 0.60;
+// Beca de Esperanza: 20% de descuento (pacientes en rehabilitación).
+export const BECA_ESPERANZA_PCT = 20;
+
+// Redondeo "amigable" según la magnitud del monto en moneda local.
+export function redondearCuota(monto) {
+  if (monto >= 10000) return Math.round(monto / 100) * 100;
+  if (monto >= 1000)  return Math.round(monto / 10) * 10;
+  if (monto >= 100)   return Math.round(monto / 5) * 5;
+  return Math.round(monto);
+}
+
+// Calcula todas las cuotas de un país a partir de { tier, fx, cur, chargeInUSD }.
+export function calcularCuotaPais(info) {
+  const full = redondearCuota(PPP_TIER_USD[info.tier] * info.fx);
+  return {
+    b: full, c: full, p: full,
+    pre: redondearCuota(full * RATIO_PRE),
+    cat: redondearCuota(full * RATIO_CAT),
+    pad: redondearCuota(full * RATIO_PAD),
+    cur: info.cur, tier: info.tier, chargeInUSD: !!info.chargeInUSD,
+  };
+}
+
+// Aplica el descuento de Beca de Esperanza (20%) a un monto base y redondea a
+// entero. Sin beca, devuelve el monto base redondeado. Es la matemática exacta
+// que usa el desglose de precio en el registro.
+export function aplicarBeca(base, esRehab) {
+  const disc = esRehab ? 1 - BECA_ESPERANZA_PCT / 100 : 1;
+  return Math.round(base * disc);
+}
