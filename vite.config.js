@@ -43,6 +43,10 @@ function inlineCss() {
 
 export default defineConfig({
   plugins: [react(), inlineCss()],
+  // JSX con runtime AUTOMÁTICO (como la app): sin esto, las pruebas de
+  // componentes transformaban el JSX al runtime clásico y fallaban con
+  // "React is not defined". No afecta al build (plugin-react ya usa automático).
+  esbuild: { jsx: "automatic" },
   build: {
     // No publicar sourcemaps: evitan exponer el código fuente legible en producción.
     sourcemap: false,
