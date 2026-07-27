@@ -79,7 +79,7 @@ export default function VideoModal({secId,vid,bridge,onWatched,onClose}){
         <div style={{fontSize:28,marginBottom:8}}>🎬</div>
         <h2 style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:16,marginBottom:4}}>{title}</h2>
         <p style={{color:C.ivoryM,fontSize:13,marginBottom:12}}>⏱ {vid.dur}</p>
-        {videoPrueba&&!videoError&&(
+        {!urlReal&&videoPrueba&&!videoError&&(
           <div style={{
             display:"inline-flex",alignItems:"center",gap:6,marginBottom:12,
             background:"rgba(248,113,113,0.12)",border:"1px solid rgba(248,113,113,0.35)",
