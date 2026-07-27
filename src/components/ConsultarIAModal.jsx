@@ -12,11 +12,26 @@ export default function ConsultarIAModal({ onClose, contexto = "" }) {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
   const [restantes, setRestantes] = useState(null); // consultas que le quedan esta semana
+  const [limite, setLimite] = useState(10);
   const scrollRef = useRef(null);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [msgs, loading]);
+
+  // Al abrir, consulta el cupo (sin gastar consulta) para mostrarlo desde el inicio.
+  useEffect(() => {
+    let vivo = true;
+    (async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke("consultar-magisterium", { body: { peek: true } });
+        if (!vivo || error || !data) return;
+        if (typeof data.restantes === "number") setRestantes(data.restantes);
+        if (typeof data.limite === "number") setLimite(data.limite);
+      } catch { /* sin conexión: se mostrará el cupo tras la primera consulta */ }
+    })();
+    return () => { vivo = false; };
+  }, []);
 
   const sugerencias = [
     T("¿Qué es la gracia santificante?", "What is sanctifying grace?", "Qu'est-ce que la grâce sanctifiante ?", "Was ist die heiligmachende Gnade?", "O que é a graça santificante?", "Cos'è la grazia santificante?"),
@@ -90,7 +105,7 @@ export default function ConsultarIAModal({ onClose, contexto = "" }) {
               <p style={{ color: C.ivoryM, fontSize: 11.5, margin: 0 }}>
                 {restantes === null
                   ? T("Respuestas fieles al Magisterio de la Iglesia", "Answers faithful to the Church's Magisterium", "Réponses fidèles au Magistère de l'Église", "Antworten treu zum Lehramt der Kirche", "Respostas fiéis ao Magistério da Igreja", "Risposte fedeli al Magistero della Chiesa")
-                  : T(`Te quedan ${restantes} consultas esta semana`, `You have ${restantes} questions left this week`, `Il vous reste ${restantes} questions cette semaine`, `Sie haben diese Woche noch ${restantes} Fragen`, `Restam ${restantes} consultas esta semana`, `Ti restano ${restantes} domande questa settimana`)}
+                  : T(`Te quedan ${restantes} de ${limite} consultas esta semana`, `${restantes} of ${limite} questions left this week`, `Il vous reste ${restantes} sur ${limite} questions cette semaine`, `Noch ${restantes} von ${limite} Fragen diese Woche`, `Restam ${restantes} de ${limite} consultas esta semana`, `Ti restano ${restantes} di ${limite} domande questa settimana`)}
               </p>
             </div>
           </div>
@@ -101,8 +116,11 @@ export default function ConsultarIAModal({ onClose, contexto = "" }) {
         <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: "18px 20px", display: "flex", flexDirection: "column", gap: 14, minHeight: 240 }}>
           {msgs.length === 0 && !loading && (
             <div style={{ margin: "auto 0", textAlign: "center" }}>
-              <p style={{ color: C.ivoryM, fontFamily: "'Crimson Text',serif", fontSize: 15, marginBottom: 14 }}>
+              <p style={{ color: C.ivoryM, fontFamily: "'Crimson Text',serif", fontSize: 15, marginBottom: 8 }}>
                 {T("Pregunta lo que quieras sobre la fe católica.", "Ask anything about the Catholic faith.", "Posez toute question sur la foi catholique.", "Frag alles über den katholischen Glauben.", "Pergunte o que quiser sobre a fé católica.", "Chiedi qualsiasi cosa sulla fede cattolica.")}
+              </p>
+              <p style={{ color: C.gold, fontFamily: "'Cinzel',serif", fontSize: 11.5, letterSpacing: "0.04em", marginBottom: 16 }}>
+                {T(`Tienes ${limite} consultas por semana; úsalas para profundizar en tu formación.`, `You have ${limite} questions per week; use them to deepen your formation.`, `Vous avez ${limite} questions par semaine ; utilisez-les pour approfondir votre formation.`, `Du hast ${limite} Fragen pro Woche; nutze sie, um deine Ausbildung zu vertiefen.`, `Você tem ${limite} consultas por semana; use-as para aprofundar sua formação.`, `Hai ${limite} domande a settimana; usale per approfondire la tua formazione.`)}
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {sugerencias.map((s, i) => (

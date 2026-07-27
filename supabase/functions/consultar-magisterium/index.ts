@@ -56,6 +56,8 @@ Deno.serve(async (req) => {
     const { data: { user }, error: uErr } = await sb.auth.getUser();
     if (uErr || !user) return json({ error: "unauthorized" }, 401);
 
+    const body = await req.json().catch(() => ({}));
+
     // 1.5) Límite por alumno (10 / 7 días). Se comprueba ANTES de gastar en la
     // API; solo se registra la consulta si Magisterium responde (más abajo).
     const { data: cupo } = await sb.rpc("consultas_ia_disponibles", {
@@ -63,12 +65,17 @@ Deno.serve(async (req) => {
     });
     const usadas = Number(cupo?.usadas ?? 0);
     const limite = Number(cupo?.limite ?? LIMITE_SEMANAL);
+    const restantes = Math.max(0, limite - usadas);
+
+    // "peek": el modal pregunta cuántas consultas le quedan al abrir, SIN gastar
+    // consulta ni llamar a Magisterium.
+    if (body?.peek === true) return json({ usadas, limite, restantes });
+
     if (usadas >= limite) {
       return json({ limited: true, usadas, limite }, 200); // regla de negocio, no error
     }
 
     // 2) Sanitizar la conversación: solo role/content, últimos turnos, con tope.
-    const body = await req.json().catch(() => ({}));
     const rawMsgs = Array.isArray(body?.messages) ? body.messages : [];
     const clean = rawMsgs
       .filter((m: unknown): m is { role: string; content: string } =>
