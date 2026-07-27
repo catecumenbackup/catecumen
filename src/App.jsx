@@ -421,14 +421,15 @@ function TourScene({tipo,video,webm,poster}){
       @keyframes tFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
       @keyframes tFloat2{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
       @keyframes tPulse{0%,100%{opacity:.35;transform:scale(.9)}50%{opacity:.85;transform:scale(1.08)}}
-      @keyframes tGlow{0%,100%{filter:drop-shadow(0 0 4px rgba(200,169,81,.5))}50%{filter:drop-shadow(0 0 16px rgba(200,169,81,.95))}}
+      /* tGlow (animación de filter) eliminada: no se puede componer y Lighthouse
+         la penaliza. Se usa un drop-shadow estático en .tbig en su lugar. */
       @keyframes tSpin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
       @keyframes tRise{0%{transform:translateY(12px);opacity:0}40%,100%{transform:translateY(0);opacity:1}}
       @keyframes tSweep{0%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
       @keyframes tOrbit{from{transform:rotate(0) translateX(34px) rotate(0)}to{transform:rotate(360deg) translateX(34px) rotate(-360deg)}}
       @keyframes tBlink{0%,100%{opacity:.25}50%{opacity:1}}
       .tstar{position:absolute;color:#E5C97A;animation:tBlink 2.4s ease-in-out infinite}
-      .tbig{font-size:52px;animation:tFloat 3.6s ease-in-out infinite, tGlow 3.6s ease-in-out infinite}
+      .tbig{font-size:52px;animation:tFloat 3.6s ease-in-out infinite;filter:drop-shadow(0 0 11px rgba(200,169,81,.8))}
     `}</style>
   );
   const center={position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"};
@@ -587,7 +588,7 @@ function WelcomeModal({onContinue,onLogin}){
   return(
     <div style={OVERLAY}>
       <div style={{...MODAL, textAlign:"center", maxWidth:560, display:"flex", flexDirection:"column"}}>
-        <img src="/catecumenlogo.png" alt="Logo Catecumen"
+        <img src="/catecumenlogo.webp" alt="Logo Catecumen" width="300" height="100"
           style={{maxWidth:230,width:"100%",height:"auto",margin:"0 auto 2px",
             filter:"drop-shadow(0 2px 10px rgba(200,169,81,0.55)) drop-shadow(0 0 2px rgba(120,90,20,0.35))"}}/>
         <p style={{fontStyle:"italic",color:C.ivoryM,fontSize:16,marginTop:-2,marginBottom:12,letterSpacing:"0.04em"}}>
