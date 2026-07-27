@@ -16,7 +16,8 @@ describe("PaymentModal", () => {
     render(<PaymentModal formData={{ country: "México", priceBreakdown: pbBase }}
       userType="catecumeno" selectedSacs={["bautismo"]} onSuccess={vi.fn()} onBack={vi.fn()} />);
     expect(screen.getByText(/Pagar en línea con tarjeta/i)).toBeInTheDocument();
-    expect(screen.getByText(/350/)).toBeInTheDocument();
+    expect(screen.getByText("Total")).toBeInTheDocument();
+    expect(screen.getAllByText(/350/).length).toBeGreaterThan(0); // línea + total
   });
 
   it("MXN ofrece además el método de vale (OXXO)", () => {
@@ -35,7 +36,7 @@ describe("PaymentModal", () => {
   it("ruta gratuita (beca 100%): muestra el mensaje de beca, no el de pago", () => {
     render(<PaymentModal formData={{ country: "México", freeRegistration: true, estaInternado: true }}
       userType="catecumeno" selectedSacs={["bautismo"]} onSuccess={vi.fn()} onBack={vi.fn()} />);
-    expect(screen.getByText(/Beca del 100%/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Beca del 100%/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Comenzar formación/i })).toBeInTheDocument();
     expect(screen.queryByText(/Pagar en línea/i)).toBeNull();
   });
