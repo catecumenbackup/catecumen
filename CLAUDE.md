@@ -195,7 +195,17 @@ Existe suite de pruebas con **Vitest**: `npm run test` (una pasada) y `npm run t
 
 Al extraer más lógica de `App.jsx` (siguiente paso de modularización), moverla a `logic.js` y añadir pruebas. Es la red de seguridad para el pendiente grande (troceo del bundle).
 
-**Pruebas de COMPONENTES (React Testing Library + jsdom):** configurado en `vite.config.js` (bloque `test`). Separación por extensión: **`*.test.js` → Node** (lógica pura, rápido); **`*.test.jsx` → jsdom** (componentes). Setup en `src/test-setup.js` (matchers de jest-dom + `cleanup`). Ejemplo/humo en `src/example.test.jsx`. DevDeps: `jsdom`, `@testing-library/{react,jest-dom,user-event}`. Requiere `npm i` tras el pull. Al trocear `App.jsx`, cada pantalla extraída se prueba con un `*.test.jsx`.
+**Pruebas de COMPONENTES (React Testing Library + jsdom):** configurado en `vite.config.js` (bloque `test`, con `esbuild.jsx:"automatic"` para el runtime JSX). Separación por extensión: **`*.test.js` → Node** (lógica pura, rápido); **`*.test.jsx` → jsdom** (componentes). Setup en `src/test-setup.js` (matchers de jest-dom + `cleanup`). DevDeps: `jsdom`, `@testing-library/{react,jest-dom,user-event}`. Requiere `npm i` tras el pull. Al trocear `App.jsx`, cada pantalla extraída se prueba con un `*.test.jsx`.
+
+### Modularización de `App.jsx` (en curso)
+Se está sacando el ámbito compartido y las pantallas del monolito, una pieza a la vez, con red de pruebas:
+- **`src/logic.js`** — lógica pura (buildSeq, translate, pick, precios PPP, formatSerie, cuotaFromRow, resolverCuota).
+- **`src/ui.js`** — estilos base (C, BTN, INP, LBL, checkStyle, radioStyle, CARD, MODAL, READ, FONT_READ, OVERLAY).
+- **`src/i18n.js`** — runtime i18n (SUPPORTED_LANGS, detectLang, LANG, setAppLanguage, T, PICK, SINO). Depende de logic.js.
+- **`src/supabaseClient.js`** — el cliente `supabase` (antes creado en App.jsx).
+- **`src/components/`** — componentes/pantallas extraídos, cada uno con su `*.test.jsx`: `EstrellasInput`, `AgendaTab`. Importan de `ui.js`/`i18n.js`/`supabaseClient.js`.
+
+Patrón para seguir: extraer pantalla → importar sus deps de esos módulos → escribir `*.test.jsx` → (opcional) `React.lazy`. `App.jsx` solo importa y usa; su definición ya NO vive ahí.
 
 ## Control de versiones (git)
 
