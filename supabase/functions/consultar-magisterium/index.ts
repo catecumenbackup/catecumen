@@ -37,7 +37,12 @@ const LANG_NAME: Record<string, string> = {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return json({ error: "method not allowed" }, 405);
-  if (!KEY) return json({ error: "server not configured" }, 500);
+  // Diagnóstico (no filtra el valor de la key, solo si existe).
+  console.log("consultar-magisterium:", JSON.stringify({ hasKey: !!KEY, base: BASE, model: MODEL }));
+  if (!KEY) {
+    console.error("MAGISTERIUM_API_KEY ausente: revisa el secret (nombre exacto, sensible a mayúsculas).");
+    return json({ error: "server not configured" }, 500);
+  }
 
   try {
     // 1) Usuario autenticado (alumno con sesión).
@@ -90,6 +95,7 @@ Deno.serve(async (req) => {
     });
     if (!r.ok) {
       const detail = await r.text().catch(() => "");
+      console.error("magisterium_error", r.status, detail.slice(0, 600));
       return json({ error: "magisterium_error", status: r.status, detail: detail.slice(0, 600) }, 502);
     }
     const data = await r.json();
@@ -104,6 +110,7 @@ Deno.serve(async (req) => {
       restantes: Math.max(0, limite - (usadas + 1)),
     });
   } catch (e) {
+    console.error("consultar-magisterium excepción:", e);
     return json({ error: String((e as Error)?.message ?? e) }, 500);
   }
 });
