@@ -33,7 +33,7 @@ describe("Dashboard", () => {
   it("calcula el porcentaje de progreso global (2/4 = 50%)", () => {
     render(<Dashboard {...base} />);
     expect(screen.getByText("50%")).toBeInTheDocument();
-    expect(screen.getByText(/2\/4/)).toBeInTheDocument();
+    expect(screen.getByText(/2\/4 temas completados/)).toBeInTheDocument();
   });
 
   it("abre la pestaña Mi Cuenta y muestra los datos del usuario", async () => {
