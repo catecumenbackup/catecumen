@@ -11,6 +11,7 @@ export default function ConsultarIAModal({ onClose, contexto = "" }) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
+  const [restantes, setRestantes] = useState(null); // consultas que le quedan esta semana
   const scrollRef = useRef(null);
 
   useEffect(() => {
@@ -36,6 +37,22 @@ export default function ConsultarIAModal({ onClose, contexto = "" }) {
         body: { messages: nuevos.map((m) => ({ role: m.role, content: m.content })), lang: LANG },
       });
       if (error || !data || data.error) throw new Error(data?.error || error?.message || "error");
+      // Límite semanal alcanzado: no se envió la consulta. Devuelve la pregunta.
+      if (data.limited) {
+        setMsgs((prev) => prev.slice(0, -1));
+        setInput(q);
+        setRestantes(0);
+        setErr(T(
+          `Alcanzaste tu límite de ${data.limite} consultas por semana. Podrás preguntar de nuevo en unos días.`,
+          `You've reached your limit of ${data.limite} questions per week. You'll be able to ask again in a few days.`,
+          `Vous avez atteint votre limite de ${data.limite} questions par semaine. Vous pourrez de nouveau poser des questions dans quelques jours.`,
+          `Sie haben Ihr Limit von ${data.limite} Fragen pro Woche erreicht. In einigen Tagen können Sie wieder fragen.`,
+          `Você atingiu seu limite de ${data.limite} consultas por semana. Poderá perguntar novamente em alguns dias.`,
+          `Hai raggiunto il limite di ${data.limite} domande a settimana. Potrai chiedere di nuovo tra qualche giorno.`,
+        ));
+        return;
+      }
+      if (typeof data.restantes === "number") setRestantes(data.restantes);
       setMsgs((prev) => [...prev, {
         role: "assistant",
         content: data.content || "",
@@ -71,7 +88,9 @@ export default function ConsultarIAModal({ onClose, contexto = "" }) {
                 {T("Consultar con Magisterium AI", "Ask Magisterium AI", "Consulter Magisterium AI", "Magisterium AI fragen", "Consultar o Magisterium AI", "Consulta Magisterium AI")}
               </h2>
               <p style={{ color: C.ivoryM, fontSize: 11.5, margin: 0 }}>
-                {T("Respuestas fieles al Magisterio de la Iglesia", "Answers faithful to the Church's Magisterium", "Réponses fidèles au Magistère de l'Église", "Antworten treu zum Lehramt der Kirche", "Respostas fiéis ao Magistério da Igreja", "Risposte fedeli al Magistero della Chiesa")}
+                {restantes === null
+                  ? T("Respuestas fieles al Magisterio de la Iglesia", "Answers faithful to the Church's Magisterium", "Réponses fidèles au Magistère de l'Église", "Antworten treu zum Lehramt der Kirche", "Respostas fiéis ao Magistério da Igreja", "Risposte fedeli al Magistero della Chiesa")
+                  : T(`Te quedan ${restantes} consultas esta semana`, `You have ${restantes} questions left this week`, `Il vous reste ${restantes} questions cette semaine`, `Sie haben diese Woche noch ${restantes} Fragen`, `Restam ${restantes} consultas esta semana`, `Ti restano ${restantes} domande questa settimana`)}
               </p>
             </div>
           </div>

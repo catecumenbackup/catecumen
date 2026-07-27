@@ -19,6 +19,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const KEY = Deno.env.get("MAGISTERIUM_API_KEY") ?? "";
 const BASE = (Deno.env.get("MAGISTERIUM_BASE_URL") ?? "https://www.magisterium.com/api/v1").replace(/\/$/, "");
 const MODEL = Deno.env.get("MAGISTERIUM_MODEL") ?? "magisterium-1";
+const LIMITE_SEMANAL = Number(Deno.env.get("MAGISTERIUM_LIMITE_SEMANAL") ?? "10"); // consultas por alumno / 7 días
+const VENTANA_DIAS = 7;
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -48,6 +50,17 @@ Deno.serve(async (req) => {
     );
     const { data: { user }, error: uErr } = await sb.auth.getUser();
     if (uErr || !user) return json({ error: "unauthorized" }, 401);
+
+    // 1.5) Límite por alumno (10 / 7 días). Se comprueba ANTES de gastar en la
+    // API; solo se registra la consulta si Magisterium responde (más abajo).
+    const { data: cupo } = await sb.rpc("consultas_ia_disponibles", {
+      p_limite: LIMITE_SEMANAL, p_dias: VENTANA_DIAS,
+    });
+    const usadas = Number(cupo?.usadas ?? 0);
+    const limite = Number(cupo?.limite ?? LIMITE_SEMANAL);
+    if (usadas >= limite) {
+      return json({ limited: true, usadas, limite }, 200); // regla de negocio, no error
+    }
 
     // 2) Sanitizar la conversación: solo role/content, últimos turnos, con tope.
     const body = await req.json().catch(() => ({}));
@@ -80,10 +93,15 @@ Deno.serve(async (req) => {
       return json({ error: "magisterium_error", status: r.status, detail: detail.slice(0, 600) }, 502);
     }
     const data = await r.json();
+
+    // Consulta exitosa → registrar el consumo (cuenta para el límite semanal).
+    await sb.rpc("registrar_consulta_ia").catch(() => {});
+
     return json({
       content: data?.choices?.[0]?.message?.content ?? "",
       citations: data?.citations ?? [],
       related_questions: data?.related_questions ?? [],
+      restantes: Math.max(0, limite - (usadas + 1)),
     });
   } catch (e) {
     return json({ error: String((e as Error)?.message ?? e) }, 500);
