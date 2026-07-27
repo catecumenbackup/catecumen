@@ -4,6 +4,7 @@ import { C, BTN, CARD, MODAL, OVERLAY } from "../ui.js";
 import { T, LANG } from "../i18n.js";
 
 const ConsultarIAModal = lazy(() => import("./ConsultarIAModal.jsx"));
+const ConsultarCatequistaModal = lazy(() => import("./ConsultarCatequistaModal.jsx"));
 
 // Cluster de soporte y biblioteca, compartido por varias pantallas.
 // Sin estado del ámbito de App; solo depende de ui.js e i18n.js.
@@ -246,14 +247,20 @@ export function LibraryButton({size="sec"}){
   );
 }
 
-export function ConsultarDudasButton({contexto="Consulta de dudas",size="sec"}){
+// Consulta del alumno a su catequista (mensajería interna). Modal propio, distinto
+// del soporte técnico, para no confundir al estudiante.
+export function ConsultarDudasButton({contexto="",size="sec"}){
   const [open,setOpen]=useState(false);
   return(
     <div style={{display:"inline-block"}}>
       <button onClick={()=>setOpen(true)} style={{...BTN(size),fontSize:12}}>
         💬 {T("Consultar a tu catequista","Ask your catechist","Consulter votre catéchiste","Deinen Katecheten fragen","Consultar seu catequista","Consulta il tuo catechista")}
       </button>
-      {open&&<SoporteModal contexto={contexto} onClose={()=>setOpen(false)}/>}
+      {open&&(
+        <Suspense fallback={<div style={OVERLAY}><div style={{color:C.gold,fontFamily:"'Cinzel',serif"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div></div>}>
+          <ConsultarCatequistaModal contexto={contexto} onClose={()=>setOpen(false)}/>
+        </Suspense>
+      )}
     </div>
   );
 }

@@ -11,7 +11,7 @@
 // limpie la caché vieja.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const CACHE_VERSION = "catecumen-v43";
+const CACHE_VERSION = "catecumen-v44";
 const APP_SHELL = ["/", "/manifest.webmanifest", "/catecumenlogo.png"];
 
 self.addEventListener("install", (event) => {
