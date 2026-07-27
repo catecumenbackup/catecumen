@@ -24,6 +24,7 @@ import { createClient } from "@supabase/supabase-js";
 import { buildSeq as buildSeqCore, translate as translateCore, pick as pickCore,
   calcularCuotaPais, aplicarBeca, formatSerie, cuotaFromRow, resolverCuota } from "./logic.js";
 import EstrellasInput from "./components/EstrellasInput.jsx";
+import { C, BTN, INP, LBL, checkStyle, radioStyle, CARD, MODAL, FONT_READ, READ, OVERLAY } from "./ui.js";
 
 // ─── SUPABASE (producción) ─────────────────────────────────────────
 // Configura VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY en tu archivo .env
@@ -114,72 +115,8 @@ function FlagImg({code,size=18}){
     onError={()=>setFailed(true)}/>;
 }
 
-// ─── TEMA (variables CSS: cambian según data-theme en <html>) ──────
-const C={bg:"var(--c-bg)",surface:"var(--c-surface)",card:"var(--c-card)",cardH:"var(--c-cardH)",
-  border:"var(--c-border)",borderD:"var(--c-borderD)",
-  gold:"var(--c-gold)",goldL:"var(--c-goldL)",ivory:"var(--c-ivory)",ivoryM:"var(--c-ivoryM)",
-  wine:"var(--c-wine)",green:"var(--c-green)",greenB:"var(--c-greenB)",blue:"var(--c-blue)",
-  blueB:"var(--c-blueB)",gray:"var(--c-gray)",t1:"var(--c-ivory)",t2:"var(--c-ivoryM)",tM:"var(--c-tM)"};
-
-// ─── ESTILOS REUTILIZABLES ────────────────────────────────────────
-const BTN=(v="pri")=>({
-  background:v==="pri"?`linear-gradient(135deg,${C.goldL} 0%,${C.gold} 45%,var(--c-goldDeep) 100%)`:"transparent",
-  color:v==="pri"?"var(--c-btnPriText)":C.gold,
-  border:v==="pri"?"none":`1px solid ${C.gold}60`,
-  borderRadius:10,padding:v==="pri"?"12px 28px":"10px 22px",
-  fontFamily:"'Cinzel',serif",fontSize:13,fontWeight:700,letterSpacing:"0.07em",
-  cursor:"pointer",transition:"all .22s ease",display:"inline-flex",alignItems:"center",gap:8,
-  boxShadow:v==="pri"?`0 2px 12px rgba(200,169,81,0.35),0 1px 0 rgba(255,255,255,0.15) inset`:"none",
-});
-const INP={width:"100%",background:"var(--c-inputBg)",border:`1px solid ${C.border}`,
-  borderRadius:8,padding:"11px 14px",color:C.ivory,fontFamily:"'Crimson Text',serif",
-  fontSize:16,outline:"none",transition:"border-color .2s",boxSizing:"border-box",
-  colorScheme:"var(--c-scheme, dark)"};
-const LBL={fontSize:12,color:"var(--c-label)",letterSpacing:"0.08em",textTransform:"uppercase",
-  marginBottom:4,display:"block",fontFamily:"'Cinzel',serif",fontWeight:600};
-
-// Checkbox/radio con apariencia 100% controlada (evita que el navegador/SO
-// pinte la casilla vacía como "rellena" — bug observado con accent-color
-// nativo en combinación con el tema oscuro del sistema en Windows/Edge).
-const checkStyle=(checked,size=18)=>({
-  appearance:"none",WebkitAppearance:"none",MozAppearance:"none",
-  width:size,height:size,flexShrink:0,cursor:"pointer",
-  borderRadius:4,border:`1.5px solid ${checked?C.gold:C.ivoryM}`,
-  background:checked?C.gold:"transparent",
-  transition:"background .15s ease,border-color .15s ease",
-});
-const radioStyle=(checked,size=16)=>({
-  ...checkStyle(checked,size),
-  borderRadius:"50%",
-  background:checked?`radial-gradient(circle,${C.gold} 42%,transparent 46%)`:"transparent",
-});
-const CARD={background:`linear-gradient(145deg,${C.card} 0%,var(--c-cardEnd) 100%)`,
-  border:`1px solid ${C.borderD}`,borderRadius:14,padding:"20px 22px",
-  boxShadow:"var(--c-cardShadow)"};
-const MODAL={background:`linear-gradient(160deg,var(--c-modalStart) 0%,${C.surface} 60%,var(--c-modalEnd) 100%)`,
-  border:`1px solid ${C.border}`,borderRadius:20,
-  maxWidth:700,width:"95%",maxHeight:"88vh",overflowY:"auto",padding:"32px 28px",
-  boxShadow:"var(--c-modalShadow)",
-  animation:"modalIn .28s cubic-bezier(.34,1.2,.64,1) both"};
-// Estilo de LECTURA para textos largos (encuadres, tarjetas, descripciones).
-// Aplica las 5 mejoras de legibilidad: (1) mayor tamaño e (2) interlineado,
-// (3) fuente sans del sistema —muy legible y SIN descarga extra— reservando
-// Cinzel/Crimson para títulos y acentos, (4) ancho de columna limitado (~66
-// caracteres) para no cansar la vista, (5) alto contraste (marfil), alineado a
-// la izquierda y sin mayúsculas sostenidas.
-const FONT_READ="-apple-system,'Segoe UI',Roboto,system-ui,'Helvetica Neue',Arial,sans-serif";
-const READ={fontFamily:FONT_READ,fontSize:17,lineHeight:1.75,color:C.ivory,
-  textAlign:"left",letterSpacing:"0.005em",maxWidth:"38em",marginLeft:"auto",marginRight:"auto"};
-const OVERLAY={
-  position:"fixed",
-  inset:0,
-  background:"rgba(250,247,240,0.82)",
-  display:"flex",
-  alignItems:"center",
-  justifyContent:"center",
-  zIndex:1000,
-  padding:16
-};
+// Estilos base (tema, botones, tarjetas, modales, lectura…) en src/ui.js.
+// Se importan arriba junto con el resto de módulos.
 const genCode=()=>[...Array(24)].map(()=>"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[Math.floor(Math.random()*36)]).join("").match(/.{6}/g).join("-");
 
 // Carga perezosa de una librería externa (UMD) por CDN. Devuelve una promesa.
