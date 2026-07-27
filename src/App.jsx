@@ -22,7 +22,7 @@ const iconoBautismo = "/iconobautismo.svg";
 const iconoConfirmacion = "/iconoconfirmacion.svg";
 import { createClient } from "@supabase/supabase-js";
 import { buildSeq as buildSeqCore, translate as translateCore, pick as pickCore,
-  calcularCuotaPais, aplicarBeca } from "./logic.js";
+  calcularCuotaPais, aplicarBeca, formatSerie } from "./logic.js";
 
 // ─── SUPABASE (producción) ─────────────────────────────────────────
 // Configura VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY en tu archivo .env
@@ -5583,7 +5583,8 @@ function CertificatesModal({formData,sequence,progress,insBySec,onClose}){
       }catch(e){
         console.error("registrar_constancia:",e);
         // Respaldo: serie local si la RPC no está disponible (no bloquea la descarga).
-        serie="CAT-"+(formData.country||"XX").toUpperCase().slice(0,2)+"-"+secId.toUpperCase().slice(0,3)+"-"+new Date().getFullYear()+"-"+genCode().replace(/-/g,"").slice(0,6);
+        // formatSerie (logic.js, probado) garantiza el formato CAT-ISO-SAC-AÑO-NNNNNN.
+        serie=formatSerie(formData.country, secId, new Date().getFullYear(), Math.floor(Math.random()*1000000));
         codigo=genCode().replace(/-/g,"").toLowerCase();
         vigencia=new Date(Date.now()+182*864e5).toISOString().slice(0,10);
       }

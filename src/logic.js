@@ -81,3 +81,18 @@ export function aplicarBeca(base, esRehab) {
   const disc = esRehab ? 1 - BECA_ESPERANZA_PCT / 100 : 1;
   return Math.round(base * disc);
 }
+
+// ─── Serie de la constancia ──────────────────────────────────────────────
+// Devuelve el número de serie con el formato canónico:
+//   CAT-{ISO2}-{SAC3}-{AÑO4}-{NNNNNN}   ej. "CAT-MX-BAU-2026-000042"
+// Normaliza a mayúsculas, descarta caracteres no alfanuméricos, recorta/rellena
+// los segmentos a su longitud fija, y el consecutivo a 6 dígitos con ceros.
+// La serie REAL (con consecutivo secuencial) la emite la RPC del servidor; este
+// formateador se usa en el respaldo local y garantiza el formato del QR/PDF.
+export function formatSerie(iso, sac, anio, consecutivo) {
+  const p2 = String(iso ?? "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 2).padEnd(2, "X");
+  const p3 = String(sac ?? "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 3).padEnd(3, "X");
+  const y  = String(anio ?? "").replace(/[^0-9]/g, "").slice(0, 4).padStart(4, "0");
+  const n  = String(Math.abs(Math.trunc(Number(consecutivo) || 0)) % 1000000).padStart(6, "0");
+  return `CAT-${p2}-${p3}-${y}-${n}`;
+}

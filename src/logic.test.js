@@ -1,7 +1,7 @@
 // Pruebas de la lógica pura del curso (Vitest).  Ejecutar: npm run test
 import { describe, it, expect } from "vitest";
 import { buildSeq, translate, pick,
-  redondearCuota, calcularCuotaPais, aplicarBeca, PPP_TIER_USD } from "./logic.js";
+  redondearCuota, calcularCuotaPais, aplicarBeca, PPP_TIER_USD, formatSerie } from "./logic.js";
 
 describe("buildSeq — secuencia del curso", () => {
   it("catequista solo cursa su módulo, sin TC1/TC2/Kerigma", () => {
@@ -159,5 +159,32 @@ describe("aplicarBeca — Beca de Esperanza (20%)", () => {
   });
   it("redondea a entero montos con decimales", () => {
     expect(aplicarBeca(66, true)).toBe(53); // 52.8 → 53
+  });
+});
+
+describe("formatSerie — serie de la constancia (CAT-ISO-SAC-AÑO-NNNNNN)", () => {
+  it("produce el formato canónico documentado", () => {
+    expect(formatSerie("MX", "BAU", 2026, 42)).toBe("CAT-MX-BAU-2026-000042");
+  });
+  it("normaliza a mayúsculas y recorta segmentos", () => {
+    expect(formatSerie("mx", "bautismo", 2026, 7)).toBe("CAT-MX-BAU-2026-000007");
+  });
+  it("descarta acentos/no alfanuméricos del país (México → MX)", () => {
+    expect(formatSerie("México", "confirmacion", 2026, 1)).toBe("CAT-MX-CON-2026-000001");
+  });
+  it("rellena con X si faltan caracteres", () => {
+    expect(formatSerie("", "", 2026, 0)).toBe("CAT-XX-XXX-2026-000000");
+  });
+  it("acota el consecutivo a 6 dígitos (módulo 1.000.000)", () => {
+    expect(formatSerie("US", "PRI", 2026, 1000042)).toBe("CAT-US-PRI-2026-000042");
+  });
+  it("acepta el consecutivo como texto", () => {
+    expect(formatSerie("US", "PRI", 2026, "123")).toBe("CAT-US-PRI-2026-000123");
+  });
+  it("siempre empieza con CAT- y tiene 5 segmentos", () => {
+    const s = formatSerie("br", "euc", 2027, 999999);
+    expect(s.startsWith("CAT-")).toBe(true);
+    expect(s.split("-")).toHaveLength(5);
+    expect(s).toBe("CAT-BR-EUC-2027-999999");
   });
 });
