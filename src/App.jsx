@@ -26,11 +26,13 @@ import { supabase } from "./supabaseClient.js";
 import { SUPPORTED_LANGS, detectLang, LANG, setAppLanguage, T, PICK, SINO } from "./i18n.js";
 import EstrellasInput from "./components/EstrellasInput.jsx";
 import { FlameIcon, CalizIcon, iconoBautismo, iconoConfirmacion } from "./components/icons.jsx";
+import { FRow, Input, PasswordInput } from "./components/fields.jsx";
 // Carga diferida: estas pantallas solo se descargan al abrir su pestaña
 // (quedan fuera del bundle inicial, sin añadir peticiones a la ruta crítica).
 const AgendaTab = lazy(() => import("./components/AgendaTab.jsx"));
 const MensajesTab = lazy(() => import("./components/MensajesTab.jsx"));
 const EncuadreModal = lazy(() => import("./components/EncuadreModal.jsx"));
+const LoginModal = lazy(() => import("./components/LoginModal.jsx"));
 import { C, BTN, INP, LBL, checkStyle, radioStyle, CARD, MODAL, FONT_READ, READ, OVERLAY } from "./ui.js";
 
 // El cliente Supabase vive en ./supabaseClient.js y el runtime i18n
@@ -853,76 +855,7 @@ function StarRain({show}){
 }
 // FlameIcon y CalizIcon → ./components/icons.jsx (importados arriba).
 
-// ─── INTRO VIDEO ───────────────────────────────────────────────────
-function IntroVideo({onEnded}){
-  const [err,setErr]=useState(false);
-
-  // Fallback cuando no existe el archivo
-  if(err){
-    return(
-      <div style={{position:"fixed",inset:0,zIndex:9999,display:"flex",flexDirection:"column",
-        alignItems:"center",justifyContent:"center",
-        background:"radial-gradient(ellipse at 30% 20%,#0d1f38 0%,#060D18 55%,#070410 100%)"}}>
-        <div style={{textAlign:"center",padding:"0 24px",maxWidth:540}}>
-          <div style={{fontSize:64,marginBottom:16}}>✝️</div>
-          <h1 style={{fontFamily:"'Cinzel',serif",color:C.gold,
-            fontSize:"clamp(16px,3.5vw,26px)",marginBottom:12,lineHeight:1.35}}>
-            Centro Internacional de Catequesis a Distancia
-          </h1>
-          <p style={{color:C.ivoryM,fontFamily:"'Crimson Text',serif",
-            fontSize:17,marginBottom:32,lineHeight:1.65}}>
-            {T("Plataforma para formación sacramental católica basada en Neuropedagogía Catequética.","Platform for Catholic sacramental formation based on catechetical neuropedagogy.","Plateforme de formation sacramentelle catholique fondée sur la Neuropédagogie Catéchétique.","Plattform für katholische Sakramentenbildung auf Grundlage der Katechetischen Neuropädagogik.","Plataforma de formação sacramental católica baseada na Neuropedagogia Catequética.","Piattaforma per la formazione sacramentale cattolica basata sulla Neuropedagogia Catechetica.")}
-          </p>
-          <button onClick={onEnded} style={{...BTN("pri"),fontSize:15,padding:"14px 40px"}}>
-            {T("Comenzar","Begin","Commencer","Beginnen","Começar","Inizia")} →
-          </button>
-          <p style={{color:C.tM,fontSize:11,marginTop:14}}>
-            {T("(Coloca catecumenvideo.mp4 en la carpeta /public)","(Place catecumenvideo.mp4 in the /public folder)","(Placez catecumenvideo.mp4 dans le dossier /public)","(Legen Sie catecumenvideo.mp4 im Ordner /public ab)","(Coloque catecumenvideo.mp4 na pasta /public)","(Posiziona catecumenvideo.mp4 nella cartella /public)")}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  return(
-    <div style={{
-      position:"fixed", inset:0, zIndex:9999,
-      background:"#000", overflow:"hidden",
-    }}>
-      <video
-        src="/catecumenvideo.mp4"
-        onEnded={onEnded}
-        onError={()=>setErr(true)}
-        autoPlay muted playsInline
-        style={{
-          display:"block",
-          position:"absolute", top:0, left:0,
-          width:"100%", height:"100%",
-          objectFit:"contain",
-          objectPosition:"center center",
-        }}
-      />
-      {/* Botón Omitir flotante */}
-      <button
-        onClick={onEnded}
-        style={{
-          position:"absolute", bottom:24, right:24,
-          background:"rgba(0,0,0,0.55)",
-          border:"1px solid rgba(200,169,81,0.55)",
-          color:C.gold, fontFamily:"'Cinzel',serif",
-          fontSize:12, fontWeight:700, letterSpacing:"0.07em",
-          padding:"10px 22px", borderRadius:8, cursor:"pointer",
-          backdropFilter:"blur(6px)", WebkitBackdropFilter:"blur(6px)",
-          transition:"all .2s",
-        }}
-        onMouseEnter={e=>{e.currentTarget.style.background="rgba(200,169,81,0.18)";}}
-        onMouseLeave={e=>{e.currentTarget.style.background="rgba(0,0,0,0.55)";}}
-      >
-        {T("Omitir","Skip","Ignorer","Überspringen","Pular","Salta")} ▶
-      </button>
-    </div>
-  );
-}
+// (IntroVideo eliminado: era código muerto tras quitar el video intro.)
 
 
 // ─── ESTILO DE BARRAS DE SCROLL (escritorio) ───────────────────────
@@ -1172,95 +1105,7 @@ function ResumePaymentModal({onBack}){
   );
 }
 
-function LoginModal({onBack,onSuccess,onResume}){
-  const [email,setEmail]=useState("");
-  const [pass,setPass]=useState("");
-  const [loading,setLoading]=useState(false);
-  const [err,setErr]=useState("");
-  const canLogin=email.includes("@")&&pass.length>=6;
-
-  const handleLogin=async()=>{
-    if(!canLogin)return;
-    setLoading(true);setErr("");
-    try{
-      const {data,error}=await supabase.auth.signInWithPassword({email,password:pass});
-      if(error) throw error;
-      onSuccess(data.user);
-    }catch(e){
-      const msg=e?.message||"";
-      if(/email not confirmed/i.test(msg)){
-        setErr(T("Tu cuenta existe pero el correo aún no está confirmado. Busca el mensaje de confirmación en tu bandeja (y en spam) y haz clic en el enlace; después vuelve a iniciar sesión.","Your account exists but the email is not yet confirmed. Find the confirmation message in your inbox (and spam) and click the link; then sign in again.","Votre compte existe mais l'e-mail n'est pas encore confirmé. Recherchez le message de confirmation dans votre boîte de réception (et vos spams) et cliquez sur le lien ; puis reconnectez-vous.","Ihr Konto existiert, aber die E-Mail-Adresse ist noch nicht bestätigt. Suchen Sie die Bestätigungsnachricht in Ihrem Posteingang (und im Spam-Ordner) und klicken Sie auf den Link; melden Sie sich danach erneut an.","Sua conta existe, mas o e-mail ainda não foi confirmado. Procure a mensagem de confirmação na sua caixa de entrada (e no spam) e clique no link; depois faça login novamente.","Il tuo account esiste ma l'email non è ancora confermata. Cerca il messaggio di conferma nella tua casella di posta (e nello spam) e clicca sul link; poi accedi di nuovo."));
-      }else if(/invalid login credentials/i.test(msg)){
-        setErr(T("Correo o contraseña incorrectos. Verifica tus datos o usa «Recupérala aquí» para restablecer tu contraseña.","Incorrect email or password. Check your credentials or use \u201CReset it here\u201D to set a new password.","E-mail ou mot de passe incorrect. Vérifiez vos données ou utilisez « Le récupérer ici » pour réinitialiser votre mot de passe.","E-Mail-Adresse oder Passwort falsch. Überprüfen Sie Ihre Angaben oder nutzen Sie „Hier zurücksetzen“, um ein neues Passwort festzulegen.","E-mail ou senha incorretos. Verifique seus dados ou use «Recuperar aqui» para redefinir sua senha.","Email o password errati. Controlla i tuoi dati oppure usa «Recuperala qui» per reimpostare la password."));
-      }else if(/rate limit|too many/i.test(msg)){
-        setErr(T("Demasiados intentos. Espera unos minutos e intenta de nuevo.","Too many attempts. Wait a few minutes and try again.","Trop de tentatives. Attendez quelques minutes et réessayez.","Zu viele Versuche. Warten Sie einige Minuten und versuchen Sie es erneut.","Muitas tentativas. Aguarde alguns minutos e tente novamente.","Troppi tentativi. Attendi qualche minuto e riprova."));
-      }else if(/network|fetch/i.test(msg)){
-        setErr(T("No hay conexión con el servidor. Revisa tu internet e intenta de nuevo.","Cannot reach the server. Check your connection and try again.","Aucune connexion au serveur. Vérifiez votre connexion internet et réessayez.","Keine Verbindung zum Server. Überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.","Sem conexão com o servidor. Verifique sua internet e tente novamente.","Nessuna connessione al server. Controlla la tua connessione internet e riprova."));
-      }else{
-        setErr("⚠ "+msg);
-      }
-    }finally{setLoading(false);}
-  };
-
-  return(
-    <div style={OVERLAY}>
-      <div style={{...MODAL,maxWidth:420}}>
-        <div style={{textAlign:"center",marginBottom:20}}>
-          <div style={{fontSize:36,marginBottom:8}}>🔑</div>
-          <h2 style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:20}}>
-            {T("Iniciar sesión","Sign in","Se connecter","Anmelden","Entrar","Accedi")}
-          </h2>
-          <p style={{color:C.ivoryM,fontFamily:"'Crimson Text',serif",fontSize:14,marginTop:6}}>
-            {T("Ingresa con tu correo y contraseña registrados.","Sign in with your registered email and password.","Connectez-vous avec votre e-mail et votre mot de passe enregistrés.","Melden Sie sich mit Ihrer registrierten E-Mail-Adresse und Ihrem Passwort an.","Entre com seu e-mail e senha cadastrados.","Accedi con la tua email e password registrate.")}
-          </p>
-        </div>
-        <FRow label={T("Correo electrónico","Email address","Adresse e-mail","E-Mail-Adresse","E-mail","Indirizzo email")}>
-          <Input type="email" value={email} onChange={setEmail}
-            placeholder="usuario@correo.com"/>
-        </FRow>
-        <FRow label={T("Contraseña","Password","Mot de passe","Passwort","Senha","Password")}>
-          <PasswordInput value={pass} onChange={setPass}
-            placeholder={T("Tu contraseña","Your password","Votre mot de passe","Ihr Passwort","Sua senha","La tua password")}/>
-        </FRow>
-        {err&&(
-          <p style={{color:"#F87171",fontFamily:"'Crimson Text',serif",
-            fontSize:14,marginBottom:12}}>⚠️ {err}</p>
-        )}
-        <button
-          onClick={handleLogin}
-          disabled={!canLogin||loading}
-          style={{...BTN("pri"),width:"100%",justifyContent:"center",
-            opacity:canLogin&&!loading?1:0.4,
-            cursor:canLogin&&!loading?"pointer":"not-allowed",
-            marginBottom:12}}>
-          {loading
-            ? T("Verificando...","Verifying...","Vérification...","Wird überprüft...","Verificando...","Verifica in corso...")
-            : T("Entrar a la plataforma","Enter the platform","Entrer sur la plateforme","Zur Plattform","Entrar na plataforma","Entra nella piattaforma")} →
-        </button>
-        <button onClick={onBack}
-          style={{...BTN("sec"),width:"100%",justifyContent:"center"}}>
-          ← {T("Regresar","Back","Retour","Zurück","Voltar","Indietro")}
-        </button>
-        <p style={{color:C.ivoryM,fontSize:12,textAlign:"center",marginTop:14}}>
-          {T("¿Olvidaste tu contraseña?","Forgot your password?","Mot de passe oublié ?","Passwort vergessen?","Esqueceu sua senha?","Hai dimenticato la password?")}
-          {" "}<span
-            style={{color:C.gold,cursor:"pointer",textDecoration:"underline"}}
-            onClick={()=>window.open("https://www.catecumen.com/recuperar","_blank")}>
-            {T("Recupérala aquí","Reset it here","La récupérer ici","Hier zurücksetzen","Recuperar aqui","Recuperala qui")}
-          </span>
-        </p>
-        <p style={{color:C.ivoryM,fontSize:12,textAlign:"center",marginTop:8}}>
-          {T("¿Te registraste pero no completaste tu pago?","Registered but never finished payment?","Vous êtes inscrit(e) mais n'avez pas terminé le paiement ?","Registriert, aber die Zahlung nicht abgeschlossen?","Registrou-se mas não concluiu o pagamento?","Ti sei registrato/a ma non hai completato il pagamento?")}
-          {" "}<span
-            style={{color:C.gold,cursor:"pointer",textDecoration:"underline"}}
-            onClick={onResume}>
-            {T("Reanúdalo aquí","Resume it here","Reprenez-le ici","Hier fortsetzen","Retome aqui","Riprendilo qui")}
-          </span>
-        </p>
-      </div>
-    </div>
-  );
-}
+// LoginModal → ./components/LoginModal.jsx (diferido con React.lazy).
 
 // ─── WELCOME MODAL ─────────────────────────────────────────────────
 // ─── CARRUSEL DE IMÁGENES DEL MODAL DE BIENVENIDA (fundido cruzado, 2s) ──
@@ -1871,21 +1716,7 @@ function SacSelectModal({onContinue,onBack}){
 // EncuadreModal → ./components/EncuadreModal.jsx (diferido con React.lazy).
 
 // ─── HELPERS DE FORMULARIO ─────────────────────────────────────────
-function FRow({label,children}){
-  return(
-    <div style={{marginBottom:16}}>
-      <label style={LBL}>{label}</label>
-      {children}
-    </div>
-  );
-}
-
-function Input({value,onChange,placeholder,type="text",style={}}){
-  return(
-    <input type={type} value={value||""} onChange={e=>onChange(e.target.value)}
-      placeholder={placeholder} style={{...INP,...style}}/>
-  );
-}
+// FRow, Input y PasswordInput → ./components/fields.jsx (importados arriba).
 
 function PhoneField({phoneCode,phone,onChange}){
   return(
@@ -1912,22 +1743,6 @@ function CountrySelect({value,onChange}){
   );
 }
 
-function PasswordInput({value,onChange,placeholder}){
-  const [show,setShow]=useState(false);
-  return(
-    <div style={{position:"relative"}}>
-      <input type={show?"text":"password"} value={value||""} onChange={e=>onChange(e.target.value)}
-        placeholder={placeholder} style={{...INP,paddingRight:44}}/>
-      <button onClick={()=>setShow(s=>!s)} type="button"
-        aria-label={show?"Ocultar contraseña":"Mostrar contraseña"}
-        style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",
-          background:"none",border:"none",color:C.gold,cursor:"pointer",fontSize:17,
-          padding:0,lineHeight:1}}>
-        {show?"🙈":"👁"}
-      </button>
-    </div>
-  );
-}
 
 function pwdStrength(pw){
   let s=0;
@@ -5309,11 +5124,15 @@ export default function App(){
         onContinue={()=>setPhase("filter")}
         onLogin={()=>setPhase("login")}
       />}
-      {phase==="login"&&<LoginModal
-        onBack={()=>setPhase("welcome")}
-        onSuccess={handleLoginSuccess}
-        onResume={()=>setPhase("resume")}
-      />}
+      {phase==="login"&&(
+        <Suspense fallback={<div style={OVERLAY}><div style={{color:C.gold,fontFamily:"'Cinzel',serif"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div></div>}>
+          <LoginModal
+            onBack={()=>setPhase("welcome")}
+            onSuccess={handleLoginSuccess}
+            onResume={()=>setPhase("resume")}
+          />
+        </Suspense>
+      )}
 
       {phase==="resume"&&<ResumePaymentModal onBack={()=>setPhase("login")}/>}
 
