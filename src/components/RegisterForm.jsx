@@ -159,7 +159,10 @@ export default function RegisterForm({userType,sacraments,onNext,onBack}){
   };
   const catequistaAfilOk=userType!=="catequista"||d.afiliadaOrg!=="si"||
     orgVerif==="valido"||orgVerif==="errorDB";
-  const canSubmit=d.nombre&&d.apellido&&d.email&&d.country&&d.estado&&d.dob&&d.phone&&d.docNum&&d.phoneCode&&
+  // Confirmación de correo: ambos campos deben coincidir (sin distinguir
+  // mayúsculas ni espacios) para evitar erratas que dejarían al usuario sin acceso.
+  const emailsMatch=(d.email||"").trim().toLowerCase()===(d.emailConfirm||"").trim().toLowerCase();
+  const canSubmit=d.nombre&&d.apellido&&d.email&&d.emailConfirm&&emailsMatch&&d.country&&d.estado&&d.dob&&d.phone&&d.docNum&&d.phoneCode&&
     (userType==="catequista" ? !!d.parroquia : (d.parroquia||d.noSure))&&d.terms&&ageOk&&maritalOk&&sacsBenefOk&&
     catequistaAfilOk;
   const isFree=(userType==="catequista"&&d.afiliadaOrg==="si"&&orgVerif==="valido")||!!d.estaInternado;
@@ -185,7 +188,20 @@ export default function RegisterForm({userType,sacraments,onNext,onBack}){
         <FRow label={T("Correo electrónico","Email address","Adresse e-mail","E-Mail-Adresse","E-mail","Indirizzo email")}>
           <Input type="email" value={d.email} onChange={v=>set("email",v)} placeholder="nombre@ejemplo.com"/>
         </FRow>
-        
+
+        <FRow label={T("Confirmar correo electrónico","Confirm email address","Confirmer l'adresse e-mail","E-Mail-Adresse bestätigen","Confirmar e-mail","Conferma indirizzo email")}>
+          {/* Reescribir (no pegar) para atrapar erratas; se compara sin distinguir mayúsculas. */}
+          <input type="email" value={d.emailConfirm||""} onChange={e=>set("emailConfirm",e.target.value)}
+            onPaste={e=>e.preventDefault()} onDrop={e=>e.preventDefault()}
+            autoComplete="off" spellCheck={false} placeholder="nombre@ejemplo.com"
+            style={{...INP, ...(d.emailConfirm&&!emailsMatch?{borderColor:"#F87171"}:{})}}/>
+          {d.emailConfirm&&!emailsMatch&&(
+            <p style={{color:"#F87171",fontSize:12.5,margin:"6px 0 0",fontFamily:"'Crimson Text',serif"}}>
+              ⚠️ {T("Los correos no coinciden","The emails do not match","Les e-mails ne correspondent pas","Die E-Mail-Adressen stimmen nicht überein","Os e-mails não coincidem","Le email non corrispondono")}
+            </p>
+          )}
+        </FRow>
+
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
           <FRow label={T("Fecha de nacimiento","Date of birth","Date de naissance","Geburtsdatum","Data de nascimento","Data di nascita")}>
             <Input type="date" value={d.dob} onChange={v=>set("dob",v)}/>
@@ -774,6 +790,7 @@ export default function RegisterForm({userType,sacraments,onNext,onBack}){
               {!d.nombre&&<span>• {T("Nombre","First name","Prénom","Vorname","Nome","Nome")}<br/></span>}
               {!d.apellido&&<span>• {T("Apellido","Last name","Nom","Nachname","Sobrenome","Cognome")}<br/></span>}
               {!d.email&&<span>• {T("Correo electrónico","Email","E-mail","E-Mail","E-mail","Email")}<br/></span>}
+              {d.email&&(!d.emailConfirm||!emailsMatch)&&<span>• {T("Confirmar correo (debe coincidir)","Confirm email (must match)","Confirmer l'e-mail (doit correspondre)","E-Mail bestätigen (muss übereinstimmen)","Confirmar e-mail (deve coincidir)","Conferma email (deve corrispondere)")}<br/></span>}
               {!d.country&&<span>• {T("País de residencia","Country of residence","Pays de résidence","Wohnsitzland","País de residência","Paese di residenza")}<br/></span>}
               {!d.dob&&<span>• {T("Fecha de nacimiento","Date of birth","Date de naissance","Geburtsdatum","Data de nascimento","Data di nascita")}<br/></span>}
               {!d.phoneCode&&<span>• {T("Código de país (teléfono)","Phone country code","Indicatif du pays (téléphone)","Ländervorwahl (Telefon)","Código do país (telefone)","Prefisso internazionale (telefono)")}<br/></span>}
