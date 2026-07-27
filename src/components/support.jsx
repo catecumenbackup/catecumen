@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { createPortal } from "react-dom";
 import { C, BTN, CARD, MODAL, OVERLAY } from "../ui.js";
 import { T, LANG } from "../i18n.js";
+
+const ConsultarIAModal = lazy(() => import("./ConsultarIAModal.jsx"));
 
 // Cluster de soporte y biblioteca, compartido por varias pantallas.
 // Sin estado del ámbito de App; solo depende de ui.js e i18n.js.
@@ -252,6 +254,23 @@ export function ConsultarDudasButton({contexto="Consulta de dudas",size="sec"}){
         💬 {T("Consultar dudas","Ask a question","Poser une question","Frage stellen","Tirar dúvidas","Fai una domanda")}
       </button>
       {open&&<SoporteModal contexto={contexto} onClose={()=>setOpen(false)}/>}
+    </div>
+  );
+}
+
+// Abre el chat con Magisterium AI (modal diferido). Botón para el área de estudio.
+export function ConsultarIAButton({contexto="",size="sec"}){
+  const [open,setOpen]=useState(false);
+  return(
+    <div style={{display:"inline-block"}}>
+      <button onClick={()=>setOpen(true)} style={{...BTN(size),fontSize:12}}>
+        ✨ {T("Consultar IA","Ask AI","Consulter l'IA","KI fragen","Consultar IA","Consulta IA")}
+      </button>
+      {open&&(
+        <Suspense fallback={<div style={OVERLAY}><div style={{color:C.gold,fontFamily:"'Cinzel',serif"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div></div>}>
+          <ConsultarIAModal contexto={contexto} onClose={()=>setOpen(false)}/>
+        </Suspense>
+      )}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { SEC_META, videoState } from "../data/course.js";
 import SecIcon from "./SecIcon.jsx";
-import { LibraryButton, ConsultarDudasButton, SoporteFloat } from "./support.jsx";
+import { LibraryButton, ConsultarDudasButton, ConsultarIAButton, SoporteFloat } from "./support.jsx";
 import { C, BTN, CARD } from "../ui.js";
 import { T, PICK } from "../i18n.js";
 
@@ -31,6 +31,7 @@ export default function CourseSectionView({secId,progress,onVideoAction,onEvalAc
             :<span/>}
           <div style={{display:"flex",gap:8,marginLeft:"auto"}}>
             <LibraryButton/>
+            <ConsultarIAButton contexto={"Área de estudio — "+secId}/>
             <ConsultarDudasButton contexto={"Área de estudio — "+secId}/>
             <button onClick={onDash} style={{...BTN("sec"),fontSize:12}}>👤 {T("Mi Cuenta","My Account","Mon compte","Mein Konto","Minha Conta","Il mio account")}</button>
           </div>

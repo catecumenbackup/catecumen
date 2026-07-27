@@ -7,6 +7,7 @@ vi.mock("./SecIcon.jsx", () => ({ default: () => <span data-testid="secicon" /> 
 vi.mock("./support.jsx", () => ({
   LibraryButton: () => <button>Biblioteca</button>,
   ConsultarDudasButton: () => <button>Consultar dudas</button>,
+  ConsultarIAButton: () => <button>Consultar IA</button>,
   SoporteFloat: () => <div data-testid="soporte" />,
 }));
 vi.mock("../data/course.js", () => ({
