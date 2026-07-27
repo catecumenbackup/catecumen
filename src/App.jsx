@@ -3,7 +3,7 @@
 // ║  Requiere: react, @supabase/supabase-js                         ║
 // ║  Video intro: coloca catecumenvideo.mp4 en /public              ║
 // ╚══════════════════════════════════════════════════════════════════╝
-import { useState, useEffect, useCallback, useRef, Fragment } from "react";
+import { useState, useEffect, useCallback, useRef, Fragment, lazy, Suspense } from "react";
 import { createPortal } from "react-dom";
 // ─── Imágenes servidas desde la carpeta public/ con rutas ABSOLUTAS estables ──
 // (Antes eran imports ES que Vite renombraba con un hash distinto en cada build;
@@ -25,7 +25,9 @@ import { buildSeq as buildSeqCore,
 import { supabase } from "./supabaseClient.js";
 import { SUPPORTED_LANGS, detectLang, LANG, setAppLanguage, T, PICK, SINO } from "./i18n.js";
 import EstrellasInput from "./components/EstrellasInput.jsx";
-import AgendaTab from "./components/AgendaTab.jsx";
+// Carga diferida: AgendaTab solo se descarga cuando el usuario abre su pestaña
+// (queda fuera del bundle inicial, sin añadir peticiones a la ruta crítica).
+const AgendaTab = lazy(() => import("./components/AgendaTab.jsx"));
 import { C, BTN, INP, LBL, checkStyle, radioStyle, CARD, MODAL, FONT_READ, READ, OVERLAY } from "./ui.js";
 
 // El cliente Supabase vive en ./supabaseClient.js y el runtime i18n
@@ -5915,7 +5917,9 @@ function Dashboard({formData,sequence,progress,onUpdate,onClose,initialTab}){
             <p style={{color:C.ivoryM,fontFamily:"'Crimson Text',serif",fontSize:15,marginBottom:16}}>
               {T("Tus sesiones y reuniones programadas. Confirma tu asistencia o avisa si no podrás asistir.","Your scheduled sessions and meetings. Confirm your attendance or let us know if you can't make it.","Vos sessions et réunions programmées. Confirmez votre présence ou signalez votre absence.","Deine geplanten Sitzungen und Treffen. Bestätige deine Teilnahme oder sag ab.","Suas sessões e reuniões agendadas. Confirme sua presença ou avise se não poderá comparecer.","Le tue sessioni e riunioni programmate. Conferma la presenza o avvisa se non potrai partecipare.")}
             </p>
-            <AgendaTab/>
+            <Suspense fallback={<div style={{color:C.ivoryM,padding:20,textAlign:"center"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div>}>
+              <AgendaTab/>
+            </Suspense>
           </div>
         )}
         {tab==="mensajes"&&(
