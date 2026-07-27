@@ -203,9 +203,10 @@ Se está sacando el ámbito compartido y las pantallas del monolito, una pieza a
 - **`src/ui.js`** — estilos base (C, BTN, INP, LBL, checkStyle, radioStyle, CARD, MODAL, READ, FONT_READ, OVERLAY).
 - **`src/i18n.js`** — runtime i18n (SUPPORTED_LANGS, detectLang, LANG, setAppLanguage, T, PICK, SINO). Depende de logic.js.
 - **`src/supabaseClient.js`** — el cliente `supabase` (antes creado en App.jsx).
-- **`src/components/`** — componentes/pantallas extraídos, cada uno con su `*.test.jsx`: `EstrellasInput`, `AgendaTab`. Importan de `ui.js`/`i18n.js`/`supabaseClient.js`.
+- **`src/components/`** — componentes/pantallas extraídos, cada uno con su `*.test.jsx`: `EstrellasInput`, `AgendaTab`, `MensajesTab`. Importan de `ui.js`/`i18n.js`/`supabaseClient.js`.
+- **Carga diferida:** `AgendaTab` y `MensajesTab` se cargan con `React.lazy` + `<Suspense>` (chunks aparte, fuera del bundle inicial). Es el "buen" troceo: pantallas que se abren DESPUÉS, no en la ruta crítica (distinto del vendor splitting que empeoró el arranque).
 
-Patrón para seguir: extraer pantalla → importar sus deps de esos módulos → escribir `*.test.jsx` → (opcional) `React.lazy`. `App.jsx` solo importa y usa; su definición ya NO vive ahí.
+Patrón para seguir: extraer pantalla → importar sus deps de esos módulos → escribir `*.test.jsx` (mockeando `i18n.js` y `supabaseClient.js` para aislar) → `React.lazy` + `Suspense`. `App.jsx` solo importa y usa. El premio grande (los "122 KiB de JS sin usar") llega al diferir las pantallas PESADAS (`RegisterForm`, `PaymentModal`, `CertificatesModal`, `Dashboard`, `EncuadreModal`) — dejar `RegisterForm`/`PaymentModal` para el final y probar el flujo de pago entre cada paso.
 
 ## Control de versiones (git)
 
