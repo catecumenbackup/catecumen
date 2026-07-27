@@ -38,6 +38,11 @@ const EncuadreModal = lazy(() => import("./components/EncuadreModal.jsx"));
 const LoginModal = lazy(() => import("./components/LoginModal.jsx"));
 const ValidarConstanciaModal = lazy(() => import("./components/ValidarConstanciaModal.jsx"));
 const CourseSectionView = lazy(() => import("./components/CourseSectionView.jsx"));
+const SectionCompleteModal = lazy(() => import("./components/SectionCompleteModal.jsx"));
+const VideoModal = lazy(() => import("./components/VideoModal.jsx"));
+const EncuestaVideoModal = lazy(() => import("./components/EncuestaVideoModal.jsx"));
+const EvalModal = lazy(() => import("./components/EvalModal.jsx"));
+const ResultModal = lazy(() => import("./components/ResultModal.jsx"));
 import { C, BTN, INP, LBL, checkStyle, radioStyle, CARD, MODAL, FONT_READ, READ, OVERLAY } from "./ui.js";
 
 // El cliente Supabase vive en ./supabaseClient.js y el runtime i18n
@@ -2535,150 +2540,8 @@ function OrgThankYouModal({orgType,formData,onClose}){
 }
 
 // ─── SECTION COMPLETE MODAL ────────────────────────────────────────
-function SectionCompleteModal({secId,avgScore,nextSecId,isLastBeforeCerts,isAllDone,onContinue}){
-  const sec=SEC_META[secId];
-  const next=nextSecId?SEC_META[nextSecId]:null;
-  return(
-    <div style={OVERLAY}>
-      <div style={{...MODAL,maxWidth:520,textAlign:"center"}}>
-        <div style={{fontSize:48,marginBottom:8}}><SecIcon id={secId} size={48}/></div>
-        <h2 style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:20,marginBottom:8}}>
-          🎉 {T("¡Sección completada!","Section completed!","Section terminée !","Abschnitt abgeschlossen!","Seção concluída!","Sezione completata!")}
-        </h2>
-        <p style={{color:C.ivory,fontFamily:"'Crimson Text',serif",fontSize:18,marginBottom:8}}>
-          {PICK(sec)}
-        </p>
-        <div style={{...CARD,background:"rgba(200,169,81,0.1)",marginBottom:20,display:"inline-block",padding:"16px 32px"}}>
-          <p style={{color:C.gold,fontFamily:"'Cinzel',serif",fontSize:28,fontWeight:700}}>
-            {avgScore?.toFixed(1)||"—"}/10
-          </p>
-          <p style={{color:C.ivoryM,fontSize:13}}>{T("Puntuación promedio","Average score","Score moyen","Durchschnittliche Punktzahl","Pontuação média","Punteggio medio")}</p>
-        </div>
-        {isAllDone&&(
-          <p style={{color:C.goldL,fontFamily:"'Crimson Text',serif",fontSize:17,marginBottom:16}}>
-            🌟 {T("¡Has completado toda tu formación sacramental! Ahora puedes descargar tus constancias.","You have completed your entire sacramental formation! You can now download your certificates.","Vous avez terminé toute votre formation sacramentelle ! Vous pouvez maintenant télécharger vos attestations.","Sie haben Ihre gesamte sakramentale Ausbildung abgeschlossen! Sie können jetzt Ihre Bescheinigungen herunterladen.","Você concluiu toda a sua formação sacramental! Agora você pode baixar seus certificados.","Hai completato tutta la tua formazione sacramentale! Ora puoi scaricare i tuoi attestati.")}
-          </p>
-        )}
-        {!isAllDone&&next&&(
-          <p style={{color:C.ivory,fontFamily:"'Crimson Text',serif",fontSize:16,marginBottom:16}}>
-            {T(
-              "A continuación comenzarás la formación en: ",
-              "You will now begin formation in: ",
-              "Vous allez maintenant commencer la formation : ",
-              "Sie beginnen jetzt die Ausbildung in: ",
-              "Você agora começará a formação em: ",
-              "Ora inizierai la formazione in: "
-            )}{PICK(next)}
-          </p>
-        )}
-        <button onClick={onContinue} style={{...BTN("pri"),width:"100%",justifyContent:"center"}}>
-          {isAllDone?T("Ver mis Constancias","View My Certificates","Voir mes attestations","Meine Bescheinigungen ansehen","Ver meus Certificados","Vedi i miei attestati"):T("Continuar","Continue","Continuer","Weiter","Continuar","Continua")} →
-        </button>
-      </div>
-    </div>
-  );
-}
 
 // ─── VIDEO MODAL ───────────────────────────────────────────────────
-function VideoModal({secId,vid,bridge,onWatched,onClose}){
-  const [watching,setWatching]=useState(false);
-  const [done,setDone]=useState(false);
-  const [secs,setSecs]=useState(0);
-  const [videoError,setVideoError]=useState(false); // el archivo de video no cargó (404)
-  // Prioridad: URL real del video en la BD (idioma del usuario) → video de prueba local.
-  const urlReal=bridge?.frontToUrl?.[secId]?.[vid?.id]||null;
-  const videoPrueba=urlReal||PICK(SEC_META[secId]?.videoPrueba)||null; // real o prueba, en el idioma activo
-  const SIM_DUR=5; // seconds to simulate watching (usado solo si no hay video de prueba)
-  useEffect(()=>{
-    if(!watching||(videoPrueba&&!videoError)) return; // con video real cargando, el avance lo marca el <video>
-    const t=setInterval(()=>{
-      setSecs(s=>{
-        if(s+1>=SIM_DUR){clearInterval(t);setDone(true);return SIM_DUR;}
-        return s+1;
-      });
-    },1000);
-    return()=>clearInterval(t);
-  },[watching,videoPrueba,videoError]);
-  const title=PICK(vid);
-  return(
-    <div style={OVERLAY}>
-      <div className="catePanel" style={{...MODAL,maxWidth:580,textAlign:"center"}}>
-        <div style={{fontSize:28,marginBottom:8}}>🎬</div>
-        <h2 style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:16,marginBottom:4}}>{title}</h2>
-        <p style={{color:C.ivoryM,fontSize:13,marginBottom:12}}>⏱ {vid.dur}</p>
-        {videoPrueba&&!videoError&&(
-          <div style={{
-            display:"inline-flex",alignItems:"center",gap:6,marginBottom:12,
-            background:"rgba(248,113,113,0.12)",border:"1px solid rgba(248,113,113,0.35)",
-            borderRadius:999,padding:"4px 12px",color:"#F87171",
-            fontFamily:"'Cinzel',serif",fontSize:11,letterSpacing:"0.06em",fontWeight:700,
-          }}>⚠ {T("VIDEO DE PRUEBA — contenido provisional","TEST VIDEO — placeholder content","VIDÉO DE TEST — contenu provisoire","TESTVIDEO — vorläufiger Inhalt","VÍDEO DE TESTE — conteúdo provisório","VIDEO DI PROVA — contenuto provvisorio")}</div>
-        )}
-        <div style={{background:"#000",borderRadius:12,minHeight:200,display:"flex",flexDirection:"column",
-          alignItems:"center",justifyContent:"center",marginBottom:20,position:"relative",overflow:"hidden"}}>
-          {videoPrueba&&!videoError?(
-            <video
-              key={videoPrueba}
-              src={videoPrueba}
-              controls
-              playsInline
-              style={{width:"100%",maxHeight:320,display:"block",borderRadius:12}}
-              onPlay={()=>setWatching(true)}
-              onEnded={()=>setDone(true)}
-              onError={()=>setVideoError(true)}
-            />
-          ):(<>
-            {videoError&&!watching&&!done&&(
-              <p style={{color:C.ivoryM,fontSize:12.5,marginBottom:12,maxWidth:340}}>
-                {T("El video aún no está disponible. Puedes marcarlo como visto para continuar con tu evaluación.","The video is not available yet. You can mark it as watched to continue to your evaluation.","La vidéo n'est pas encore disponible. Vous pouvez la marquer comme vue pour continuer.","Das Video ist noch nicht verfügbar. Sie können es als angesehen markieren, um fortzufahren.","O vídeo ainda não está disponível. Você pode marcá-lo como visto para continuar.","Il video non è ancora disponibile. Puoi contrassegnarlo come visto per continuare.")}
-              </p>
-            )}
-            {!watching&&!done&&(
-              <button onClick={()=>setWatching(true)}
-                style={{...BTN("pri"),fontSize:18,padding:"16px 32px"}}>▶ {videoError?T("Marcar como visto","Mark as watched","Marquer comme vu","Als angesehen markieren","Marcar como visto","Segna come visto"):T("Ver video","Watch video","Voir la vidéo","Video ansehen","Ver vídeo","Guarda il video")}</button>
-            )}
-            {watching&&!done&&(
-              <div style={{textAlign:"center"}}>
-                <div style={{fontSize:40,marginBottom:8,animation:"pulse 1s infinite"}}>▶️</div>
-                <div style={{background:"rgba(255,255,255,0.1)",borderRadius:4,height:6,width:240,margin:"0 auto"}}>
-                  <div style={{background:C.gold,borderRadius:4,height:6,
-                    width:`${(secs/SIM_DUR)*100}%`,transition:"width 1s"}}/>
-                </div>
-                <p style={{color:C.ivoryM,fontSize:13,marginTop:8}}>
-                  {T("Reproduciendo…","Playing…","Lecture en cours…","Wird abgespielt…","Reproduzindo…","Riproduzione in corso…")} {secs}/{SIM_DUR}s
-                </p>
-              </div>
-            )}
-            {done&&(
-              <div style={{textAlign:"center"}}>
-                <div style={{fontSize:40,marginBottom:8}}>✅</div>
-                <p style={{color:"#22C55E",fontFamily:"'Crimson Text',serif",fontSize:16}}>
-                  {T("Video completado","Video completed","Vidéo terminée","Video abgeschlossen","Vídeo concluído","Video completato")}
-                </p>
-              </div>
-            )}
-          </>)}
-        </div>
-        {videoPrueba&&done&&(
-          <p style={{color:"#22C55E",fontFamily:"'Crimson Text',serif",fontSize:14.5,marginTop:-10,marginBottom:16}}>
-            ✅ {T("Video completado","Video completed","Vidéo terminée","Video abgeschlossen","Vídeo concluído","Video completato")}
-          </p>
-        )}
-        <div style={{display:"flex",gap:12}}>
-          <button onClick={onClose} style={{...BTN("sec"),flex:1,justifyContent:"center"}}>
-            ✕ {T("Cerrar","Close","Fermer","Schließen","Fechar","Chiudi")}
-          </button>
-          {done&&(
-            <button onClick={onWatched} style={{...BTN("pri"),flex:2,justifyContent:"center"}}>
-              {T("Realizar evaluación","Take evaluation","Passer l'évaluation","Bewertung durchführen","Realizar avaliação","Esegui la valutazione")} →
-            </button>
-          )}
-        </div>
-        <SoporteLink contexto={T("Video — ","Video — ","Vidéo — ","Video — ","Vídeo — ","Video — ")+(vid?.es||vid?.id||"")}/>
-      </div>
-    </div>
-  );
-}
 
 // ─── EVAL MODAL ────────────────────────────────────────────────────
 // ═══════════════════════════════════════════════════════════════════════════
@@ -2686,193 +2549,9 @@ function VideoModal({secId,vid,bridge,onWatched,onClose}){
 //  antes de la evaluación. 4 parámetros (1–5 estrellas) + comentario opcional.
 // ═══════════════════════════════════════════════════════════════════════════
 
-function EncuestaVideoModal({secId,vid,insBySec,bridge,onDone}){
-  const [claridad,setClaridad]=useState(0);
-  const [contenido,setContenido]=useState(0);
-  const [audiovideo,setAudiovideo]=useState(0);
-  const [utilidad,setUtilidad]=useState(0);
-  const [comentario,setComentario]=useState("");
-  const [enviando,setEnviando]=useState(false);
-  const title=PICK(vid);
-  const completa=claridad&&contenido&&audiovideo&&utilidad;
 
-  const params=[
-    {v:claridad,  set:setClaridad,   lbl:T("Claridad de la exposición","Clarity of the presentation","Clarté de l'exposé","Klarheit der Darstellung","Clareza da exposição","Chiarezza dell'esposizione")},
-    {v:contenido, set:setContenido,  lbl:T("Calidad del contenido","Quality of the content","Qualité du contenu","Qualität des Inhalts","Qualidade do conteúdo","Qualità del contenuto")},
-    {v:audiovideo,set:setAudiovideo, lbl:T("Calidad de audio y video","Audio and video quality","Qualité audio et vidéo","Audio- und Videoqualität","Qualidade de áudio e vídeo","Qualità audio e video")},
-    {v:utilidad,  set:setUtilidad,   lbl:T("Utilidad para tu formación","Usefulness for your formation","Utilité pour votre formation","Nutzen für Ihre Ausbildung","Utilidade para sua formação","Utilità per la tua formazione")},
-  ];
-
-  const enviar=async()=>{
-    if(!completa) return;
-    setEnviando(true);
-    try{
-      // Traducir el id del frontend (p.ej. "tc-01") al UUID real de la tabla
-      // `videos` mediante el puente. Sin esto, la encuesta no se guarda.
-      const videoUuid = bridge?.frontToUuid?.[secId]?.[vid.id] || null;
-      if(videoUuid){
-        await supabase.rpc("guardar_encuesta_video",{
-          p_video_id: videoUuid,
-          p_claridad: claridad, p_contenido: contenido,
-          p_audiovideo: audiovideo, p_utilidad: utilidad,
-          p_comentario: comentario||null,
-        });
-      }else{
-        console.warn("encuesta: no se encontró UUID para", secId, vid.id, "— no se guardó");
-      }
-    }catch(e){ console.error("guardar_encuesta_video:",e); }
-    setEnviando(false);
-    onDone(); // continúa a la evaluación
-  };
-
-  return(
-    <div style={OVERLAY}>
-      <div style={{...MODAL,maxWidth:560}}>
-        <div style={{textAlign:"center",marginBottom:16}}>
-          <div style={{fontSize:28,marginBottom:8}}>⭐</div>
-          <h2 style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:17}}>
-            {T("Antes de tu evaluación","Before your evaluation","Avant votre évaluation","Vor Ihrer Bewertung","Antes da sua avaliação","Prima della tua valutazione")}
-          </h2>
-          <p style={{color:C.ivoryM,fontSize:13,marginTop:4}}>{title}</p>
-          <p style={{color:C.ivoryM,fontSize:12.5,marginTop:6,lineHeight:1.5}}>
-            {T("Tu opinión nos ayuda a mejorar la formación. Califica esta lección para continuar.","Your feedback helps us improve the formation. Rate this lesson to continue.","Votre avis nous aide à améliorer la formation. Évaluez cette leçon pour continuer.","Ihr Feedback hilft uns, die Ausbildung zu verbessern. Bewerten Sie diese Lektion, um fortzufahren.","Sua opinião nos ajuda a melhorar a formação. Avalie esta lição para continuar.","Il tuo parere ci aiuta a migliorare la formazione. Valuta questa lezione per continuare.")}
-          </p>
-        </div>
-
-        <div style={{display:"flex",flexDirection:"column",gap:14}}>
-          {params.map((p,idx)=>(
-            <div key={idx} style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,
-              padding:"10px 14px",borderRadius:12,background:`${C.card}`,border:`1px solid ${C.borderD}`}}>
-              <span style={{color:C.ivory,fontFamily:"'Crimson Text',serif",fontSize:15}}>{p.lbl}</span>
-              <EstrellasInput valor={p.v} onChange={p.set}/>
-            </div>
-          ))}
-
-          <div>
-            <label style={{color:C.ivoryM,fontSize:13,fontFamily:"'Crimson Text',serif",display:"block",marginBottom:6}}>
-              {T("Comentario o sugerencia (opcional)","Comment or suggestion (optional)","Commentaire ou suggestion (facultatif)","Kommentar oder Vorschlag (optional)","Comentário ou sugestão (opcional)","Commento o suggerimento (facoltativo)")}
-            </label>
-            <textarea value={comentario} onChange={e=>setComentario(e.target.value)} rows={3} maxLength={600}
-              placeholder={T("Escribe aquí…","Write here…","Écrivez ici…","Hier schreiben…","Escreva aqui…","Scrivi qui…")}
-              style={{width:"100%",resize:"vertical",background:C.card,color:C.ivory,
-                border:`1px solid ${C.borderD}`,borderRadius:10,padding:"10px 12px",
-                fontFamily:"'Crimson Text',serif",fontSize:14.5,outline:"none"}}/>
-          </div>
-        </div>
-
-        <button onClick={enviar} disabled={!completa||enviando}
-          style={{...BTN("pri"),width:"100%",justifyContent:"center",fontSize:15,marginTop:16,
-            opacity:(!completa||enviando)?0.5:1,cursor:(!completa||enviando)?"default":"pointer"}}>
-          {enviando
-            ? T("Guardando…","Saving…","Enregistrement…","Speichern…","Salvando…","Salvataggio…")
-            : (completa
-                ? T("Continuar a la evaluación","Continue to evaluation","Continuer vers l'évaluation","Weiter zur Bewertung","Continuar para a avaliação","Continua alla valutazione")+" →"
-                : T("Califica los 4 aspectos","Rate all 4 aspects","Évaluez les 4 aspects","Bewerten Sie alle 4 Aspekte","Avalie os 4 aspectos","Valuta tutti e 4 gli aspetti"))}
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function EvalModal({secId,vid,onResult,onClose}){
-  const qs=Q[vid.id]||(()=>{const keys=Object.keys(Q);return Q[keys[vid.o%keys.length]];})();
-  const [ans,setAns]=useState({});
-  const [submitted,setSubmitted]=useState(false);
-  if(!qs) return null;
-  const handleSubmit=()=>{
-    const correct=qs.filter(q=>ans[q.id]===q.k).length;
-    const score=(correct/qs.length)*10;
-    setSubmitted(true);
-    setTimeout(()=>onResult({score,passed:score>=8,correct,total:qs.length}),600);
-  };
-  const allAnswered=qs.every(q=>ans[q.id]);
-  const title=PICK(vid);
-  return(
-    <div style={OVERLAY}>
-      <div style={{...MODAL,maxWidth:640}}>
-        <div style={{textAlign:"center",marginBottom:20}}>
-          <div style={{fontSize:28,marginBottom:8}}>📝</div>
-          <h2 style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:16}}>{T("Evaluación","Evaluation","Évaluation","Bewertung","Avaliação","Valutazione")}</h2>
-          <p style={{color:C.ivoryM,fontSize:13,marginTop:4}}>{title}</p>
-          <p style={{color:C.ivoryM,fontSize:12}}>
-            {T("Necesitas 8/10 para aprobar","You need 8/10 to pass","Vous avez besoin de 8/10 pour réussir","Sie benötigen 8/10, um zu bestehen","Você precisa de 8/10 para ser aprovado","Ti servono 8/10 per superare la prova")} | 
-            {T(` ${qs.length} preguntas`,` ${qs.length} questions`,` ${qs.length} questions`,` ${qs.length} Fragen`,` ${qs.length} perguntas`,` ${qs.length} domande`)}
-          </p>
-        </div>
-        <div style={{display:"flex",flexDirection:"column",gap:18}}>
-          {qs.map((q,qi)=>(
-            <div key={q.id} style={{...CARD}}>
-              <p style={{color:C.ivory,fontFamily:"'Crimson Text',serif",fontSize:16,marginBottom:12}}>
-                <strong style={{color:C.gold}}>{qi+1}.</strong> {q.q}
-              </p>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-                {Object.entries(q.o).map(([k,v])=>(
-                  <button key={k} onClick={()=>!submitted&&setAns(p=>({...p,[q.id]:k}))}
-                    style={{
-                      background:ans[q.id]===k?"rgba(200,169,81,0.18)":"rgba(255,255,255,0.04)",
-                      border:`1.5px solid ${ans[q.id]===k?C.gold:C.borderD}`,
-                      borderRadius:8,padding:"10px 12px",color:C.ivory,
-                      fontFamily:"'Crimson Text',serif",fontSize:14,textAlign:"left",cursor:"pointer",
-                      transition:"all .2s",
-                    }}>
-                    <strong style={{color:C.gold}}>{k.toUpperCase()}.</strong> {v}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-        <div style={{display:"flex",gap:12,marginTop:20}}>
-          <button onClick={onClose} style={{...BTN("sec"),flex:1,justifyContent:"center"}}>
-            {T("Cancelar","Cancel","Annuler","Abbrechen","Cancelar","Annulla")}
-          </button>
-          <button onClick={handleSubmit} disabled={!allAnswered||submitted}
-            style={{...BTN("pri"),flex:2,justifyContent:"center",
-              opacity:(allAnswered&&!submitted)?1:0.4,cursor:(allAnswered&&!submitted)?"pointer":"not-allowed"}}>
-            {submitted?T("Calificando…","Grading…","Notation en cours…","Wird bewertet…","Avaliando…","Valutazione in corso…"):T("Enviar evaluación","Submit evaluation","Envoyer l'évaluation","Bewertung einreichen","Enviar avaliação","Invia valutazione")}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // ─── RESULT MODAL ──────────────────────────────────────────────────
-function ResultModal({result,vid,onClose}){
-  const {score,passed,correct,total}=result;
-  const title=PICK(vid);
-  return(
-    <div style={OVERLAY}>
-      <div style={{...MODAL,maxWidth:460,textAlign:"center"}}>
-        <div style={{fontSize:48,marginBottom:8}}>{passed?"🏆":"📚"}</div>
-        <h2 style={{fontFamily:"'Cinzel',serif",color:passed?C.green:"#F87171",fontSize:20,marginBottom:8}}>
-          {passed?T("¡Aprobado!","Passed!","Réussi !","Bestanden!","Aprovado!","Superato!"):T("No aprobado","Not passed","Non réussi","Nicht bestanden","Não aprovado","Non superato")}
-        </h2>
-        <p style={{color:C.ivoryM,fontSize:14,marginBottom:12}}>{title}</p>
-        <div style={{...CARD,background:passed?"rgba(45,122,90,0.12)":"rgba(248,113,113,0.12)",
-          marginBottom:16,display:"inline-block",padding:"16px 40px"}}>
-          <p style={{color:passed?C.green:"#F87171",fontFamily:"'Cinzel',serif",fontSize:32,fontWeight:700}}>
-            {score.toFixed(1)}/10
-          </p>
-          <p style={{color:C.ivoryM,fontSize:13}}>{correct}/{total} {T("correctas","correct","correctes","richtig","corretas","corrette")}</p>
-        </div>
-        {!passed&&(
-          <p style={{color:"#FCA5A5",fontFamily:"'Crimson Text',serif",fontSize:15,marginBottom:16}}>
-            {T("Necesitas 8/10 para aprobar. El video ha sido marcado como no visto para que puedas revisarlo antes de intentar de nuevo.","You need 8/10 to pass. The video has been marked as unwatched so you can review it before trying again.","Vous avez besoin de 8/10 pour réussir. La vidéo a été marquée comme non visionnée afin que vous puissiez la revoir avant de réessayer.","Sie benötigen 8/10, um zu bestehen. Das Video wurde als ungesehen markiert, damit Sie es vor dem nächsten Versuch erneut ansehen können.","Você precisa de 8/10 para ser aprovado. O vídeo foi marcado como não assistido para que você possa revisá-lo antes de tentar novamente.","Ti servono 8/10 per superare la prova. Il video è stato contrassegnato come non visto, così puoi rivederlo prima di riprovare.")}
-          </p>
-        )}
-        {passed&&(
-          <p style={{color:"#86EFAC",fontFamily:"'Crimson Text',serif",fontSize:15,marginBottom:16}}>
-            {T("¡Excelente! Puedes continuar con el siguiente tema.","Excellent! You may continue to the next topic.","Excellent ! Vous pouvez passer au sujet suivant.","Ausgezeichnet! Sie können mit dem nächsten Thema fortfahren.","Excelente! Você pode continuar para o próximo tema.","Ottimo! Puoi proseguire con l'argomento successivo.")}
-          </p>
-        )}
-        <button onClick={onClose} style={{...BTN("pri"),width:"100%",justifyContent:"center"}}>
-          {T("Continuar","Continue","Continuer","Weiter","Continuar","Continua")} →
-        </button>
-      </div>
-    </div>
-  );
-}
 
 // ─── COURSE SECTION VIEW ───────────────────────────────────────────
 
@@ -4507,33 +4186,35 @@ export default function App(){
         </Suspense>
       )}
 
-      {/* OVERLAY MODALS */}
-      {activeVideo&&(
-        <VideoModal secId={activeVideo.secId} vid={activeVideo.vid} bridge={bridge}
-          onWatched={handleVideoWatched} onClose={()=>setActiveVideo(null)}/>
-      )}
-
-      {activeEncuesta&&(
-        <EncuestaVideoModal secId={activeEncuesta.secId} vid={activeEncuesta.vid}
-          insBySec={insBySec} bridge={bridge} onDone={handleEncuestaDone}/>
-      )}
-      {activeEval&&(
-        <EvalModal secId={activeEval.secId} vid={activeEval.vid}
-          onResult={handleEvalResult} onClose={()=>setActiveEval(null)}/>
-      )}
-
-      {showResult&&lastResult&&(
-        <ResultModal result={lastResult.result} vid={lastResult.vid} onClose={handleResultClose}/>
-      )}
-
-      {showSecComplete&&completedSecId&&(
-        <SectionCompleteModal
-          secId={completedSecId}
-          avgScore={calcAvgScore(completedSecId)}
-          nextSecId={sequence[seqIdx+1]||null}
-          isLastBeforeCerts={seqIdx+1>=sequence.length}
-          isAllDone={seqIdx+1>=sequence.length}
-          onContinue={handleSecCompleteNext}/>
+      {/* OVERLAY MODALS — flujo de video/evaluación (chunks diferidos; solo uno
+          se muestra a la vez, por eso comparten un único Suspense). */}
+      {(activeVideo||activeEncuesta||activeEval||(showResult&&lastResult)||(showSecComplete&&completedSecId))&&(
+        <Suspense fallback={<div style={OVERLAY}><div style={{color:C.gold,fontFamily:"'Cinzel',serif"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div></div>}>
+          {activeVideo&&(
+            <VideoModal secId={activeVideo.secId} vid={activeVideo.vid} bridge={bridge}
+              onWatched={handleVideoWatched} onClose={()=>setActiveVideo(null)}/>
+          )}
+          {activeEncuesta&&(
+            <EncuestaVideoModal secId={activeEncuesta.secId} vid={activeEncuesta.vid}
+              insBySec={insBySec} bridge={bridge} onDone={handleEncuestaDone}/>
+          )}
+          {activeEval&&(
+            <EvalModal secId={activeEval.secId} vid={activeEval.vid}
+              onResult={handleEvalResult} onClose={()=>setActiveEval(null)}/>
+          )}
+          {showResult&&lastResult&&(
+            <ResultModal result={lastResult.result} vid={lastResult.vid} onClose={handleResultClose}/>
+          )}
+          {showSecComplete&&completedSecId&&(
+            <SectionCompleteModal
+              secId={completedSecId}
+              avgScore={calcAvgScore(completedSecId)}
+              nextSecId={sequence[seqIdx+1]||null}
+              isLastBeforeCerts={seqIdx+1>=sequence.length}
+              isAllDone={seqIdx+1>=sequence.length}
+              onContinue={handleSecCompleteNext}/>
+          )}
+        </Suspense>
       )}
 
       {showCerts&&(
