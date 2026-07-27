@@ -2,6 +2,15 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
+// i18n determinista: T() devuelve el español (1er argumento) y LANG="es".
+// En jsdom navigator.language="en-US"; sin esto T() daría inglés y las
+// aserciones en español fallarían. (El i18n real se prueba en logic.test.js.)
+vi.mock("../i18n.js", () => ({
+  LANG: "es",
+  T: (es) => es,
+  PICK: (o) => (o == null ? "" : o.es ?? o.en ?? ""),
+}));
+
 // Mock del cliente Supabase ANTES de importar el componente.
 const rpc = vi.fn();
 vi.mock("../supabaseClient.js", () => ({ supabase: { rpc: (...a) => rpc(...a) } }));
