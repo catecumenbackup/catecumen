@@ -56,4 +56,33 @@ const CDOCS={
 
 const COUNTRIES=Object.keys(CDOCS).sort();
 
-export { PHONE_CODES, CDOCS, COUNTRIES };
+
+const COUNTRY_ISO={
+  "México":"MX","Argentina":"AR","Bolivia":"BO","Brasil":"BR","Canadá":"CA",
+  "Chile":"CL","Colombia":"CO","Costa Rica":"CR","Cuba":"CU","Ecuador":"EC",
+  "El Salvador":"SV","España":"ES","Estados Unidos":"US","Guatemala":"GT",
+  "Haití":"HT","Honduras":"HN","Jamaica":"JM","Nicaragua":"NI","Panamá":"PA",
+  "Paraguay":"PY","Perú":"PE","Puerto Rico":"PR","Rep. Dominicana":"DO",
+  "Trinidad y Tobago":"TT","Uruguay":"UY","Venezuela":"VE","Antigua y Barbuda":"AG",
+  "Aruba":"AW","Bahamas":"BS","Barbados":"BB","Belice":"BZ","Dominica":"DM",
+  "Granada":"GD","Groenlandia":"GL","Guyana":"GY","Surinam":"SR",
+};
+
+const ROLE_PREFIX={
+  catecumeno:"CTM",prebautismal:"FAM",padrino:"PDR",
+  catequista:"CTQ",parroquia:"PAR",diocesis:"DIO"
+};
+
+function genRegistrationId(country,userType){
+  const cc=COUNTRY_ISO[country]||"XX";
+  const rp=ROLE_PREFIX[userType]||"USR";
+  const yr=String(new Date().getFullYear()).slice(-2);
+  const isInst=userType==="parroquia"||userType==="diocesis";
+  const maxNum=isInst?899:8999;
+  const startNum=isInst?100:1000;
+  const seq=startNum+Math.floor(Math.random()*maxNum);
+  const seqStr=String(seq);
+  return `${cc}-${rp}-${yr}-${seqStr}`;
+}
+
+export { PHONE_CODES, CDOCS, COUNTRIES, COUNTRY_ISO, ROLE_PREFIX, genRegistrationId };
