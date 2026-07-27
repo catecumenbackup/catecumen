@@ -195,6 +195,8 @@ Existe suite de pruebas con **Vitest**: `npm run test` (una pasada) y `npm run t
 
 Al extraer más lógica de `App.jsx` (siguiente paso de modularización), moverla a `logic.js` y añadir pruebas. Es la red de seguridad para el pendiente grande (troceo del bundle).
 
+**Pruebas de COMPONENTES (React Testing Library + jsdom):** configurado en `vite.config.js` (bloque `test`). Separación por extensión: **`*.test.js` → Node** (lógica pura, rápido); **`*.test.jsx` → jsdom** (componentes). Setup en `src/test-setup.js` (matchers de jest-dom + `cleanup`). Ejemplo/humo en `src/example.test.jsx`. DevDeps: `jsdom`, `@testing-library/{react,jest-dom,user-event}`. Requiere `npm i` tras el pull. Al trocear `App.jsx`, cada pantalla extraída se prueba con un `*.test.jsx`.
+
 ## Control de versiones (git)
 
 El proyecto usa **git** (rama `main`, repo local en `C:\catecumen\.git`). Flujo: `git add -A` → `git commit -m "..."` tras cada cambio que funciona; commitear **antes** de subir `dist/` a Hostinger para tener punto de retorno. El `.gitignore` excluye `node_modules`, `dist`, `.env`/`.env.*` (claves) y `_archivo`.

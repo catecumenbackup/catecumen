@@ -5,6 +5,7 @@
 //  dist/recuperar/index.html  →  https://www.catecumen.com/recuperar/
 //  dist/info/index.html       →  https://www.catecumen.com/info/
 // ════════════════════════════════════════════════════════════════
+/// <reference types="vitest/config" />
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { resolve } from "path";
@@ -59,6 +60,18 @@ export default defineConfig({
   // a 70: más archivos = más viajes de ida y vuelta, y el Speed Index subió
   // de 1.2 s a 4.9 s. Un solo bundle resultó más rápido aquí. No reintroducir
   // sin medir antes con PageSpeed.
+
+  // ── Pruebas (Vitest) ─────────────────────────────────────────────────────
+  // Separación por extensión para no ralentizar la lógica pura:
+  //   *.test.js   → entorno Node (lógica de logic.js), rápido.
+  //   *.test.jsx  → entorno jsdom (componentes React con Testing Library).
+  // El plugin react() de arriba transforma el JSX también en las pruebas.
+  test: {
+    environmentMatchGlobs: [["**/*.test.jsx", "jsdom"]],
+    setupFiles: ["./src/test-setup.js"],
+    css: false,          // no procesar CSS en pruebas (más rápido)
+    clearMocks: true,
+  },
 });
 // Nota: si tu versión de Vite (8+ con Rolldown) muestra una advertencia
 // sobre rollupOptions, renombra la clave a `rolldownOptions` — la
