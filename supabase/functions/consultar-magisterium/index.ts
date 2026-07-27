@@ -101,7 +101,8 @@ Deno.serve(async (req) => {
     const data = await r.json();
 
     // Consulta exitosa → registrar el consumo (cuenta para el límite semanal).
-    await sb.rpc("registrar_consulta_ia").catch(() => {});
+    // best-effort: el builder de supabase-js no tiene .catch, así que try/catch.
+    try { await sb.rpc("registrar_consulta_ia"); } catch (_) { /* no bloquea la respuesta */ }
 
     return json({
       content: data?.choices?.[0]?.message?.content ?? "",
