@@ -148,8 +148,10 @@
           document.title = titles[lang] || titles.es;
         } catch (e) {}
 
-        // El tema claro ya va precargado estáticamente arriba. Solo si el
-        // usuario tiene el tema oscuro guardado, añadimos el suyo.
+        // El tema claro ya va precargado estáticamente arriba (y es el fondo del
+        // splash = elemento LCP). Solo si el usuario tiene el tema oscuro guardado,
+        // precargamos su fondo Y sobreescribimos el del splash con un <style>
+        // inyectado ANTES de que el body pinte (evita un flash de fondo claro).
         try {
           if (localStorage.getItem("catecumen_theme") === "dark") {
             var l = document.createElement("link");
@@ -157,6 +159,9 @@
             l.href = "/fondocatecumen.webp";
             l.setAttribute("fetchpriority", "high");
             document.head.appendChild(l);
+            var st = document.createElement("style");
+            st.textContent = "#cat-splash{background-image:url(/fondocatecumen.webp)!important}";
+            document.head.appendChild(st);
           }
         } catch (e) {}
       })();
@@ -167,12 +172,22 @@
       <!-- Pantalla de carga: HTML/CSS puro, sin peticiones externas. Pinta de
            inmediato (mejora el First Contentful Paint) y React la reemplaza
            automáticamente al montar. -->
+      <!-- El fondo de pantalla completa (fondocatecumen-claro.webp, precargado
+           arriba con fetchpriority=high) va AQUÍ, en HTML estático, para que sea
+           el elemento LCP y pinte a la velocidad del FCP en vez de esperar a que
+           React monte. React reemplaza este splash al terminar de cargar. El
+           tema oscuro lo ajusta el script inline del <head> (inyecta un <style>).
+           El contenido va sobre una tarjeta translúcida para mantener contraste. -->
       <div id="cat-splash" style="position:fixed;inset:0;display:flex;flex-direction:column;
-        align-items:center;justify-content:center;gap:22px;background:#0B1526;z-index:9999">
+        align-items:center;justify-content:center;gap:22px;z-index:9999;
+        background:#0B1526 center/cover no-repeat;background-image:url(/fondocatecumen-claro.webp)">
         <style>
           @keyframes catPulse{0%,100%{opacity:.75;transform:scale(.98)}50%{opacity:1;transform:scale(1)}}
           @keyframes catBar{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}
         </style>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:22px;
+          padding:36px 48px;border-radius:24px;background:rgba(11,21,38,.55);
+          -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)">
         <svg width="118" height="118" viewBox="0 0 100 100" aria-label="Catecumen"
              style="animation:catPulse 1.8s ease-in-out infinite">
           <defs>
@@ -185,10 +200,11 @@
           <text x="50" y="88" text-anchor="middle" fill="url(#cg)"
                 font-family="Georgia,'Times New Roman',serif" font-size="72" font-weight="700">C</text>
         </svg>
-        <div style="font-family:Georgia,'Times New Roman',serif;color:#C8A951;font-size:15px;
+        <div style="font-family:Georgia,'Times New Roman',serif;color:#F0D68A;font-size:15px;
           letter-spacing:.34em;text-transform:uppercase">Catecumen</div>
-        <div style="width:132px;height:2px;background:rgba(200,169,81,.2);overflow:hidden;border-radius:2px">
-          <div style="width:40%;height:100%;background:#C8A951;animation:catBar 1.4s ease-in-out infinite"></div>
+        <div style="width:132px;height:2px;background:rgba(200,169,81,.25);overflow:hidden;border-radius:2px">
+          <div style="width:40%;height:100%;background:#F0D68A;animation:catBar 1.4s ease-in-out infinite"></div>
+        </div>
         </div>
         <noscript>
           <p style="color:#F0EAD6;font-family:system-ui,sans-serif;font-size:14px;text-align:center;max-width:300px">
