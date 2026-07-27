@@ -23,7 +23,9 @@ export const BTN = (v = "pri") => ({
   border: v === "pri" ? "none" : `1px solid ${C.gold}60`,
   borderRadius: 10, padding: v === "pri" ? "12px 28px" : "10px 22px",
   fontFamily: "'Cinzel',serif", fontSize: 13, fontWeight: 700, letterSpacing: "0.07em",
-  cursor: "pointer", transition: "all .22s ease", display: "inline-flex", alignItems: "center", gap: 8,
+  // Solo props compuestas (transform/opacity/box-shadow) para evitar animaciones
+  // no compuestas que Lighthouse penaliza; color/background cambian sin transición.
+  cursor: "pointer", transition: "transform .22s ease, box-shadow .22s ease, opacity .22s ease", display: "inline-flex", alignItems: "center", gap: 8,
   boxShadow: v === "pri" ? `0 2px 12px rgba(200,169,81,0.35),0 1px 0 rgba(255,255,255,0.15) inset` : "none",
 });
 
