@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { SEC_META } from "../data/course.js";
+import { supabase } from "../supabaseClient.js";
 import { SoporteLink } from "./support.jsx";
 import { C, BTN, MODAL, OVERLAY } from "../ui.js";
 import { T, PICK } from "../i18n.js";
@@ -23,6 +24,19 @@ function loadHls(){
   return hlsPromise;
 }
 const esHls=(url)=>/\.m3u8(\?|#|$)/i.test(url||"");
+const esBunny=(url)=>/\.b-cdn\.net\//i.test(url||"");
+
+// Firma las URLs de Bunny (contenido de pago) vía la edge function `firmar-video`.
+// Si el token está apagado o la función no responde, devuelve la URL cruda (que
+// reproduce igual). Los .mp4 locales / Supabase no se tocan.
+async function resolverFuente(url){
+  if(!esBunny(url)) return url;
+  try{
+    const {data,error}=await supabase.functions.invoke("firmar-video",{body:{url}});
+    if(!error && data?.url) return data.url;
+  }catch{/* sin conexión / función no desplegada: se usa la URL cruda */}
+  return url;
+}
 
 export default function VideoModal({secId,vid,bridge,onWatched,onClose}){
   const [watching,setWatching]=useState(false);
@@ -38,28 +52,38 @@ export default function VideoModal({secId,vid,bridge,onWatched,onClose}){
   // Conecta la fuente al <video>: HLS vía hls.js (o nativo en Safari) para .m3u8,
   // asignación directa de src para .mp4.
   useEffect(()=>{
-    const v=videoRef.current;
-    if(!v||!videoPrueba||videoError) return;
+    if(!videoRef.current||!videoPrueba||videoError) return;
     let hls, cancelado=false;
-    if(esHls(videoPrueba)){
-      if(v.canPlayType("application/vnd.apple.mpegurl")){
-        v.src=videoPrueba; // Safari / iOS reproducen HLS de forma nativa
-      }else{
-        loadHls().then((Hls)=>{
+    (async()=>{
+      const src=await resolverFuente(videoPrueba); // firma si es Bunny; si no, igual
+      const v=videoRef.current;
+      if(cancelado||!v) return;
+      if(esHls(src)){
+        if(v.canPlayType("application/vnd.apple.mpegurl")){
+          v.src=src; // Safari / iOS reproducen HLS de forma nativa
+        }else{
+          const Hls=await loadHls().catch(()=>null);
           if(cancelado||!videoRef.current) return;
           if(Hls&&Hls.isSupported()){
-            hls=new Hls({maxBufferLength:30});
-            hls.loadSource(videoPrueba);
+            // Si la URL viene firmada (token=), propagar la MISMA query a cada
+            // segmento/subplaylist: hls.js no arrastra el query string solo, y el
+            // token de directorio de Bunny autoriza toda la carpeta con ese token.
+            const qs=(/token=/.test(src)&&src.includes("?"))?src.split("?")[1]:null;
+            hls=new Hls({maxBufferLength:30, ...(qs?{xhrSetup:(xhr,u)=>{
+              const uu=/token=/.test(u)?u:(u+(u.includes("?")?"&":"?")+qs);
+              xhr.open("GET",uu,true);
+            }}:{})});
+            hls.loadSource(src);
             hls.attachMedia(videoRef.current);
             hls.on(Hls.Events.ERROR,(_e,data)=>{ if(data?.fatal) setVideoError(true); });
           }else{
-            videoRef.current.src=videoPrueba; // último recurso
+            videoRef.current.src=src; // último recurso
           }
-        }).catch(()=>setVideoError(true));
+        }
+      }else{
+        v.src=src; // .mp4 directo
       }
-    }else{
-      v.src=videoPrueba; // .mp4 directo
-    }
+    })();
     return()=>{ cancelado=true; if(hls) hls.destroy(); };
   },[videoPrueba,videoError]);
   useEffect(()=>{
