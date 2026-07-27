@@ -21,6 +21,7 @@ const imgBienvenida2 = "/bienvenida-comunidad.webp";
 const iconoBautismo = "/iconobautismo.svg";
 const iconoConfirmacion = "/iconoconfirmacion.svg";
 import { createClient } from "@supabase/supabase-js";
+import { buildSeq as buildSeqCore, translate as translateCore, pick as pickCore } from "./logic.js";
 
 // ─── SUPABASE (producción) ─────────────────────────────────────────
 // Configura VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY en tu archivo .env
@@ -55,13 +56,10 @@ function setAppLanguage(code){
   try{localStorage.setItem("catecumen_lang",code);}catch{}
   window.location.reload();
 }
-const T=(es,en=es,fr=es,de=es,pt=es,it=es)=>{
-  const map={es,en,fr,de,pt,it};
-  return map[LANG]??es;
-};
-// Selector directo para objetos con forma {es,en,fr,de,pt,it,...}: usa el
-// idioma activo y cae de vuelta a español/inglés si el idioma no está.
-const PICK=(obj)=>obj?.[LANG]??obj?.es??obj?.en??"";
+// T y PICK delegan en las funciones puras de logic.js (probadas con Vitest),
+// aplicando el idioma activo LANG. Comportamiento idéntico al anterior.
+const T=(es,en=es,fr=es,de=es,pt=es,it=es)=>translateCore(LANG,es,en,fr,de,pt,it);
+const PICK=(obj)=>pickCore(LANG,obj);
 // Los valores internos de opciones Sí/No se guardan siempre como "Sí"/"No"
 // (son las claves de datos); esto solo traduce lo que se MUESTRA.
 const SINO=(val)=>PICK({
@@ -2422,23 +2420,9 @@ function SecIcon({id,size=36}){
   return <span style={{fontSize:size,display:"inline-block",lineHeight:1}}>{ic}</span>;
 }
 
-function buildSeq(uType, sacs){
-  // ⚠️ MODO DE PRUEBA: una sola sección → 1 video + 1 evaluación + constancia.
-  if(TEST_MODE) return ["tc1"];
-  // El catequista solo cursa el Módulo I de Neuropedagogía Catequética;
-  // no aplican TC1, TC2, Confesión ni Unción de Enfermos.
-  if(uType==="catequista") return ["catequista"];
-  const s=["tc1"];
-  if(uType==="catecumeno"){
-    // Módulo 0: el Kerigma va ANTES de TC1 y una sola vez, sin importar cuántos
-    // sacramentos elija. No aplica a papás ni padrinos.
-    s.unshift("kerigma");
-    ["bautismo","confirmacion","primera_comunion"].forEach(x=>{if(sacs.includes(x))s.push(x);});
-  } else if(uType==="prebautismal") s.push("prebautismal");
-  else if(uType==="padrino") s.push("bautismo");
-  s.push("tc2_confesion","tc2_uncion");
-  return s;
-}
+// buildSeq vive en logic.js (probado con Vitest). Aquí solo se le pasa el
+// TEST_MODE del módulo. Incluye el Módulo 0 "kerigma" para catecúmenos.
+function buildSeq(uType, sacs){ return buildSeqCore(uType, sacs, TEST_MODE); }
 
 function isSectionDone(secId, prog){
   const vids=SEC_META[secId]?.videos||[];
