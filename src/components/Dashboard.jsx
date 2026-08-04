@@ -9,14 +9,19 @@ import { T, PICK } from "../i18n.js";
 
 const AgendaTab = lazy(() => import("./AgendaTab.jsx"));
 const MensajesTab = lazy(() => import("./MensajesTab.jsx"));
+const Schola = lazy(() => import("./Schola.jsx"));
 
 // Panel "Mi Cuenta": progreso, datos personales editables, constancias y
 // las pestañas Agenda/Mensajes (diferidas). Extraído del monolito.
-export default function Dashboard({formData,sequence,progress,onUpdate,onClose,initialTab}){
+export default function Dashboard({formData,sequence,progress,onUpdate,onClose,initialTab,userType}){
   const [tab,setTab]=useState(initialTab||"progress");
   const [edit,setEdit]=useState({});
   const [saved,setSaved]=useState(false);
   const [agendaPend,setAgendaPend]=useState(0); // sesiones próximas sin responder
+  const [schola,setSchola]=useState(null); // 'catecumen' | 'fidei' | null
+  // Acceso a las Scholas: catequistas → Catecumen; quien completó un sacramento → Fidei.
+  const esCatequista=userType==="catequista";
+  const tieneSacramento=sequence.some(s=>SEC_META[s]?.cert&&isSectionDone(s,progress));
   useEffect(()=>{
     let vivo=true;
     (async()=>{
@@ -65,6 +70,27 @@ export default function Dashboard({formData,sequence,progress,onUpdate,onClose,i
             <button onClick={onClose} style={{...BTN("sec"),fontSize:12}}>✕ {T("Cerrar","Close","Fermer","Schließen","Fechar","Chiudi")}</button>
           </div>
         </div>
+
+        {/* Scholas (formación continua) disponibles según el perfil */}
+        {(esCatequista||tieneSacramento)&&(
+          <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:20}}>
+            {esCatequista&&(
+              <button onClick={()=>setSchola("catecumen")} style={{...BTN("sec"),fontSize:12.5}}>
+                🧠 Schola Catecumen
+              </button>
+            )}
+            {tieneSacramento&&(
+              <button onClick={()=>setSchola("fidei")} style={{...BTN("sec"),fontSize:12.5}}>
+                ✝️ Schola Fidei
+              </button>
+            )}
+          </div>
+        )}
+        {schola&&(
+          <Suspense fallback={<div style={{color:C.gold,fontFamily:"'Cinzel',serif",textAlign:"center",padding:20}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div>}>
+            <Schola espacio={schola} onClose={()=>setSchola(null)}/>
+          </Suspense>
+        )}
         {/* Tabs */}
         <div style={{display:"flex",gap:8,marginBottom:24}}>
           {tabs.map(t=>(

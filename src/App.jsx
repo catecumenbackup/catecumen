@@ -1453,6 +1453,11 @@ export default function App(){
       }
       const {error}=await supabase.from(table).insert(fila);
       if(error)throw error;
+      // Geocodificar en segundo plano (no bloquea el flujo). La función lee la
+      // dirección de la BD por registro_id y guarda lat/lng para el directorio.
+      if(registro_id&&(table==="parroquias"||table==="diocesis")){
+        supabase.functions.invoke("geocodificar-uno",{body:{tabla:table,registro_id}}).catch(()=>{});
+      }
     }catch(e){
       console.error("solicitud de afiliación:",e);
       alert(T("No se pudo enviar tu solicitud de afiliación. Por favor verifica tu conexión e intenta de nuevo. Si el problema persiste, escríbenos a admin@catecumen.com.","Your affiliation request could not be sent. Please check your connection and try again. If the problem persists, write to admin@catecumen.com.","Votre demande d'affiliation n'a pas pu être envoyée. Vérifiez votre connexion et réessayez. Si le problème persiste, écrivez-nous à admin@catecumen.com.","Ihr Antrag auf Anschluss konnte nicht gesendet werden. Bitte überprüfen Sie Ihre Verbindung und versuchen Sie es erneut. Wenn das Problem weiterhin besteht, schreiben Sie uns an admin@catecumen.com.","Não foi possível enviar sua solicitação de afiliação. Verifique sua conexão e tente novamente. Se o problema persistir, escreva para admin@catecumen.com.","Non è stato possibile inviare la tua richiesta di affiliazione. Controlla la tua connessione e riprova. Se il problema persiste, scrivici a admin@catecumen.com."));
@@ -1883,6 +1888,7 @@ export default function App(){
       {showDash&&(
         <Suspense fallback={<div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(250,247,240,0.82)"}}><div style={{color:C.gold,fontFamily:"'Cinzel',serif"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div></div>}>
           <Dashboard formData={formData} sequence={sequence} progress={progress}
+            userType={userType}
             initialTab={dashTab}
             onUpdate={updates=>setFormData(p=>({...p,...updates}))}
             onClose={()=>{setShowDash(false);setDashTab(null);
