@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../supabaseClient.js";
 import { ConsultarIAButton } from "./support.jsx";
+import ScholaComunidad from "./ScholaComunidad.jsx";
 import { C, BTN, MODAL, OVERLAY } from "../ui.js";
 import { T, PICK } from "../i18n.js";
 
@@ -35,6 +36,7 @@ export default function Schola({ espacio, onClose }) {
   const [estado, setEstado] = useState("cargando"); // cargando | ok | sinAcceso | error
   const [recursos, setRecursos] = useState([]);
   const [video, setVideo] = useState(null); // url del iframe abierto
+  const [seccion, setSeccion] = useState("formacion"); // formacion | comunidad
 
   useEffect(() => {
     let vivo = true;
@@ -78,8 +80,17 @@ export default function Schola({ espacio, onClose }) {
           <button onClick={onClose} style={{ ...BTN("sec"), fontSize: 12, padding: "6px 12px" }}>✕</button>
         </div>
 
+        {/* Pestañas (solo con acceso) */}
+        {estado === "ok" && (
+          <div style={{ display: "flex", gap: 8, padding: "12px 20px 0" }}>
+            <button onClick={() => setSeccion("formacion")} style={{ ...BTN(seccion === "formacion" ? "pri" : "sec"), fontSize: 12 }}>📚 {T("Formación", "Formation", "Formation", "Bildung", "Formação", "Formazione")}</button>
+            <button onClick={() => setSeccion("comunidad")} style={{ ...BTN(seccion === "comunidad" ? "pri" : "sec"), fontSize: 12 }}>💬 {T("Comunidad", "Community", "Communauté", "Gemeinschaft", "Comunidade", "Comunità")}</button>
+          </div>
+        )}
+
         {/* Cuerpo */}
         <div style={{ flex: 1, overflowY: "auto", padding: "18px 20px" }}>
+          {estado === "ok" && seccion === "comunidad" && <ScholaComunidad espacio={espacio} />}
           {estado === "cargando" && <p style={{ color: C.ivoryM, textAlign: "center", fontStyle: "italic" }}>{T("Cargando…", "Loading…", "Chargement…", "Laden…", "Carregando…", "Caricamento…")}</p>}
 
           {estado === "error" && <p style={{ color: "#F87171", textAlign: "center" }}>⚠️ {T("No se pudo cargar. Intenta de nuevo.", "Could not load. Please try again.", "Impossible de charger. Réessayez.", "Laden fehlgeschlagen. Bitte erneut versuchen.", "Não foi possível carregar. Tente novamente.", "Impossibile caricare. Riprova.")}</p>}
@@ -91,13 +102,13 @@ export default function Schola({ espacio, onClose }) {
             </div>
           )}
 
-          {estado === "ok" && recursos.length === 0 && (
+          {estado === "ok" && seccion === "formacion" && recursos.length === 0 && (
             <p style={{ color: C.ivoryM, textAlign: "center", fontStyle: "italic", padding: "24px 0" }}>
               {T("Pronto encontrarás aquí recursos de formación.", "Formation resources will appear here soon.", "Des ressources de formation apparaîtront bientôt ici.", "Bald findest du hier Bildungsressourcen.", "Em breve você encontrará recursos de formação aqui.", "Presto troverai qui risorse di formazione.")}
             </p>
           )}
 
-          {estado === "ok" && grupos.map((g, gi) => (
+          {estado === "ok" && seccion === "formacion" && grupos.map((g, gi) => (
             <div key={gi} style={{ marginBottom: 22 }}>
               <h3 style={{ fontFamily: "'Cinzel',serif", color: C.gold, fontSize: 13, letterSpacing: "0.08em", textTransform: "uppercase", borderBottom: `1px solid ${C.gold}25`, paddingBottom: 6, marginBottom: 12 }}>{g.cat}</h3>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>

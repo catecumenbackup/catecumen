@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { SEC_META, isSectionDone } from "../data/course.js";
+const Schola = lazy(() => import("./Schola.jsx"));
 import SecIcon from "./SecIcon.jsx";
 import { supabase } from "../supabaseClient.js";
 import { formatSerie } from "../logic.js";
@@ -49,6 +50,7 @@ export default function CertificatesModal({formData,sequence,progress,insBySec,o
   const certSecs=sequence.filter(s=>SEC_META[s]?.cert&&isSectionDone(s,progress));
   const today=new Date().toLocaleDateString({es:"es-MX",en:"en-US",fr:"fr-FR",de:"de-DE",pt:"pt-BR",it:"it-IT"}[LANG]||"es-MX",{year:"numeric",month:"long",day:"numeric"});
   const [downloading,setDownloading]=useState(null);
+  const [scholaOpen,setScholaOpen]=useState(false);
   const [series,setSeries]=useState({}); // {secId:{serie,codigo,vigencia}}
 
   const fmtFecha=(d)=>new Date(d).toLocaleDateString({es:"es-MX",en:"en-US",fr:"fr-FR",de:"de-DE",pt:"pt-BR",it:"it-IT"}[LANG]||"es-MX",{year:"numeric",month:"long",day:"numeric"});
@@ -233,10 +235,21 @@ export default function CertificatesModal({formData,sequence,progress,insBySec,o
             🔐 {T("Cada constancia incluye un código QR único para verificar su autenticidad. La validez es de 6 meses a partir de la fecha de emisión. Válida únicamente para mayores de 18 años.","Each certificate includes a unique QR code for authenticity verification. Valid for 6 months from the date of issue. Valid only for persons 18 years of age or older.","Chaque attestation comprend un code QR unique pour vérifier son authenticité. Elle est valable 6 mois à compter de la date d'émission. Valable uniquement pour les personnes de plus de 18 ans.","Jede Bescheinigung enthält einen eindeutigen QR-Code zur Echtheitsprüfung. Die Gültigkeit beträgt 6 Monate ab Ausstellungsdatum. Nur gültig für Personen über 18 Jahre.","Cada certificado inclui um código QR único para verificar sua autenticidade. A validade é de 6 meses a partir da data de emissão. Válido apenas para maiores de 18 anos.","Ogni attestato include un codice QR unico per verificarne l'autenticità. La validità è di 6 mesi dalla data di emissione. Valido solo per i maggiori di 18 anni.")}
           </p>
         </div>
+        {certSecs.length>0&&(
+          <button onClick={()=>setScholaOpen(true)}
+            style={{...BTN("pri"),width:"100%",justifyContent:"center",marginBottom:10}}>
+            ✝️ {T("Continúa tu formación · Schola Fidei","Continue your formation · Schola Fidei","Poursuivez votre formation · Schola Fidei","Setze deine Ausbildung fort · Schola Fidei","Continue sua formação · Schola Fidei","Continua la tua formazione · Schola Fidei")}
+          </button>
+        )}
         <button onClick={onClose} style={{...BTN("sec"),width:"100%",justifyContent:"center"}}>
           {T("Cerrar","Close","Fermer","Schließen","Fechar","Chiudi")}
         </button>
       </div>
+      {scholaOpen&&(
+        <Suspense fallback={<div style={OVERLAY}><div style={{color:C.gold,fontFamily:"'Cinzel',serif"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div></div>}>
+          <Schola espacio="fidei" onClose={()=>setScholaOpen(false)}/>
+        </Suspense>
+      )}
     </div>
   );
 }

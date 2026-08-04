@@ -142,6 +142,7 @@
       <button class="tab" data-tab="atencion">🆘 Atención <span id="aten-badge" class="pill bad" style="display:none"></span></button>
       <button class="tab" data-tab="precios">💰 Precios</button>
       <button class="tab" data-tab="constancias">🏆 Constancias</button>
+      <button class="tab" data-tab="scholas">📖 Scholas</button>
       <button class="tab" data-tab="auditoria">📜 Auditoría</button>
     </div>
 
@@ -359,6 +360,47 @@
         <th>Nombre</th><th>N° ID</th><th>Sacramento</th><th>Serie</th><th>Emitida</th><th>Vigencia</th><th class="num">Estado</th><th>Acciones</th>
       </tr></thead><tbody id="constancias-body"></tbody></table></div>
       <p id="constancias-msg" class="msg"></p>
+    </div>
+
+    <!-- TAB SCHOLAS -->
+    <div id="tab-scholas" class="tabpane hidden">
+      <h2>📖 Scholas — Recursos de formación</h2>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
+        <label>Espacio:
+          <select id="sch-filtro" onchange="cargarScholas()">
+            <option value="">Todos</option>
+            <option value="catecumen">Schola Catecumen (catequistas)</option>
+            <option value="fidei">Schola Fidei (post-sacramento)</option>
+          </select>
+        </label>
+        <button class="btn ghost" onclick="cargarScholas()">↻ Recargar</button>
+        <button class="btn" onclick="window.schLimpiar()">+ Nuevo recurso</button>
+      </div>
+      <div id="scholas-lista" class="scroll"></div>
+
+      <hr style="border-color:rgba(200,169,81,.2);margin:18px 0">
+      <h3 id="sch-form-tit" style="color:var(--gold);font-family:'Cinzel',serif">Nuevo recurso</h3>
+      <input type="hidden" id="sch-id">
+      <div class="row2">
+        <label>Espacio<select id="sch-espacio"><option value="catecumen">Catecumen</option><option value="fidei">Fidei</option></select></label>
+        <label>Tipo<select id="sch-tipo"><option value="video">Video (URL de embed/iframe)</option><option value="documento">Documento</option><option value="enlace">Enlace</option></select></label>
+      </div>
+      <div class="row2">
+        <label>Orden de categoría<input id="sch-catorden" type="number" value="0"></label>
+        <label>Orden del recurso<input id="sch-orden" type="number" value="0"></label>
+      </div>
+      <label>URL <small style="color:var(--ivory-m)">(video: URL de embed iframe, p. ej. Bunny; documento/enlace: URL directa)</small>
+        <input id="sch-url" placeholder="https://…"></label>
+      <p style="color:var(--ivory-m);font-size:12px;margin:12px 0 4px">Categoría (por idioma)</p>
+      <div id="sch-categoria"></div>
+      <p style="color:var(--ivory-m);font-size:12px;margin:12px 0 4px">Título (por idioma)</p>
+      <div id="sch-titulo"></div>
+      <p style="color:var(--ivory-m);font-size:12px;margin:12px 0 4px">Descripción (por idioma)</p>
+      <div id="sch-descripcion"></div>
+      <div class="modal-actions">
+        <button class="btn ghost" onclick="window.schLimpiar()">Limpiar</button>
+        <button class="btn" onclick="window.schGuardar()">Guardar recurso</button>
+      </div>
     </div>
 
     <!-- TAB AUDITORÍA -->
@@ -685,6 +727,59 @@
     catch(e){ alert("Error: "+(e.message||e)); }
   };
 
+  // ---------- SCHOLAS ----------
+  const SCH_LANGS=["es","en","fr","de","pt","it"];
+  let SCH_ROWS=[];
+  function _schBuild(){
+    ["categoria","titulo","descripcion"].forEach(campo=>{
+      const c=$("sch-"+campo); if(!c||c.dataset.built) return;
+      c.dataset.built="1"; c.style.display="grid"; c.style.gridTemplateColumns="repeat(3,1fr)"; c.style.gap="6px";
+      SCH_LANGS.forEach(l=>{
+        const el=campo==="descripcion"?document.createElement("textarea"):document.createElement("input");
+        el.dataset.lang=l; el.placeholder=l.toUpperCase(); if(campo==="descripcion") el.rows=2;
+        c.appendChild(el);
+      });
+    });
+  }
+  function _schGet(campo){ const o={}; $("sch-"+campo).querySelectorAll("[data-lang]").forEach(e=>o[e.dataset.lang]=e.value||null); return o; }
+  function _schSet(campo,obj){ $("sch-"+campo).querySelectorAll("[data-lang]").forEach(e=>e.value=(obj&&obj[e.dataset.lang])||""); }
+  async function cargarScholas(){
+    _schBuild();
+    const {data,error}=await sb.rpc("admin_schola_listar",{p_espacio:$("sch-filtro").value||null});
+    const cont=$("scholas-lista");
+    if(error){ cont.innerHTML="<p style='color:#F87171'>Error: "+error.message+"</p>"; return; }
+    SCH_ROWS=data||[];
+    cont.innerHTML=SCH_ROWS.length?SCH_ROWS.map((r,i)=>`<div style="display:flex;gap:10px;align-items:center;justify-content:space-between;padding:8px 10px;border:1px solid rgba(200,169,81,.2);border-radius:8px;margin-bottom:6px;${r.activo?'':'opacity:.5'}">
+      <div><b style="color:var(--gold)">${r.espacio}</b> · ${r.categoria_es||''} — ${r.titulo_es||''} <span style="color:var(--ivory-m);font-size:11px">(${r.tipo})</span></div>
+      <div class="actions-cell">
+        <button class="btn ghost" onclick="window.schEditar(${i})">Editar</button>
+        <button class="btn ghost" onclick="window.schToggle(${r.id},${!r.activo})">${r.activo?'Ocultar':'Activar'}</button>
+        <button class="btn ghost" onclick="window.schBorrar(${r.id})">Borrar</button>
+      </div></div>`).join(""):"<p style='color:var(--ivory-m)'>Sin recursos.</p>";
+  }
+  window.schEditar=(i)=>{
+    const r=SCH_ROWS[i]; if(!r) return; _schBuild();
+    $("sch-id").value=r.id; $("sch-espacio").value=r.espacio; $("sch-tipo").value=r.tipo;
+    $("sch-catorden").value=r.categoria_orden||0; $("sch-orden").value=r.orden||0; $("sch-url").value=r.url||"";
+    _schSet("categoria",{es:r.categoria_es,en:r.categoria_en,fr:r.categoria_fr,de:r.categoria_de,pt:r.categoria_pt,it:r.categoria_it});
+    _schSet("titulo",{es:r.titulo_es,en:r.titulo_en,fr:r.titulo_fr,de:r.titulo_de,pt:r.titulo_pt,it:r.titulo_it});
+    _schSet("descripcion",{es:r.descripcion_es,en:r.descripcion_en,fr:r.descripcion_fr,de:r.descripcion_de,pt:r.descripcion_pt,it:r.descripcion_it});
+    $("sch-form-tit").textContent="Editar recurso #"+r.id; window.scrollTo(0,document.body.scrollHeight);
+  };
+  window.schLimpiar=()=>{ _schBuild(); $("sch-id").value=""; $("sch-url").value=""; $("sch-catorden").value=0; $("sch-orden").value=0;
+    _schSet("categoria",{}); _schSet("titulo",{}); _schSet("descripcion",{}); $("sch-form-tit").textContent="Nuevo recurso"; };
+  window.schGuardar=async()=>{
+    const id=$("sch-id").value?parseInt($("sch-id").value):null;
+    const {error}=await sb.rpc("admin_schola_guardar",{
+      p_id:id, p_espacio:$("sch-espacio").value, p_categoria_orden:parseInt($("sch-catorden").value)||0,
+      p_categoria:_schGet("categoria"), p_titulo:_schGet("titulo"), p_descripcion:_schGet("descripcion"),
+      p_tipo:$("sch-tipo").value, p_url:$("sch-url").value, p_orden:parseInt($("sch-orden").value)||0 });
+    if(error){ alert("Error: "+error.message); return; }
+    window.schLimpiar(); await cargarScholas();
+  };
+  window.schToggle=async(id,activo)=>{ const {error}=await sb.rpc("admin_schola_activo",{p_id:id,p_activo:activo}); if(error){alert(error.message);return;} await cargarScholas(); };
+  window.schBorrar=async(id)=>{ if(!confirm("¿Borrar este recurso?"))return; const {error}=await sb.rpc("admin_schola_borrar",{p_id:id}); if(error){alert(error.message);return;} await cargarScholas(); };
+
   // ---------- TABS ----------
   document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{
     document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
@@ -701,6 +796,7 @@
     if(t.dataset.tab==="evaluaciones") cargarEvaluaciones();
     if(t.dataset.tab==="tour") cargarTour();
     if(t.dataset.tab==="etiquetas") cargarEtiquetas();
+    if(t.dataset.tab==="scholas") cargarScholas();
   }));
 
   // ---------- ESTADÍSTICAS ----------
