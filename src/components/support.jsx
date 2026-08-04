@@ -5,6 +5,7 @@ import { T, LANG } from "../i18n.js";
 
 const ConsultarIAModal = lazy(() => import("./ConsultarIAModal.jsx"));
 const ConsultarCatequistaModal = lazy(() => import("./ConsultarCatequistaModal.jsx"));
+const DirectorioAfiliados = lazy(() => import("./DirectorioAfiliados.jsx"));
 
 // Cluster de soporte y biblioteca, compartido por varias pantallas.
 // Sin estado del ámbito de App; solo depende de ui.js e i18n.js.
@@ -259,6 +260,24 @@ export function ConsultarDudasButton({contexto="",size="sec"}){
       {open&&(
         <Suspense fallback={<div style={OVERLAY}><div style={{color:C.gold,fontFamily:"'Cinzel',serif"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div></div>}>
           <ConsultarCatequistaModal contexto={contexto} onClose={()=>setOpen(false)}/>
+        </Suspense>
+      )}
+    </div>
+  );
+}
+
+// Buscador público de parroquias/diócesis afiliadas (modal diferido).
+export function DirectorioButton({size="sec",estilo={}}){
+  const [open,setOpen]=useState(false);
+  const full=estilo.width==="100%";
+  return(
+    <div style={{display:full?"block":"inline-block",...estilo}}>
+      <button onClick={()=>setOpen(true)} style={{...BTN(size),fontSize:12,...(full?{width:"100%",justifyContent:"center"}:{})}}>
+        ⛪ {T("Buscar parroquia afiliada","Find affiliated parish","Trouver une paroisse affiliée","Angeschlossene Pfarrei finden","Buscar paróquia afiliada","Trova parrocchia affiliata")}
+      </button>
+      {open&&(
+        <Suspense fallback={<div style={OVERLAY}><div style={{color:C.gold,fontFamily:"'Cinzel',serif"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div></div>}>
+          <DirectorioAfiliados onClose={()=>setOpen(false)}/>
         </Suspense>
       )}
     </div>

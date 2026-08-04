@@ -3,6 +3,7 @@ import { supabase } from "../supabaseClient.js";
 import { SEC_META, isSectionDone } from "../data/course.js";
 import SecIcon from "./SecIcon.jsx";
 import { FRow, Input, PasswordInput, PhoneField } from "./fields.jsx";
+import { DirectorioButton } from "./support.jsx";
 import { C, BTN, CARD, LBL } from "../ui.js";
 import { T, PICK } from "../i18n.js";
 
@@ -57,9 +58,12 @@ export default function Dashboard({formData,sequence,progress,onUpdate,onClose,i
         boxShadow:"0 24px 64px rgba(0,0,0,0.65)",
         padding:"26px clamp(14px,3vw,30px)",
         maxHeight:"calc(100dvh - 48px)",overflowY:"auto"}}>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24,gap:8,flexWrap:"wrap"}}>
           <h1 style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:20}}>👤 {T("Mi Cuenta","My Account","Mon compte","Mein Konto","Minha Conta","Il mio account")}</h1>
-          <button onClick={onClose} style={{...BTN("sec"),fontSize:12}}>✕ {T("Cerrar","Close","Fermer","Schließen","Fechar","Chiudi")}</button>
+          <div style={{display:"flex",gap:8,alignItems:"center"}}>
+            <DirectorioButton/>
+            <button onClick={onClose} style={{...BTN("sec"),fontSize:12}}>✕ {T("Cerrar","Close","Fermer","Schließen","Fechar","Chiudi")}</button>
+          </div>
         </div>
         {/* Tabs */}
         <div style={{display:"flex",gap:8,marginBottom:24}}>

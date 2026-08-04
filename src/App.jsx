@@ -27,7 +27,7 @@ import { SUPPORTED_LANGS, detectLang, LANG, setAppLanguage, T, PICK, SINO } from
 import EstrellasInput from "./components/EstrellasInput.jsx";
 import { FlameIcon, CalizIcon, iconoBautismo, iconoConfirmacion } from "./components/icons.jsx";
 import SecIcon from "./components/SecIcon.jsx";
-import { SoporteLink } from "./components/support.jsx";
+import { SoporteLink, DirectorioButton } from "./components/support.jsx";
 import { SEC_META, Q, TEST_MODE, isSectionDone, videoState } from "./data/course.js";
 import { appNav } from "./appNav.js";
 import { CUOTAS } from "./data/pricing.js";
@@ -642,6 +642,7 @@ function WelcomeModal({onContinue,onLogin}){
           <button onClick={onLogin} style={{...BTN("sec"),width:"100%",justifyContent:"center",fontSize:15}}>
             🔑 {T("Iniciar sesión","Sign in","Se connecter","Anmelden","Entrar","Accedi")}
           </button>
+          <DirectorioButton estilo={{width:"100%"}}/>
           {i<n-1&&(
             <button onClick={onContinue}
               style={{background:"none",border:"none",color:C.ivoryM,fontSize:13,cursor:"pointer",
