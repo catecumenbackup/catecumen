@@ -142,6 +142,7 @@
       <button class="tab" data-tab="atencion">🆘 Atención <span id="aten-badge" class="pill bad" style="display:none"></span></button>
       <button class="tab" data-tab="precios">💰 Precios</button>
       <button class="tab" data-tab="constancias">🏆 Constancias</button>
+      <button class="tab" data-tab="afiliados">⛪ Afiliados</button>
       <button class="tab" data-tab="scholas">📖 Scholas</button>
       <button class="tab" data-tab="auditoria">📜 Auditoría</button>
     </div>
@@ -360,6 +361,34 @@
         <th>Nombre</th><th>N° ID</th><th>Sacramento</th><th>Serie</th><th>Emitida</th><th>Vigencia</th><th class="num">Estado</th><th>Acciones</th>
       </tr></thead><tbody id="constancias-body"></tbody></table></div>
       <p id="constancias-msg" class="msg"></p>
+    </div>
+
+    <!-- TAB AFILIADOS -->
+    <div id="tab-afiliados" class="tabpane hidden">
+      <h2>⛪ Parroquias y diócesis afiliadas</h2>
+      <p style="color:var(--ivory-m);font-size:13px;margin:0 0 12px">
+        <b>Aprobar</b> = alta (aparece en el directorio público) · <b>Suspender</b> = se oculta pero se conserva · <b>Borrar</b> = baja definitiva.
+      </p>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
+        <label>Tipo:
+          <select id="afi-tipo" onchange="cargarAfiliados()">
+            <option value="">Todas</option>
+            <option value="parroquia">Parroquias</option>
+            <option value="diocesis">Diócesis</option>
+          </select>
+        </label>
+        <label>Situación:
+          <select id="afi-estado" onchange="cargarAfiliados()">
+            <option value="">Todas</option>
+            <option value="pendiente">Pendientes</option>
+            <option value="activa">Activas</option>
+            <option value="suspendida">Suspendidas</option>
+          </select>
+        </label>
+        <label>Buscar: <input id="afi-q" type="search" placeholder="nombre, país, estado, registro o correo…" style="width:260px;display:inline-block" oninput="cargarAfiliados()"/></label>
+        <button class="btn ghost" onclick="cargarAfiliados()">↻ Recargar</button>
+      </div>
+      <div id="afiliados-lista" class="scroll"></div>
     </div>
 
     <!-- TAB SCHOLAS -->
@@ -780,6 +809,47 @@
   window.schToggle=async(id,activo)=>{ const {error}=await sb.rpc("admin_schola_activo",{p_id:id,p_activo:activo}); if(error){alert(error.message);return;} await cargarScholas(); };
   window.schBorrar=async(id)=>{ if(!confirm("¿Borrar este recurso?"))return; const {error}=await sb.rpc("admin_schola_borrar",{p_id:id}); if(error){alert(error.message);return;} await cargarScholas(); };
 
+  // ---------- AFILIADOS (parroquias / diócesis) ----------
+  async function cargarAfiliados(){
+    const cont=$("afiliados-lista");
+    const {data,error}=await sb.rpc("admin_afiliados_listar",{
+      p_tipo:$("afi-tipo").value||null, p_estado:$("afi-estado").value||null, p_q:$("afi-q").value||null});
+    if(error){ cont.innerHTML="<p style='color:#F87171'>Error: "+esc(error.message)+"</p>"; return; }
+    const rows=data||[];
+    if(!rows.length){ cont.innerHTML="<p style='color:var(--ivory-m)'>Sin afiliados que coincidan.</p>"; return; }
+    const pill=(sit)=>{ const c=sit==='activa'?'#3FB950':sit==='suspendida'?'#F87171':'#E3B341';
+      const t=sit==='activa'?'ACTIVA':sit==='suspendida'?'SUSPENDIDA':'PENDIENTE';
+      return `<span style="margin-left:8px;font-size:10px;font-weight:700;letter-spacing:.06em;color:${c};border:1px solid ${c}66;border-radius:99px;padding:2px 9px">${t}</span>`; };
+    cont.innerHTML=rows.map(r=>{
+      const icono=r.tipo==='diocesis'?'🏛️':'⛪';
+      let btns='';
+      if(r.situacion==='pendiente') btns=`<button class="btn" onclick="window.afiAccion('${r.tipo}','${r.id}','aprobar')">Aprobar</button>`;
+      else if(r.situacion==='activa') btns=`<button class="btn ghost" onclick="window.afiAccion('${r.tipo}','${r.id}','suspender')">Suspender</button>`;
+      else btns=`<button class="btn" onclick="window.afiAccion('${r.tipo}','${r.id}','aprobar')">Reactivar</button>`;
+      btns+=`<button class="btn ghost" onclick="window.afiAccion('${r.tipo}','${r.id}','borrar')">Borrar</button>`;
+      const linea2=[esc(r.responsable||''),esc(r.pais||''),r.estado?esc(r.estado):'',r.municipio?esc(r.municipio):''].filter(Boolean).join(' · ');
+      const linea3=[esc(r.email||''),esc(r.telefono||''),r.registro_id?esc(r.registro_id):''].filter(Boolean).join(' · ');
+      return `<div style="display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid rgba(200,169,81,.2);border-radius:8px;margin-bottom:6px;${r.situacion==='suspendida'?'opacity:.65':''}">
+        <div style="min-width:0">
+          <div>${icono} <b style="color:var(--gold)">${esc(r.nombre)}</b>${pill(r.situacion)}</div>
+          ${linea2?`<div style="color:var(--ivory-m);font-size:12px;margin-top:2px">${linea2}</div>`:''}
+          ${linea3?`<div style="color:var(--ivory-m);font-size:12px">${linea3}</div>`:''}
+          ${r.direccion?`<div style="color:var(--ivory-m);font-size:11px;margin-top:2px">${esc(r.direccion)}</div>`:''}
+        </div>
+        <div class="actions-cell">${btns}</div>
+      </div>`;
+    }).join("");
+  }
+  window.afiAccion=async(tipo,id,accion)=>{
+    const msg=accion==='borrar'?'BORRAR definitivamente este afiliado (no se puede deshacer)'
+      :accion==='suspender'?'suspender este afiliado (se ocultará del directorio)'
+      :'aprobar/reactivar este afiliado (aparecerá en el directorio)';
+    if(!confirm('¿Deseas '+msg+'?')) return;
+    const {error}=await sb.rpc("admin_afiliado_estado",{p_tipo:tipo,p_id:id,p_accion:accion});
+    if(error){ alert("Error: "+error.message); return; }
+    await cargarAfiliados();
+  };
+
   // ---------- TABS ----------
   document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{
     document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
@@ -790,6 +860,7 @@
     if(t.dataset.tab==="usuarios") cargarUsuarios();
     if(t.dataset.tab==="mensajes") cargarConversaciones();
     if(t.dataset.tab==="constancias") cargarConstancias();
+    if(t.dataset.tab==="afiliados") cargarAfiliados();
     if(t.dataset.tab==="sesiones") cargarSesiones();
     if(t.dataset.tab==="atencion") cargarAtencion();
     if(t.dataset.tab==="precios") cargarCuotas();
