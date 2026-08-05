@@ -1,4 +1,4 @@
-import { useState, Fragment } from "react";
+import { useState, useEffect } from "react";
 import useEtiquetasOpciones from "../hooks/useEtiquetasOpciones.js";
 import { C, MODAL, OVERLAY } from "../ui.js";
 import { T } from "../i18n.js";
@@ -6,6 +6,11 @@ import { T } from "../i18n.js";
 export default function FilterModal({onSelect}){
   const [showBecas,setShowBecas]=useState(true);
   const etiquetas=useEtiquetasOpciones();
+  const [desktop,setDesktop]=useState(typeof window!=="undefined"&&window.innerWidth>=900);
+  useEffect(()=>{
+    const on=()=>setDesktop(window.innerWidth>=900);
+    window.addEventListener("resize",on); return()=>window.removeEventListener("resize",on);
+  },[]);
   const opts=[
     {k:"catecumeno", icon:"✝️", es:"Quiero recibir mis sacramentos",en:"I want to receive my sacraments",fr:"Je veux recevoir mes sacrements",de:"Ich möchte meine Sakramente empfangen",pt:"Quero receber meus sacramentos",it:"Voglio ricevere i miei sacramenti"},
     {k:"prebautismal",icon:"👨‍👩‍👧",es:"Soy papá/mamá y quiero formación pre-sacramental para que mi hijo reciba el Bautismo, Confirmación y/o Primera Comunión",en:"I'm a parent and want pre-sacramental formation for my child attending to receive the Baptism, Confirmation and/or Fist Communion",fr:"Je suis parent et je souhaite une formation pré-sacramentelle pour que mon enfant reçoive le Baptême, la Confirmation et/ou la Première Communion",de:"Ich bin Vater/Mutter und möchte eine vorsakramentale Bildung, damit mein Kind die Taufe, Firmung und/oder Erstkommunion empfängt",pt:"Sou pai/mãe e quero formação pré-sacramental para que meu filho receba o Batismo, a Crisma e/ou a Primeira Comunhão",it:"Sono genitore e desidero una formazione pre-sacramentale affinché mio figlio riceva il Battesimo, la Cresima e/o la Prima Comunione"},
@@ -140,8 +145,8 @@ export default function FilterModal({onSelect}){
           </div>
         )}
 
-  <div style={{...MODAL, maxWidth: 640}}>
-    
+  <div style={{...MODAL, maxWidth: desktop?960:640}}>
+
         <div style={{textAlign:"center",marginBottom:24}}>
                   <h2 style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:20}}>
             {T("Dinos quién eres","Tell us Who you are","Dites-nous qui vous êtes","Sagen Sie uns, wer Sie sind","Diga-nos quem você é","Dicci chi sei")}
@@ -150,26 +155,20 @@ export default function FilterModal({onSelect}){
             {T("Selecciona la opción que mejor te describe","Select the option that best describes you","Sélectionnez l'option qui vous décrit le mieux","Wählen Sie die Option, die am besten auf Sie zutrifft","Selecione a opção que melhor descreve você","Seleziona l'opzione che ti descrive meglio")}
           </p>
         </div>
-        <div style={{display:"flex",flexDirection:"column",gap:10}}>
-          {opts.map((o,i)=>{
-            const afiliacionKeys=["parroquia","diocesis","centroadiccion"];
-            const esAfiliacion=afiliacionKeys.includes(o.k);
-            const prevAfiliacion=i>0 && afiliacionKeys.includes(opts[i-1].k);
-            const mostrarFormacion=i===0;
-            const mostrarAfiliacion=esAfiliacion && !prevAfiliacion;
-            const Encabezado=({texto})=>(
-              <div style={{display:"flex",alignItems:"center",gap:12,margin:"6px 2px 2px"}}>
-                <span style={{height:1,flex:"0 0 16px",background:`linear-gradient(90deg,transparent,${C.gold})`}}/>
-                <span style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:12.5,
-                  letterSpacing:"0.16em",textTransform:"uppercase",fontWeight:700,whiteSpace:"nowrap"}}>{texto}</span>
-                <span style={{height:1,flex:1,background:`linear-gradient(90deg,${C.gold},transparent)`}}/>
-              </div>
-            );
-            return(
-            <Fragment key={o.k}>
-              {mostrarFormacion&&<Encabezado texto={T("Formación","Formation","Formation","Bildung","Formação","Formazione")}/>}
-              {mostrarAfiliacion&&<Encabezado texto={T("Afiliación","Affiliation","Affiliation","Anbindung","Afiliação","Affiliazione")}/>}
-            <button onClick={etiquetas[o.k]?undefined:()=>onSelect(o.k)}
+        {(()=>{
+          const afiliacionKeys=["parroquia","diocesis","centroadiccion"];
+          const formacion=opts.filter(o=>!afiliacionKeys.includes(o.k));
+          const afiliacion=opts.filter(o=>afiliacionKeys.includes(o.k));
+          const Encabezado=({texto})=>(
+            <div style={{display:"flex",alignItems:"center",gap:12,margin:"2px 2px 4px"}}>
+              <span style={{height:1,flex:"0 0 16px",background:`linear-gradient(90deg,transparent,${C.gold})`}}/>
+              <span style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:12.5,
+                letterSpacing:"0.16em",textTransform:"uppercase",fontWeight:700,whiteSpace:"nowrap"}}>{texto}</span>
+              <span style={{height:1,flex:1,background:`linear-gradient(90deg,${C.gold},transparent)`}}/>
+            </div>
+          );
+          const OptBtn=(o)=>(
+            <button key={o.k} onClick={etiquetas[o.k]?undefined:()=>onSelect(o.k)}
               disabled={!!etiquetas[o.k]}
               aria-disabled={!!etiquetas[o.k]}
               style={{cursor:etiquetas[o.k]?"not-allowed":"pointer",textAlign:"left",display:"flex",alignItems:"center",width:"100%",
@@ -208,9 +207,31 @@ export default function FilterModal({onSelect}){
               </div>
               <span style={{marginLeft:"auto",color:C.gold,fontSize:16,opacity:0.5}}>{etiquetas[o.k]?"🔒":"›"}</span>
             </button>
-            </Fragment>
-          );})}
-        </div>
+          );
+          const tFormacion=T("Formación","Formation","Formation","Bildung","Formação","Formazione");
+          const tAfiliacion=T("Afiliación","Affiliation","Affiliation","Anbindung","Afiliação","Affiliazione");
+          const Columna=({titulo,items})=>(
+            <div style={{flex:"1 1 0",display:"flex",flexDirection:"column",gap:10,minWidth:0}}>
+              <Encabezado texto={titulo}/>
+              {items.map(OptBtn)}
+            </div>
+          );
+          return desktop?(
+            <div style={{display:"flex",gap:22,alignItems:"stretch"}}>
+              <Columna titulo={tFormacion} items={formacion}/>
+              <div style={{width:1,alignSelf:"stretch",background:`${C.gold}22`}}/>
+              <Columna titulo={tAfiliacion} items={afiliacion}/>
+            </div>
+          ):(
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              <Encabezado texto={tFormacion}/>
+              {formacion.map(OptBtn)}
+              <div style={{height:6}}/>
+              <Encabezado texto={tAfiliacion}/>
+              {afiliacion.map(OptBtn)}
+            </div>
+          );
+        })()}
       </div>
     </div>
   );
