@@ -89,7 +89,8 @@
   Header always set X-Content-Type-Options "nosniff"
   Header always set X-Frame-Options "SAMEORIGIN"
   Header always set Referrer-Policy "strict-origin-when-cross-origin"
-  Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+  # geolocation=(self): el buscador de parroquias/diócesis pide ubicación (solo este origen).
+  Header always set Permissions-Policy "geolocation=(self), microphone=(), camera=()"
   # Quita cabeceras que revelan versiones del servidor
   Header unset X-Powered-By
 </IfModule>
