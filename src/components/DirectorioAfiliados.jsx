@@ -41,13 +41,24 @@ export default function DirectorioAfiliados({ onClose }) {
   const [err, setErr] = useState("");
   const [buscado, setBuscado] = useState(false);
   const [sel, setSel] = useState(null); // afiliado seleccionado al hacer clic en su marcador
+  const [desktop, setDesktop] = useState(typeof window !== "undefined" && window.innerWidth >= 900);
   const mapDiv = useRef(null), mapRef = useRef(null), layerRef = useRef(null);
+
+  useEffect(() => {
+    const h = () => setDesktop(window.innerWidth >= 900);
+    window.addEventListener("resize", h);
+    return () => window.removeEventListener("resize", h);
+  }, []);
 
   // Mapa: crea/actualiza marcadores cuando cambian los resultados.
   useEffect(() => {
     let cancel = false;
     cargarLeaflet().then((L) => {
       if (cancel || !mapDiv.current) return;
+      // Si cambió el layout (móvil↔escritorio), el contenedor del mapa es otro nodo.
+      if (mapRef.current && mapRef.current.getContainer() !== mapDiv.current) {
+        mapRef.current.remove(); mapRef.current = null; layerRef.current = null;
+      }
       if (!mapRef.current) {
         mapRef.current = L.map(mapDiv.current, { scrollWheelZoom: false }).setView([14, -80], 3);
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -74,7 +85,7 @@ export default function DirectorioAfiliados({ onClose }) {
       setTimeout(() => mapRef.current && mapRef.current.invalidateSize(), 120);
     }).catch(() => {});
     return () => { cancel = true; };
-  }, [resultados]);
+  }, [resultados, desktop]);
 
   useEffect(() => () => { if (mapRef.current) { mapRef.current.remove(); mapRef.current = null; } }, []);
 
@@ -122,10 +133,112 @@ export default function DirectorioAfiliados({ onClose }) {
     { k: "diocesis", lbl: T("Diócesis", "Dioceses", "Diocèses", "Diözesen", "Dioceses", "Diocesi") },
   ];
 
+  // Piezas compartidas por ambos layouts. En móvil se apilan; en escritorio el
+  // mapa va grande a la izquierda y controles + info + resultados a la derecha.
+  const controles = (
+    <div style={{ padding: "14px 20px", borderBottom: `1px solid ${C.gold}18`, display: "flex", flexDirection: "column", gap: 10 }}>
+      <div style={{ display: "flex", gap: 8 }}>
+        <input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") buscar(); }}
+          placeholder={T("Nombre, ciudad o país…", "Name, city or country…", "Nom, ville ou pays…", "Name, Stadt oder Land…", "Nome, cidade ou país…", "Nome, città o paese…")}
+          style={{ flex: 1, minWidth: 0, background: C.card, color: C.ivory, border: `1px solid ${C.borderD}`, borderRadius: 10, padding: "10px 12px", fontFamily: "'Crimson Text',serif", fontSize: 14.5, outline: "none" }} />
+        <button onClick={buscar} disabled={cargando} style={{ ...BTN("pri"), fontSize: 12, padding: "8px 14px" }}>
+          🔍 {T("Buscar", "Search", "Chercher", "Suchen", "Buscar", "Cerca")}
+        </button>
+      </div>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+        <select value={pais} onChange={(e) => { setPais(e.target.value); setEstado(""); setMunicipio(""); }} style={selStyle}>
+          <option value="">{T("Todos los países", "All countries", "Tous les pays", "Alle Länder", "Todos os países", "Tutti i paesi")}</option>
+          {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
+        </select>
+        {esMexico && (
+          <select value={estado} onChange={(e) => setEstado(e.target.value)} style={selStyle}>
+            <option value="">{T("Todos los estados", "All states", "Tous les états", "Alle Bundesstaaten", "Todos os estados", "Tutti gli stati")}</option>
+            {MX_ESTADOS.map((s) => <option key={s} value={s}>{s}</option>)}
+          </select>
+        )}
+        {esMexico && (
+          <input value={municipio} onChange={(e) => setMunicipio(e.target.value)}
+            placeholder={T("Municipio", "Municipality", "Municipalité", "Gemeinde", "Município", "Comune")}
+            style={{ ...selStyle, width: 160 }} />
+        )}
+      </div>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+        <button onClick={buscarCerca} disabled={cargando} style={{ ...BTN("sec"), fontSize: 12 }}>
+          📍 {T("Cerca de mí", "Near me", "Près de moi", "In meiner Nähe", "Perto de mim", "Vicino a me")}
+        </button>
+        <span style={{ width: 1, height: 20, background: `${C.gold}30` }} />
+        {filtros.map((f) => (
+          <button key={String(f.k)} onClick={() => setTipo(f.k)}
+            style={{ ...BTN(tipo === f.k ? "pri" : "sec"), fontSize: 11.5, padding: "6px 12px" }}>{f.lbl}</button>
+        ))}
+      </div>
+      {err && <p style={{ color: "#F87171", fontSize: 13, margin: 0 }}>⚠️ {err}</p>}
+    </div>
+  );
+
+  const panelInfo = sel && (
+    <div style={{ padding: "10px 20px", borderBottom: `1px solid ${C.gold}30`, background: "rgba(200,169,81,0.09)", flexShrink: 0 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+        <span style={{ color: C.gold, fontFamily: "'Cinzel',serif", fontSize: 14.5 }}>
+          {sel.tipo === "diocesis" ? "🏛️" : "⛪"} {sel.nombre}
+        </span>
+        <button onClick={() => setSel(null)} aria-label="cerrar"
+          style={{ background: "none", border: "none", color: C.ivoryM, cursor: "pointer", fontSize: 16, lineHeight: 1, flexShrink: 0 }}>✕</button>
+      </div>
+      {sel.responsable && <p style={{ color: C.ivory, fontFamily: "'Crimson Text',serif", fontSize: 13.5, margin: "3px 0 0" }}>{sel.responsable}</p>}
+      <p style={{ color: C.ivoryM, fontSize: 12.5, margin: "3px 0 0" }}>
+        {[sel.direccion, sel.pais].filter(Boolean).join(" · ")}
+        {sel.distancia_km != null ? ` · ${sel.distancia_km} km` : ""}
+      </p>
+      <div style={{ display: "flex", gap: 14, marginTop: 6, flexWrap: "wrap" }}>
+        {sel.email && <a href={`mailto:${sel.email}`} style={{ color: C.gold, fontSize: 12.5 }}>✉️ {sel.email}</a>}
+        {sel.telefono && <a href={`tel:${String(sel.telefono).replace(/\s/g, "")}`} style={{ color: C.gold, fontSize: 12.5 }}>📞 {sel.telefono}</a>}
+      </div>
+    </div>
+  );
+
+  const listaResultados = (
+    <>
+      {cargando && <p style={{ color: C.ivoryM, textAlign: "center", fontStyle: "italic" }}>{T("Buscando…", "Searching…", "Recherche…", "Suche…", "Buscando…", "Ricerca…")}</p>}
+      {!cargando && buscado && resultados.length === 0 && (
+        <p style={{ color: C.ivoryM, textAlign: "center", fontStyle: "italic", padding: "16px 0" }}>
+          {T("No se encontraron afiliados. Prueba con otro nombre o amplía la búsqueda.", "No affiliates found. Try another name or widen the search.", "Aucun affilié trouvé. Essayez un autre nom ou élargissez la recherche.", "Keine angeschlossenen Einrichtungen gefunden. Versuchen Sie einen anderen Namen.", "Nenhum afiliado encontrado. Tente outro nome ou amplie a busca.", "Nessun affiliato trovato. Prova un altro nome o amplia la ricerca.")}
+        </p>
+      )}
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {resultados.map((r, i) => {
+          const et = r.tipo === "diocesis"
+            ? T("Diócesis", "Diocese", "Diocèse", "Diözese", "Diocese", "Diocesi")
+            : T("Parroquia", "Parish", "Paroisse", "Pfarrei", "Paróquia", "Parrocchia");
+          return (
+            <div key={i} onClick={() => { setSel(r); if (r.lat != null && mapRef.current) mapRef.current.setView([r.lat, r.lng], 13); }}
+              style={{ background: sel === r ? "rgba(200,169,81,0.14)" : "rgba(200,169,81,0.05)", border: `1px solid ${sel === r ? C.gold + "66" : C.borderD}`, borderRadius: 12, padding: "12px 14px", display: "flex", gap: 12, cursor: "pointer" }}>
+              <span style={{ fontSize: 22, flexShrink: 0 }}>{r.tipo === "diocesis" ? "🏛️" : "⛪"}</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ color: C.ivory, fontFamily: "'Cinzel',serif", fontSize: 14.5, margin: 0 }}>{r.nombre}</p>
+                <p style={{ color: C.gold, fontSize: 11.5, margin: "2px 0 0", letterSpacing: "0.04em" }}>
+                  {et}{r.distancia_km != null ? ` · ${r.distancia_km} km` : ""}
+                </p>
+                {r.responsable && <p style={{ color: C.ivoryM, fontSize: 13, margin: "4px 0 0", fontFamily: "'Crimson Text',serif" }}>{r.responsable}</p>}
+                <p style={{ color: C.ivoryM, fontSize: 12.5, margin: "3px 0 0" }}>
+                  {[r.direccion, r.pais].filter(Boolean).join(" · ")}
+                </p>
+                <div style={{ display: "flex", gap: 12, marginTop: 6, flexWrap: "wrap" }}>
+                  {r.email && <a href={`mailto:${r.email}`} onClick={(e) => e.stopPropagation()} style={{ color: C.gold, fontSize: 12.5 }}>✉️ {r.email}</a>}
+                  {r.telefono && <a href={`tel:${r.telefono.replace(/\s/g, "")}`} onClick={(e) => e.stopPropagation()} style={{ color: C.gold, fontSize: 12.5 }}>📞 {r.telefono}</a>}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </>
+  );
+
   return (
     <div style={OVERLAY} onClick={onClose}>
       <div className="catePanel" onClick={(e) => e.stopPropagation()}
-        style={{ ...MODAL, maxWidth: 760, width: "min(760px,96vw)", display: "flex", flexDirection: "column", maxHeight: "90vh", padding: 0, overflow: "hidden" }}>
+        style={{ ...MODAL, maxWidth: desktop ? 1040 : 760, width: desktop ? "min(1040px,96vw)" : "min(760px,96vw)", display: "flex", flexDirection: "column", maxHeight: "90vh", padding: 0, overflow: "hidden" }}>
         {/* Encabezado */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "16px 20px", borderBottom: `1px solid ${C.gold}25` }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -137,107 +250,25 @@ export default function DirectorioAfiliados({ onClose }) {
           <button onClick={onClose} style={{ ...BTN("sec"), fontSize: 12, padding: "6px 12px" }}>✕</button>
         </div>
 
-        {/* Controles */}
-        <div style={{ padding: "14px 20px", borderBottom: `1px solid ${C.gold}18`, display: "flex", flexDirection: "column", gap: 10 }}>
-          <div style={{ display: "flex", gap: 8 }}>
-            <input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") buscar(); }}
-              placeholder={T("Nombre, ciudad o país…", "Name, city or country…", "Nom, ville ou pays…", "Name, Stadt oder Land…", "Nome, cidade ou país…", "Nome, città o paese…")}
-              style={{ flex: 1, background: C.card, color: C.ivory, border: `1px solid ${C.borderD}`, borderRadius: 10, padding: "10px 12px", fontFamily: "'Crimson Text',serif", fontSize: 14.5, outline: "none" }} />
-            <button onClick={buscar} disabled={cargando} style={{ ...BTN("pri"), fontSize: 12, padding: "8px 14px" }}>
-              🔍 {T("Buscar", "Search", "Chercher", "Suchen", "Buscar", "Cerca")}
-            </button>
-          </div>
-          {/* País (y, para México, estado + municipio) */}
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-            <select value={pais} onChange={(e) => { setPais(e.target.value); setEstado(""); setMunicipio(""); }} style={selStyle}>
-              <option value="">{T("Todos los países", "All countries", "Tous les pays", "Alle Länder", "Todos os países", "Tutti i paesi")}</option>
-              {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
-            </select>
-            {esMexico && (
-              <select value={estado} onChange={(e) => setEstado(e.target.value)} style={selStyle}>
-                <option value="">{T("Todos los estados", "All states", "Tous les états", "Alle Bundesstaaten", "Todos os estados", "Tutti gli stati")}</option>
-                {MX_ESTADOS.map((s) => <option key={s} value={s}>{s}</option>)}
-              </select>
-            )}
-            {esMexico && (
-              <input value={municipio} onChange={(e) => setMunicipio(e.target.value)}
-                placeholder={T("Municipio", "Municipality", "Municipalité", "Gemeinde", "Município", "Comune")}
-                style={{ ...selStyle, width: 160 }} />
-            )}
-          </div>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-            <button onClick={buscarCerca} disabled={cargando} style={{ ...BTN("sec"), fontSize: 12 }}>
-              📍 {T("Cerca de mí", "Near me", "Près de moi", "In meiner Nähe", "Perto de mim", "Vicino a me")}
-            </button>
-            <span style={{ width: 1, height: 20, background: `${C.gold}30` }} />
-            {filtros.map((f) => (
-              <button key={String(f.k)} onClick={() => setTipo(f.k)}
-                style={{ ...BTN(tipo === f.k ? "pri" : "sec"), fontSize: 11.5, padding: "6px 12px" }}>{f.lbl}</button>
-            ))}
-          </div>
-          {err && <p style={{ color: "#F87171", fontSize: 13, margin: 0 }}>⚠️ {err}</p>}
-        </div>
-
-        {/* Mapa */}
-        <div ref={mapDiv} style={{ height: 240, background: C.card, flexShrink: 0 }} />
-
-        {/* Panel de información del marcador seleccionado */}
-        {sel && (
-          <div style={{ padding: "10px 20px", borderBottom: `1px solid ${C.gold}30`, background: "rgba(200,169,81,0.09)", flexShrink: 0 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
-              <span style={{ color: C.gold, fontFamily: "'Cinzel',serif", fontSize: 14.5 }}>
-                {sel.tipo === "diocesis" ? "🏛️" : "⛪"} {sel.nombre}
-              </span>
-              <button onClick={() => setSel(null)} aria-label="cerrar"
-                style={{ background: "none", border: "none", color: C.ivoryM, cursor: "pointer", fontSize: 16, lineHeight: 1, flexShrink: 0 }}>✕</button>
-            </div>
-            {sel.responsable && <p style={{ color: C.ivory, fontFamily: "'Crimson Text',serif", fontSize: 13.5, margin: "3px 0 0" }}>{sel.responsable}</p>}
-            <p style={{ color: C.ivoryM, fontSize: 12.5, margin: "3px 0 0" }}>
-              {[sel.direccion, sel.pais].filter(Boolean).join(" · ")}
-              {sel.distancia_km != null ? ` · ${sel.distancia_km} km` : ""}
-            </p>
-            <div style={{ display: "flex", gap: 14, marginTop: 6, flexWrap: "wrap" }}>
-              {sel.email && <a href={`mailto:${sel.email}`} style={{ color: C.gold, fontSize: 12.5 }}>✉️ {sel.email}</a>}
-              {sel.telefono && <a href={`tel:${String(sel.telefono).replace(/\s/g, "")}`} style={{ color: C.gold, fontSize: 12.5 }}>📞 {sel.telefono}</a>}
+        {desktop ? (
+          <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
+            {/* Mapa grande a la izquierda */}
+            <div ref={mapDiv} style={{ flex: "1.9 1 0", minWidth: 0, background: C.card }} />
+            {/* Columna derecha: controles + info + resultados */}
+            <div style={{ flex: "1 1 0", minWidth: 340, maxWidth: 400, display: "flex", flexDirection: "column", minHeight: 0, borderLeft: `1px solid ${C.gold}22` }}>
+              {controles}
+              {panelInfo}
+              <div style={{ flex: 1, overflowY: "auto", padding: "12px 16px" }}>{listaResultados}</div>
             </div>
           </div>
+        ) : (
+          <>
+            {controles}
+            <div ref={mapDiv} style={{ height: 240, background: C.card, flexShrink: 0 }} />
+            {panelInfo}
+            <div style={{ flex: 1, overflowY: "auto", padding: "12px 20px", minHeight: 120 }}>{listaResultados}</div>
+          </>
         )}
-
-        {/* Resultados */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "12px 20px" }}>
-          {cargando && <p style={{ color: C.ivoryM, textAlign: "center", fontStyle: "italic" }}>{T("Buscando…", "Searching…", "Recherche…", "Suche…", "Buscando…", "Ricerca…")}</p>}
-          {!cargando && buscado && resultados.length === 0 && (
-            <p style={{ color: C.ivoryM, textAlign: "center", fontStyle: "italic", padding: "16px 0" }}>
-              {T("No se encontraron afiliados. Prueba con otro nombre o amplía la búsqueda.", "No affiliates found. Try another name or widen the search.", "Aucun affilié trouvé. Essayez un autre nom ou élargissez la recherche.", "Keine angeschlossenen Einrichtungen gefunden. Versuchen Sie einen anderen Namen.", "Nenhum afiliado encontrado. Tente outro nome ou amplie a busca.", "Nessun affiliato trovato. Prova un altro nome o amplia la ricerca.")}
-            </p>
-          )}
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {resultados.map((r, i) => {
-              const et = r.tipo === "diocesis"
-                ? T("Diócesis", "Diocese", "Diocèse", "Diözese", "Diocese", "Diocesi")
-                : T("Parroquia", "Parish", "Paroisse", "Pfarrei", "Paróquia", "Parrocchia");
-              return (
-                <div key={i} style={{ background: "rgba(200,169,81,0.05)", border: `1px solid ${C.borderD}`, borderRadius: 12, padding: "12px 14px", display: "flex", gap: 12 }}>
-                  <span style={{ fontSize: 22, flexShrink: 0 }}>{r.tipo === "diocesis" ? "🏛️" : "⛪"}</span>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ color: C.ivory, fontFamily: "'Cinzel',serif", fontSize: 14.5, margin: 0 }}>{r.nombre}</p>
-                    <p style={{ color: C.gold, fontSize: 11.5, margin: "2px 0 0", letterSpacing: "0.04em" }}>
-                      {et}{r.distancia_km != null ? ` · ${r.distancia_km} km` : ""}
-                    </p>
-                    {r.responsable && <p style={{ color: C.ivoryM, fontSize: 13, margin: "4px 0 0", fontFamily: "'Crimson Text',serif" }}>{r.responsable}</p>}
-                    <p style={{ color: C.ivoryM, fontSize: 12.5, margin: "3px 0 0" }}>
-                      {[r.direccion, r.pais].filter(Boolean).join(" · ")}
-                    </p>
-                    <div style={{ display: "flex", gap: 12, marginTop: 6, flexWrap: "wrap" }}>
-                      {r.email && <a href={`mailto:${r.email}`} style={{ color: C.gold, fontSize: 12.5 }}>✉️ {r.email}</a>}
-                      {r.telefono && <a href={`tel:${r.telefono.replace(/\s/g, "")}`} style={{ color: C.gold, fontSize: 12.5 }}>📞 {r.telefono}</a>}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
       </div>
     </div>
   );
