@@ -4,15 +4,16 @@ import { C, MODAL, OVERLAY } from "../ui.js";
 import { T } from "../i18n.js";
 
 export default function FilterModal({onSelect}){
-  // El pop-up de becas se muestra SOLO la primera vez que el usuario abre este
-  // modal (persistido en localStorage); no reaparece al entrar/salir repetidamente.
+  // El pop-up de becas se muestra SOLO una vez por sesión del navegador
+  // (sessionStorage): no reaparece al entrar/salir del modal repetidamente,
+  // pero vuelve a mostrarse en una nueva sesión (nueva pestaña/reapertura).
   const [showBecas,setShowBecas]=useState(()=>{
-    try{ return !localStorage.getItem("catecumen_becas_visto"); }catch(_){ return true; }
+    try{ return !sessionStorage.getItem("catecumen_becas_visto"); }catch(_){ return true; }
   });
   const etiquetas=useEtiquetasOpciones();
   const [desktop,setDesktop]=useState(typeof window!=="undefined"&&window.innerWidth>=900);
   useEffect(()=>{
-    try{ localStorage.setItem("catecumen_becas_visto","1"); }catch(_){/* ignora */}
+    try{ sessionStorage.setItem("catecumen_becas_visto","1"); }catch(_){/* ignora */}
   },[]);
   useEffect(()=>{
     const on=()=>setDesktop(window.innerWidth>=900);
