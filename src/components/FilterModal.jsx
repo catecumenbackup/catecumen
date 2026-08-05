@@ -3,7 +3,7 @@ import useEtiquetasOpciones from "../hooks/useEtiquetasOpciones.js";
 import { C, MODAL, OVERLAY } from "../ui.js";
 import { T } from "../i18n.js";
 
-export default function FilterModal({onSelect}){
+export default function FilterModal({onSelect,onBack}){
   // El pop-up de becas se muestra SOLO una vez por sesión del navegador
   // (sessionStorage): no reaparece al entrar/salir del modal repetidamente,
   // pero vuelve a mostrarse en una nueva sesión (nueva pestaña/reapertura).
@@ -240,6 +240,19 @@ export default function FilterModal({onSelect}){
             </div>
           );
         })()}
+        {/* Volver al modal de bienvenida (esquina inferior derecha) */}
+        {onBack&&(
+          <div style={{display:"flex",justifyContent:"flex-end",marginTop:18}}>
+            <button onClick={onBack}
+              style={{background:"none",border:"none",cursor:"pointer",padding:"4px 2px",
+                color:C.gold,fontFamily:"'Cinzel',serif",fontSize:13,letterSpacing:"0.06em",
+                display:"inline-flex",alignItems:"center",gap:6,opacity:0.85,transition:"opacity .2s"}}
+              onMouseEnter={e=>e.currentTarget.style.opacity=1}
+              onMouseLeave={e=>e.currentTarget.style.opacity=0.85}>
+              ← {T("Volver al inicio","Back to start","Retour à l'accueil","Zurück zum Start","Voltar ao início","Torna all'inizio")}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

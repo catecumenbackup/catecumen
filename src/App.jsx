@@ -1837,7 +1837,7 @@ export default function App(){
       
       {(phase==="filter"||phase==="sacSelect")&&(
         <Suspense fallback={<div style={OVERLAY}><div style={{color:C.gold,fontFamily:"'Cinzel',serif"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div></div>}>
-          {phase==="filter"&&<FilterModal onSelect={handleFilterSelect}/>}
+          {phase==="filter"&&<FilterModal onSelect={handleFilterSelect} onBack={()=>setPhase("welcome")}/>}
           {phase==="sacSelect"&&(
             <SacSelectModal onContinue={handleSacSelect} onBack={()=>setPhase("filter")}/>
           )}
