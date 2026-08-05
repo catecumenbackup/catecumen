@@ -160,11 +160,11 @@ export default function DirectorioAfiliados({ onClose }) {
   // Piezas compartidas por ambos layouts. En móvil se apilan; en escritorio el
   // mapa va grande a la izquierda y controles + info + resultados a la derecha.
   const controles = (
-    <div style={{ padding: "14px 20px", borderBottom: `1px solid ${C.gold}18`, display: "flex", flexDirection: "column", gap: 10 }}>
+    <div style={{ padding: "9px 16px", borderBottom: `1px solid ${C.gold}18`, display: "flex", flexDirection: "column", gap: 7 }}>
       <div style={{ display: "flex", gap: 8 }}>
         <input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") buscar(); }}
           placeholder={T("Nombre, ciudad o país…", "Name, city or country…", "Nom, ville ou pays…", "Name, Stadt oder Land…", "Nome, cidade ou país…", "Nome, città o paese…")}
-          style={{ flex: 1, minWidth: 0, background: C.card, color: C.ivory, border: `1px solid ${C.borderD}`, borderRadius: 10, padding: "10px 12px", fontFamily: "'Crimson Text',serif", fontSize: 14.5, outline: "none" }} />
+          style={{ flex: 1, minWidth: 0, background: C.card, color: C.ivory, border: `1px solid ${C.borderD}`, borderRadius: 10, padding: "8px 12px", fontFamily: "'Crimson Text',serif", fontSize: 14.5, outline: "none" }} />
         <button onClick={buscar} disabled={cargando} style={{ ...BTN("pri"), fontSize: 12, padding: "8px 14px" }}>
           🔍 {T("Buscar", "Search", "Chercher", "Suchen", "Buscar", "Cerca")}
         </button>
@@ -186,10 +186,12 @@ export default function DirectorioAfiliados({ onClose }) {
             style={{ ...selStyle, width: 160 }} />
         )}
       </div>
-      <button onClick={buscarCerca} disabled={cargando} style={{ ...BTN("sec"), fontSize: 12, width: "100%", justifyContent: "center" }}>
-        📍 {T("Cerca de mí", "Near me", "Près de moi", "In meiner Nähe", "Perto de mim", "Vicino a me")}
-      </button>
-      <div style={{ display: "flex", gap: 6 }}>
+      {/* "Cerca de mí" + filtros en una sola fila para ahorrar altura */}
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+        <button onClick={buscarCerca} disabled={cargando}
+          style={{ ...BTN("sec"), fontSize: 11.5, padding: "7px 10px", flex: "1 1 auto", justifyContent: "center", whiteSpace: "nowrap" }}>
+          📍 {T("Cerca de mí", "Near me", "Près de moi", "In meiner Nähe", "Perto de mim", "Vicino a me")}
+        </button>
         {filtros.map((f) => (
           <button key={String(f.k)} onClick={() => setTipo(f.k)}
             style={{ ...BTN(tipo === f.k ? "pri" : "sec"), fontSize: 11.5, padding: "7px 6px", flex: "1 1 0", justifyContent: "center" }}>{f.lbl}</button>
