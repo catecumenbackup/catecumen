@@ -254,7 +254,7 @@ export default function DirectorioAfiliados({ onClose }) {
   return (
     <div style={{ ...OVERLAY, background: "rgba(9,16,28,0.9)" }} onClick={onClose}>
       <div className="catePanel" onClick={(e) => e.stopPropagation()}
-        style={{ ...MODAL, maxWidth: desktop ? 1040 : 760, width: desktop ? "min(1040px,96vw)" : "min(760px,96vw)", display: "flex", flexDirection: "column", maxHeight: "90vh", padding: 0, overflow: "hidden" }}>
+        style={{ ...MODAL, maxWidth: desktop ? 1040 : 760, width: desktop ? "min(1040px,96vw)" : "min(760px,96vw)", display: "flex", flexDirection: "column", height: "min(88vh, 900px)", maxHeight: "88dvh", padding: 0, overflow: "hidden" }}>
         {/* Encabezado */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "16px 20px", borderBottom: `1px solid ${C.gold}25` }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
