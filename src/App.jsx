@@ -1609,6 +1609,11 @@ export default function App(){
         @media(max-width:480px){
           .modal-inner{padding:20px 16px!important;max-height:94vh!important;}
         }
+        /* La interfaz es móvil-first (tamaños en px), así que en monitores grandes
+           se ve pequeña/angosta. La agrandamos de forma uniforme (fuentes, anchos,
+           paddings) con zoom por tramos. Solo aplica en escritorio amplio. */
+        @media(min-width:1366px){ body{ zoom:1.15; } }
+        @media(min-width:1920px){ body{ zoom:1.28; } }
       `}</style>
 
       <GoldenRain show={goldRain}/>
