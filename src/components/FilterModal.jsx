@@ -4,21 +4,28 @@ import { C, MODAL, OVERLAY } from "../ui.js";
 import { T } from "../i18n.js";
 
 export default function FilterModal({onSelect}){
-  const [showBecas,setShowBecas]=useState(true);
+  // El pop-up de becas se muestra SOLO la primera vez que el usuario abre este
+  // modal (persistido en localStorage); no reaparece al entrar/salir repetidamente.
+  const [showBecas,setShowBecas]=useState(()=>{
+    try{ return !localStorage.getItem("catecumen_becas_visto"); }catch(_){ return true; }
+  });
   const etiquetas=useEtiquetasOpciones();
   const [desktop,setDesktop]=useState(typeof window!=="undefined"&&window.innerWidth>=900);
+  useEffect(()=>{
+    try{ localStorage.setItem("catecumen_becas_visto","1"); }catch(_){/* ignora */}
+  },[]);
   useEffect(()=>{
     const on=()=>setDesktop(window.innerWidth>=900);
     window.addEventListener("resize",on); return()=>window.removeEventListener("resize",on);
   },[]);
   const opts=[
     {k:"catecumeno", icon:"✝️", es:"Quiero recibir mis sacramentos",en:"I want to receive my sacraments",fr:"Je veux recevoir mes sacrements",de:"Ich möchte meine Sakramente empfangen",pt:"Quero receber meus sacramentos",it:"Voglio ricevere i miei sacramenti"},
-    {k:"prebautismal",icon:"👨‍👩‍👧",es:"Soy papá/mamá y quiero formación pre-sacramental para que mi hijo reciba el Bautismo, Confirmación y/o Primera Comunión",en:"I'm a parent and want pre-sacramental formation for my child attending to receive the Baptism, Confirmation and/or Fist Communion",fr:"Je suis parent et je souhaite une formation pré-sacramentelle pour que mon enfant reçoive le Baptême, la Confirmation et/ou la Première Communion",de:"Ich bin Vater/Mutter und möchte eine vorsakramentale Bildung, damit mein Kind die Taufe, Firmung und/oder Erstkommunion empfängt",pt:"Sou pai/mãe e quero formação pré-sacramental para que meu filho receba o Batismo, a Crisma e/ou a Primeira Comunhão",it:"Sono genitore e desidero una formazione pre-sacramentale affinché mio figlio riceva il Battesimo, la Cresima e/o la Prima Comunione"},
-    {k:"padrino",    icon:"🤝", es:"Soy padrino/madrina y quiero recibir formación sacramental",en:"I'm a godparent seeking sacramental formation",fr:"Je suis parrain/marraine et je souhaite une formation sacramentelle",de:"Ich bin Pate/Patin und möchte eine sakramentale Bildung erhalten",pt:"Sou padrinho/madrinha e quero receber formação sacramental",it:"Sono padrino/madrina e desidero ricevere una formazione sacramentale"},
+    {k:"prebautismal",icon:"👨‍👩‍👧",es:"Soy papá/mamá y necesito formación pre-sacramental para el Bautismo, Confirmación o Primera Comunión de mi hijo.",en:"I'm a parent and need pre-sacramental formation for my child's Baptism, Confirmation or First Communion.",fr:"Je suis parent et j'ai besoin d'une formation pré-sacramentelle pour le Baptême, la Confirmation ou la Première Communion de mon enfant.",de:"Ich bin Vater/Mutter und benötige eine vorsakramentale Bildung für die Taufe, Firmung oder Erstkommunion meines Kindes.",pt:"Sou pai/mãe e preciso de formação pré-sacramental para o Batismo, a Crisma ou a Primeira Comunhão do meu filho.",it:"Sono genitore e ho bisogno di una formazione pre-sacramentale per il Battesimo, la Cresima o la Prima Comunione di mio figlio."},
+    {k:"padrino",    icon:"🤝", es:"Voy a ser padrino/madrina y quiero recibir formación sacramental.",en:"I'm going to be a godparent and want to receive sacramental formation.",fr:"Je vais être parrain/marraine et je souhaite recevoir une formation sacramentelle.",de:"Ich werde Pate/Patin und möchte eine sakramentale Bildung erhalten.",pt:"Vou ser padrinho/madrinha e quero receber formação sacramental.",it:"Sarò padrino/madrina e desidero ricevere una formazione sacramentale."},
     {k:"catequista", icon:"🧠", es:"Soy catequista y quiero formación en Neuropedagogía Catequética",en:"I'm a catechist seeking catechetical neuropedagogy training",fr:"Je suis catéchiste et je souhaite une formation en Neuropédagogie Catéchétique",de:"Ich bin Katechet/in und möchte eine Ausbildung in Katechetischer Neuropädagogik",pt:"Sou catequista e quero formação em Neuropedagogia Catequética",it:"Sono catechista e desidero una formazione in Neuropedagogia Catechetica"},
-    {k:"parroquia",  icon:"⛪", es:"Soy una parroquia y deseo afiliarme a la plataforma",en:"I'm a parish seeking to affiliate with this platform",fr:"Je suis une paroisse et je souhaite m'affilier à la plateforme",de:"Ich bin eine Pfarrei und möchte mich der Plattform anschließen",pt:"Sou uma paróquia e desejo me afiliar à plataforma",it:"Sono una parrocchia e desidero affiliarmi alla piattaforma"},
-    {k:"diocesis",   icon:"🏛️", es:"Soy una diócesis y deseo afiliarme a la plataforma",en:"I'm a diocese seeking to affiliate with this platform",fr:"Je suis un diocèse et je souhaite m'affilier à la plateforme",de:"Ich bin eine Diözese und möchte mich der Plattform anschließen",pt:"Sou uma diocese e desejo me afiliar à plataforma",it:"Sono una diocesi e desidero affiliarmi alla piattaforma"},
-    {k:"centroadiccion",icon:"🏥", es:"Soy un Centro de Tratamiento de Adicciones y deseo afiliarme",en:"I'm an Addiction Treatment Center seeking to affiliate",fr:"Je suis un Centre de Traitement des Addictions et je souhaite m'affilier",de:"Ich bin ein Suchtbehandlungszentrum und möchte mich anschließen",pt:"Sou um Centro de Tratamento de Dependências e desejo me afiliar",it:"Sono un Centro di Trattamento delle Dipendenze e desidero affiliarmi"},
+    {k:"parroquia",  icon:"⛪", es:"Afiliarse como Parroquia",en:"Affiliate as a Parish",fr:"S'affilier en tant que paroisse",de:"Als Pfarrei anschließen",pt:"Afiliar-se como Paróquia",it:"Affiliarsi come Parrocchia"},
+    {k:"diocesis",   icon:"🏛️", es:"Afiliarse como Diócesis",en:"Affiliate as a Diocese",fr:"S'affilier en tant que diocèse",de:"Als Diözese anschließen",pt:"Afiliar-se como Diocese",it:"Affiliarsi come Diocesi"},
+    {k:"centroadiccion",icon:"🏥", es:"Afiliarse como Centro de Tratamiento de Adicciones",en:"Affiliate as an Addiction Treatment Center",fr:"S'affilier en tant que Centre de Traitement des Addictions",de:"Als Suchtbehandlungszentrum anschließen",pt:"Afiliar-se como Centro de Tratamento de Dependências",it:"Affiliarsi come Centro di Trattamento delle Dipendenze"},
   ];
   return(
 <div style={OVERLAY}>

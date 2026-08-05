@@ -14,7 +14,7 @@ export default function EncuadreModal({ encKey, onRegister, onBack }) {
   const isOrg = encKey === "parroquia" || encKey === "diocesis";
   return (
     <div style={OVERLAY}>
-      <div style={{ ...MODAL, maxWidth: 720 }}>
+      <div style={{ ...MODAL, maxWidth: 720, fontFamily: "Arial, Helvetica, sans-serif" }}>
         <div style={{ textAlign: "center", marginBottom: 20 }}>
           <div style={{ fontSize: 36, marginBottom: 8, display: "flex", justifyContent: "center" }}>
             {icon === "__caliz__" ? <CalizIcon size={42} />
@@ -23,9 +23,9 @@ export default function EncuadreModal({ encKey, onRegister, onBack }) {
               : icon === "__confirmacion_img__" ? <img src={iconoConfirmacion} width={52} height={52} style={{ objectFit: "contain", filter: "sepia(1) saturate(3) brightness(0.95)" }} alt="" />
               : <span>{icon}</span>}
           </div>
-          <h2 style={{ fontFamily: "'Cinzel',serif", color: C.gold, fontSize: 18 }}>{title}</h2>
+          <h2 style={{ fontFamily: "Arial, Helvetica, sans-serif", color: C.gold, fontSize: 18 }}>{title}</h2>
         </div>
-        <div style={{ ...READ, whiteSpace: "pre-line", marginBottom: 20 }}>
+        <div style={{ ...READ, fontFamily: "Arial, Helvetica, sans-serif", whiteSpace: "pre-line", marginBottom: 20 }}>
           {body}
         </div>
         <p style={{ marginTop: -6, marginBottom: 20, color: C.goldL, textAlign: "center", fontSize: 14 }}>
