@@ -35,7 +35,9 @@ INSERT INTO public.opciones_etiquetas
   -- Sacramentos del segundo modal (selección de sacramento):
   ('bautismo',         'Próximamente','Coming soon','Bientôt disponible','Demnächst','Em breve','Prossimamente', false),
   ('confirmacion',     'Próximamente','Coming soon','Bientôt disponible','Demnächst','Em breve','Prossimamente', false),
-  ('primera_comunion', 'Próximamente','Coming soon','Bientôt disponible','Demnächst','Em breve','Prossimamente', false)
+  ('primera_comunion', 'Próximamente','Coming soon','Bientôt disponible','Demnächst','Em breve','Prossimamente', false),
+  -- Botón "Buscar parroquia afiliada" de la pantalla de bienvenida:
+  ('buscar_parroquia', 'Próximamente','Coming soon','Bientôt disponible','Demnächst','Em breve','Prossimamente', false)
 ON CONFLICT (clave) DO NOTHING;
 
 -- ─────────────────────────────────────────────────────────────────────────

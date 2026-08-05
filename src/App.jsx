@@ -627,6 +627,13 @@ function WelcomeModal({onContinue,onLogin}){
         <p style={{color:C.ivoryM,fontSize:12.5,marginBottom:4}}>
           {i+1} / {n} · <span style={{opacity:.8}}>{T("desliza o usa las flechas","swipe or use arrows","glissez ou flèches","wischen oder Pfeile","deslize ou use as setas","scorri o usa le frecce")}</span>
         </p>
+        {i<n-1&&(
+          <button onClick={onContinue}
+            style={{background:"none",border:"none",color:C.ivoryM,fontSize:13,cursor:"pointer",
+              textDecoration:"underline",marginBottom:6}}>
+            {T("Omitir presentación","Skip intro","Passer l'introduction","Einführung überspringen","Pular apresentação","Salta introduzione")}
+          </button>
+        )}
 
         {/* Conoce más (se mantiene visible) */}
         <p style={{marginTop:6,color:C.goldL,textAlign:"center",fontSize:14}}>
@@ -634,22 +641,25 @@ function WelcomeModal({onContinue,onLogin}){
           <a href="https://www.catecumen.com/info" target="_blank" rel="noreferrer" style={{color:C.gold}}>www.catecumen.com/info</a>
         </p>
 
-        {/* Botones fijos (siempre a la vista) */}
-        <div style={{display:"flex",flexDirection:"column",gap:8,marginTop:14}}>
-          <button onClick={onContinue} style={{...BTN("pri"),width:"100%",justifyContent:"center",fontSize:15}}>
-            ✝️ {T("Registrarme","Register","M'inscrire","Registrieren","Registrar-me","Registrati")}
-          </button>
-          <button onClick={onLogin} style={{...BTN("sec"),width:"100%",justifyContent:"center",fontSize:15}}>
-            🔑 {T("Iniciar sesión","Sign in","Se connecter","Anmelden","Entrar","Accedi")}
-          </button>
-          <DirectorioButton estilo={{width:"100%"}}/>
-          {i<n-1&&(
+        {/* Botones fijos (siempre a la vista). Cada uno con contenedor de color
+            diferenciado: Registrarme (dorado) + Iniciar sesión (azul) comparten
+            fila; Buscar parroquia (verde) va aparte con su etiqueta admin. */}
+        <div style={{display:"flex",flexDirection:"column",gap:10,marginTop:14}}>
+          <div style={{display:"flex",gap:10}}>
             <button onClick={onContinue}
-              style={{background:"none",border:"none",color:C.ivoryM,fontSize:13,cursor:"pointer",
-                textDecoration:"underline",marginTop:2}}>
-              {T("Omitir presentación","Skip intro","Passer l'introduction","Einführung überspringen","Pular apresentação","Salta introduzione")}
+              style={{...BTN("pri"),flex:"1.7 1 0",justifyContent:"center",fontSize:15}}>
+              ✝️ {T("Registrarme","Register","M'inscrire","Registrieren","Registrar-me","Registrati")}
             </button>
-          )}
+            <button onClick={onLogin}
+              style={{flex:"1 1 0",justifyContent:"center",fontSize:14,cursor:"pointer",
+                display:"inline-flex",alignItems:"center",gap:8,
+                fontFamily:"'Cinzel',serif",fontWeight:700,letterSpacing:"0.05em",
+                background:"rgba(70,120,190,0.18)",color:C.ivory,
+                border:"1px solid rgba(70,120,190,0.55)",borderRadius:10,padding:"12px 14px"}}>
+              🔑 {T("Iniciar sesión","Sign in","Se connecter","Anmelden","Entrar","Accedi")}
+            </button>
+          </div>
+          <DirectorioButton estilo={{width:"100%"}} tono="green"/>
         </div>
       </div>
     </div>

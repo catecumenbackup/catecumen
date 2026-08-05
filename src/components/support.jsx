@@ -1,5 +1,6 @@
 import { useState, lazy, Suspense } from "react";
 import { createPortal } from "react-dom";
+import useEtiquetasOpciones from "../hooks/useEtiquetasOpciones.js";
 import { C, BTN, CARD, MODAL, OVERLAY } from "../ui.js";
 import { T, LANG } from "../i18n.js";
 
@@ -266,16 +267,31 @@ export function ConsultarDudasButton({contexto="",size="sec"}){
   );
 }
 
-// Buscador público de parroquias/diócesis afiliadas (modal diferido).
-export function DirectorioButton({size="sec",estilo={}}){
+// Buscador público de parroquias/diócesis afiliadas (modal diferido). Es
+// etiquetable/bloqueable desde el panel admin (clave "buscar_parroquia"): con la
+// etiqueta activa muestra el sello y queda deshabilitado. `tono` da el color del
+// contenedor (p. ej. "green" en la bienvenida).
+export function DirectorioButton({size="sec",estilo={},tono=null}){
   const [open,setOpen]=useState(false);
+  const etiquetas=useEtiquetasOpciones();
+  const etq=etiquetas["buscar_parroquia"];
   const full=estilo.width==="100%";
+  const tonos={
+    green:{background:"rgba(45,122,90,0.18)",color:C.ivory,border:"1px solid rgba(45,122,90,0.55)"},
+  };
   return(
     <div style={{display:full?"block":"inline-block",...estilo}}>
-      <button onClick={()=>setOpen(true)} style={{...BTN(size),fontSize:12,...(full?{width:"100%",justifyContent:"center"}:{})}}>
+      <button onClick={etq?undefined:()=>setOpen(true)} disabled={!!etq} aria-disabled={!!etq}
+        style={{...BTN(size),fontSize:12,...(full?{width:"100%",justifyContent:"center"}:{}),
+          ...(tono&&tonos[tono]?tonos[tono]:{}),...(etq?{opacity:0.55,cursor:"not-allowed"}:{})}}>
         ⛪ {T("Buscar parroquia afiliada","Find affiliated parish","Trouver une paroisse affiliée","Angeschlossene Pfarrei finden","Buscar paróquia afiliada","Trova parrocchia affiliata")}
+        {etq&&(
+          <span style={{marginLeft:8,background:etq.bg,color:etq.fg,fontFamily:"'Cinzel',serif",
+            fontSize:10,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",
+            padding:"2px 8px",borderRadius:99,border:`1px solid ${etq.fg}55`}}>{etq.txt}</span>
+        )}
       </button>
-      {open&&(
+      {open&&!etq&&(
         <Suspense fallback={<div style={OVERLAY}><div style={{color:C.gold,fontFamily:"'Cinzel',serif"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div></div>}>
           <DirectorioAfiliados onClose={()=>setOpen(false)}/>
         </Suspense>
