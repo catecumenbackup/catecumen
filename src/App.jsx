@@ -1316,6 +1316,12 @@ export default function App(){
         .select("*").eq("id",authUser?.id).maybeSingle();
       if(error||!u){
         console.error("login: no se encontró perfil para este usuario",error);
+        // ¿Es una cuenta de ADMINISTRADOR? Los admins viven en public.admins y
+        // normalmente NO tienen perfil de alumno en 'usuarios'. En ese caso, en
+        // vez de rebotar a la bienvenida, los llevamos al panel de administración.
+        let esAdmin=false;
+        try{ const {data:ad}=await supabase.rpc("es_admin"); esAdmin=!!ad; }catch(e){ console.error("es_admin:",e); }
+        if(esAdmin){ window.location.href="/admin/"; return; }
         // Sesión sin perfil (huérfana, p. ej. cuenta borrada): cerrar sesión y
         // volver al inicio en vez de dejar la plataforma en blanco.
         try{ await supabase.auth.signOut(); }catch(e){ console.error("signOut:",e); }
