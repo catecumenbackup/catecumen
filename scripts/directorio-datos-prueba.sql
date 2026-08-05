@@ -6,6 +6,19 @@
 -- Todos llevan el email marcador 'prueba-directorio@catecumen.com' para poder
 -- borrarlos de un golpe cuando termines de validar (ver el bloque final).
 
+-- Asegura las columnas (por si aún no corriste directorio-afiliados.sql /
+-- directorio-mx.sql). Así este script funciona por sí solo para la carga.
+alter table public.parroquias add column if not exists lat       double precision;
+alter table public.parroquias add column if not exists lng       double precision;
+alter table public.parroquias add column if not exists aprobada  boolean not null default false;
+alter table public.parroquias add column if not exists estado    text;
+alter table public.parroquias add column if not exists municipio text;
+alter table public.diocesis  add column if not exists lat       double precision;
+alter table public.diocesis  add column if not exists lng       double precision;
+alter table public.diocesis  add column if not exists aprobada  boolean not null default false;
+alter table public.diocesis  add column if not exists estado    text;
+alter table public.diocesis  add column if not exists municipio text;
+
 -- Limpia pruebas anteriores (idempotente).
 delete from public.parroquias where email_contacto = 'prueba-directorio@catecumen.com';
 delete from public.diocesis  where email_contacto = 'prueba-directorio@catecumen.com';
