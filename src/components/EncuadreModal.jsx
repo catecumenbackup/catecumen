@@ -10,22 +10,33 @@ function bloquesDe(body) {
   return String(body || "").split(/\n\s*\n/).map((b) => b.trim()).filter(Boolean);
 }
 
-// Un sub-ítem "Nombre (descripción)" se pinta con el nombre resaltado y la
-// descripción más tenue. Si no casa el patrón, se pinta el texto tal cual.
+// Un sub-ítem se pinta con el nombre/título resaltado y la descripción más
+// tenue. Reconoce dos patrones: "Nombre (descripción)" (módulos) y
+// "Título: descripción" (viñetas de organizaciones). Si no casa, texto tal cual.
 function SubItem({ texto }) {
-  const m = texto.match(/^([^(]+?)\s*\(([\s\S]*)\)\s*$/);
+  const mParen = texto.match(/^([^(]+?)\s*\(([\s\S]*)\)\s*$/);
+  const mColon = !mParen && texto.match(/^([^:]{2,60}):\s+([\s\S]+)$/);
   return (
     <div style={{ display: "flex", gap: 9, alignItems: "flex-start",
       background: "rgba(255,255,255,0.035)", border: `1px solid ${C.gold}1f`,
       borderRadius: 9, padding: "8px 11px" }}>
       <span style={{ color: C.gold, fontSize: 13, lineHeight: 1.5, marginTop: 1, flexShrink: 0 }}>◆</span>
       <span style={{ fontFamily: AR, fontSize: 13.5, lineHeight: 1.55, color: C.ivory, textAlign: "left" }}>
-        {m ? (<><strong style={{ color: C.goldL, fontWeight: 700 }}>{m[1].trim()}</strong>
-          <span style={{ color: C.ivoryM }}> — {m[2].trim()}</span></>)
+        {mParen ? (<><strong style={{ color: C.goldL, fontWeight: 700 }}>{mParen[1].trim()}</strong>
+          <span style={{ color: C.ivoryM }}> — {mParen[2].trim()}</span></>)
+          : mColon ? (<><strong style={{ color: C.goldL, fontWeight: 700 }}>{mColon[1].trim()}:</strong>
+          <span style={{ color: C.ivoryM }}> {mColon[2].trim()}</span></>)
           : texto}
       </span>
     </div>
   );
+}
+
+// Resalta el título inicial "Xxxx:" de una sección (organizaciones).
+function ConTitulo({ texto }) {
+  const m = texto.match(/^([^:]{2,70}):\s+([\s\S]+)$/);
+  if (!m) return <>{texto}</>;
+  return (<><strong style={{ color: C.goldL, fontWeight: 700 }}>{m[1].trim()}:</strong> {m[2].trim()}</>);
 }
 
 // Modal de "encuadre": presenta las características de la formación según el
@@ -39,15 +50,29 @@ export default function EncuadreModal({ encKey, onRegister, onBack }) {
   const isOrg = encKey === "parroquia" || encKey === "diocesis";
 
   // Parseo genérico del cuerpo: párrafos guía / ítems numerados / cierre.
+  // Numeración CONTINUA: los ítems pueden venir como "N." (sacramentos) o como
+  // secciones que empiezan con un emoji (organizaciones); ambos se numeran en la
+  // misma secuencia. Las viñetas "•" internas se vuelven sub-tarjetas.
   const bloques = bloquesDe(body);
   let hayItems = false;
+  let contador = 0;
   const nodos = bloques.map((b, i) => {
-    const m = b.match(/^(\d+)\.\s+([\s\S]*)$/);
-    if (m) {
+    const mNum = b.match(/^(\d+)\.\s+([\s\S]*)$/);
+    const mEmoji = !mNum && b.match(/^(\p{Extended_Pictographic}️?)\s+([\s\S]*)$/u);
+    if (mNum || mEmoji) {
       hayItems = true;
-      const lineas = m[2].split(/\n/).map((s) => s.trim()).filter(Boolean);
-      const principal = lineas[0];
-      const sub = lineas.slice(1);
+      let num, contenido, esOrg = false;
+      if (mNum) { num = parseInt(mNum[1], 10); contador = num; contenido = mNum[2]; }
+      else { contador += 1; num = contador; contenido = mEmoji[2]; esOrg = true; }
+      // Sub-ítems: por viñetas "•" (organizaciones) o por saltos de línea (módulos).
+      let principal, sub = [];
+      if (contenido.includes("•")) {
+        const partes = contenido.split("•").map((s) => s.trim()).filter(Boolean);
+        principal = partes[0]; sub = partes.slice(1);
+      } else {
+        const lineas = contenido.split(/\n/).map((s) => s.trim()).filter(Boolean);
+        principal = lineas[0]; sub = lineas.slice(1);
+      }
       return (
         <div key={i} style={{ display: "flex", gap: 13, alignItems: "flex-start",
           background: `linear-gradient(145deg, rgba(200,169,81,0.07) 0%, rgba(200,169,81,0.02) 100%)`,
@@ -56,9 +81,11 @@ export default function EncuadreModal({ encKey, onRegister, onBack }) {
             display: "flex", alignItems: "center", justifyContent: "center",
             background: "linear-gradient(135deg,#F0D68A,#B8912F)", color: "#3A2E12",
             fontFamily: AR, fontWeight: 800, fontSize: 14,
-            boxShadow: "0 2px 6px rgba(0,0,0,0.35)" }}>{m[1]}</span>
+            boxShadow: "0 2px 6px rgba(0,0,0,0.35)" }}>{num}</span>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ margin: 0, fontFamily: AR, fontSize: 14.5, lineHeight: 1.65, color: C.ivory, textAlign: "justify" }}>{principal}</p>
+            <p style={{ margin: 0, fontFamily: AR, fontSize: 14.5, lineHeight: 1.65, color: C.ivory, textAlign: "justify" }}>
+              {esOrg ? <ConTitulo texto={principal} /> : principal}
+            </p>
             {sub.length > 0 && (
               <div style={{ display: "flex", flexDirection: "column", gap: 7, marginTop: 10 }}>
                 {sub.map((s, j) => <SubItem key={j} texto={s} />)}
