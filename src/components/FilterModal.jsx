@@ -27,6 +27,7 @@ export default function FilterModal({onSelect,onBack}){
     {k:"parroquia",  icon:"⛪", es:"Afiliarse como Parroquia",en:"Affiliate as a Parish",fr:"S'affilier en tant que paroisse",de:"Als Pfarrei anschließen",pt:"Afiliar-se como Paróquia",it:"Affiliarsi come Parrocchia"},
     {k:"diocesis",   icon:"🏛️", es:"Afiliarse como Diócesis",en:"Affiliate as a Diocese",fr:"S'affilier en tant que diocèse",de:"Als Diözese anschließen",pt:"Afiliar-se como Diocese",it:"Affiliarsi come Diocesi"},
     {k:"centroadiccion",icon:"🏥", es:"Afiliarse como Centro de Tratamiento de Adicciones",en:"Affiliate as an Addiction Treatment Center",fr:"S'affilier en tant que Centre de Traitement des Addictions",de:"Als Suchtbehandlungszentrum anschließen",pt:"Afiliar-se como Centro de Tratamento de Dependências",it:"Affiliarsi come Centro di Trattamento delle Dipendenze"},
+    {k:"otro",       icon:"🏢", es:"Afiliar otra organización o institución",en:"Affiliate another organization or institution",fr:"Affilier une autre organisation ou institution",de:"Eine andere Organisation oder Institution anschließen",pt:"Afiliar outra organização ou instituição",it:"Affiliare un'altra organizzazione o istituzione"},
   ];
   return(
 <div style={OVERLAY}>
@@ -164,7 +165,7 @@ export default function FilterModal({onSelect,onBack}){
           </p>
         </div>
         {(()=>{
-          const afiliacionKeys=["parroquia","diocesis","centroadiccion"];
+          const afiliacionKeys=["parroquia","diocesis","centroadiccion","otro"];
           const formacion=opts.filter(o=>!afiliacionKeys.includes(o.k));
           const afiliacion=opts.filter(o=>afiliacionKeys.includes(o.k));
           const Encabezado=({texto})=>(

@@ -56,6 +56,7 @@ const RegisterForm = lazy(() => import("./components/RegisterForm.jsx"));
 const RegisterParroquiaForm = lazy(() => import("./components/RegisterParroquiaForm.jsx"));
 const RegisterDiocesisForm = lazy(() => import("./components/RegisterDiocesisForm.jsx"));
 const RegisterCentroForm = lazy(() => import("./components/RegisterCentroForm.jsx"));
+const RegisterOtroForm = lazy(() => import("./components/RegisterOtroForm.jsx"));
 const PasswordModal = lazy(() => import("./components/PasswordModal.jsx"));
 const ThankYouModal = lazy(() => import("./components/ThankYouModal.jsx"));
 const OrgThankYouModal = lazy(() => import("./components/OrgThankYouModal.jsx"));
@@ -1211,7 +1212,7 @@ export default function App(){
       setOrgType(null); // limpiar flujo de organización previo
       setPhase("sacSelect");
     }
-    else if(uType==="parroquia"||uType==="diocesis"||uType==="centroadiccion"){
+    else if(uType==="parroquia"||uType==="diocesis"||uType==="centroadiccion"||uType==="otro"){
       setOrgType(uType);
       setEncuadreKey(uType);
       setPhase("encuadre");
@@ -1507,10 +1508,14 @@ export default function App(){
       }else if(orgType==="diocesis"){
         table="diocesis";
         fila={...comunes, direccion:data.curia||null, nombre_obispo:data.obispo||""};
-      }else{
+      }else if(orgType==="centroadiccion"){
         table="centros_adiccion";
         fila={...comunes, estado:data.estado||null, municipio:data.municipio||null,
           calle:data.calle||null, numero:data.numero||null};
+      }else{
+        // "otro": organización/institución no prevista; guarda el tipo que indicó.
+        table="organizaciones_otro";
+        fila={...comunes, tipo_organizacion:data.tipoOrg||"", direccion:data.direccion||null};
       }
       const {error}=await supabase.from(table).insert(fila);
       if(error)throw error;
@@ -1610,7 +1615,7 @@ export default function App(){
   };
 
   // Determine if this is organization flow
-  const isOrgFlow=orgType==="parroquia"||orgType==="diocesis"||orgType==="centroadiccion";
+  const isOrgFlow=orgType==="parroquia"||orgType==="diocesis"||orgType==="centroadiccion"||orgType==="otro";
 
   // RENDER
   return(
@@ -1865,6 +1870,7 @@ export default function App(){
           {orgType==="parroquia"&&<RegisterParroquiaForm onNext={handleOrgRegisterNext} onBack={()=>setPhase("encuadre")}/>}
           {orgType==="diocesis"&&<RegisterDiocesisForm onNext={handleOrgRegisterNext} onBack={()=>setPhase("encuadre")}/>}
           {orgType==="centroadiccion"&&<RegisterCentroForm onNext={handleOrgRegisterNext} onBack={()=>setPhase("encuadre")}/>}
+          {orgType==="otro"&&<RegisterOtroForm onNext={handleOrgRegisterNext} onBack={()=>setPhase("encuadre")}/>}
         </Suspense>
       )}
       {phase==="register"&&!isOrgFlow&&(

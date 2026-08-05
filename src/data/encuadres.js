@@ -1612,4 +1612,85 @@ La nostra offerta formativa include:
 Ora potrai procedere con la registrazione e l'affiliazione del tuo Centro e prendere visione del Regolamento della Piattaforma, Termini e Condizioni e Informativa sulla Privacy.`}
   },
 
+  otro:{
+    es:{title:"Afiliación de otra organización o institución",icon:"🏢",body:`Agradecemos su interés en afiliar su organización o institución al Centro Internacional de Catequesis a Distancia (CICADI).
+
+A continuación le explicamos las características de esta afiliación:
+
+1. Sabemos que la labor de evangelización y formación en la fe se vive en muchos ámbitos que no siempre encajan en las categorías habituales: movimientos, asociaciones, colegios, universidades, capellanías, casas de retiro, comunidades religiosas, fundaciones y otras obras de inspiración católica. Esta opción está pensada para todas ellas.
+
+2. Al indicar el tipo de organización o institución que representa, nuestro equipo podrá revisar su solicitud y proponerle la modalidad de colaboración más adecuada a su misión, ya sea el acceso a la formación sacramental, la difusión entre sus miembros o una alianza pastoral a la medida.
+
+3. En el Catecumen no buscamos sustituir la valiosa labor que su organización ya realiza, sino complementarla desde la formación catequética digital, con nuestra metodología de Neuropedagogía Catequética, respetando sus tiempos y su carisma propio.
+
+4. La afiliación no implica ningún costo ni carga administrativa. Solo se requiere formalizar el registro con los datos de su organización; nuestro equipo se pondrá en contacto para acompañar los siguientes pasos.
+
+A continuación podrá realizar el registro y afiliación de su organización y conocer el Reglamento de la Plataforma, los Términos y Condiciones y el Aviso de Privacidad.`},
+    en:{title:"Affiliation of another organization or institution",icon:"🏢",body:`Thank you for your interest in affiliating your organization or institution with the International Center for Distance Catechesis (ICDC).
+
+The following explains the characteristics of this affiliation:
+
+1. We know that the work of evangelization and formation in the faith takes place in many settings that do not always fit the usual categories: movements, associations, schools, universities, chaplaincies, retreat houses, religious communities, foundations, and other Catholic-inspired works. This option is intended for all of them.
+
+2. By indicating the type of organization or institution you represent, our team will be able to review your request and propose the form of collaboration best suited to your mission — whether access to sacramental formation, outreach among your members, or a tailored pastoral partnership.
+
+3. At Catecumen we do not seek to replace the valuable work your organization already does, but to complement it through digital catechetical formation, with our Catechetical Neuropedagogy methodology, respecting your schedules and your own charism.
+
+4. Affiliation involves no cost or administrative burden. You only need to complete the registration with your organization's information; our team will get in touch to guide the next steps.
+
+You may now complete the registration and affiliation of your organization and review the Platform Rules, Terms and Conditions, and Privacy Notice.`},
+    fr:{title:"Affiliation d'une autre organisation ou institution",icon:"🏢",body:`Nous vous remercions de votre intérêt à affilier votre organisation ou institution au Centre International de Catéchèse à Distance (CICADI).
+
+Voici les caractéristiques de cette affiliation :
+
+1. Nous savons que le travail d'évangelisation et de formation à la foi se vit dans de nombreux cadres qui ne correspondent pas toujours aux catégories habituelles : mouvements, associations, écoles, universités, aumôneries, maisons de retraite, communautés religieuses, fondations et autres œuvres d'inspiration catholique. Cette option leur est destinée à toutes.
+
+2. En indiquant le type d'organisation ou d'institution que vous représentez, notre équipe pourra examiner votre demande et vous proposer la forme de collaboration la mieux adaptée à votre mission : accès à la formation sacramentelle, diffusion auprès de vos membres ou un partenariat pastoral sur mesure.
+
+3. Chez Catecumen, nous ne cherchons pas à remplacer le précieux travail que votre organisation accomplit déjà, mais à le compléter par une formation catéchétique numérique, avec notre méthodologie de Neuropédagogie Catéchétique, dans le respect de vos horaires et de votre charisme propre.
+
+4. L'affiliation n'entraîne aucun coût ni charge administrative. Il suffit de formaliser l'inscription avec les données de votre organisation ; notre équipe vous contactera pour vous accompagner dans les étapes suivantes.
+
+Vous pourrez ensuite procéder à l'inscription et à l'affiliation de votre organisation et prendre connaissance du Règlement de la Plateforme, des Conditions Générales et de l'Avis de Confidentialité.`},
+    de:{title:"Anschluss einer anderen Organisation oder Institution",icon:"🏢",body:`Wir danken Ihnen für Ihr Interesse, Ihre Organisation oder Institution an das Internationale Zentrum für Fernkatechese (CICADI) anzuschließen.
+
+Im Folgenden erläutern wir die Merkmale dieses Anschlusses:
+
+1. Wir wissen, dass die Arbeit der Evangelisierung und der Glaubensbildung in vielen Bereichen gelebt wird, die nicht immer in die üblichen Kategorien passen: Bewegungen, Vereine, Schulen, Universitäten, Seelsorgestellen, Exerzitienhäuser, Ordensgemeinschaften, Stiftungen und andere Werke katholischer Prägung. Diese Option ist für sie alle gedacht.
+
+2. Wenn Sie die Art Ihrer Organisation oder Institution angeben, kann unser Team Ihre Anfrage prüfen und Ihnen die für Ihre Mission am besten geeignete Form der Zusammenarbeit vorschlagen — sei es der Zugang zur sakramentalen Bildung, die Verbreitung unter Ihren Mitgliedern oder eine maßgeschneiderte pastorale Partnerschaft.
+
+3. Bei Catecumen möchten wir die wertvolle Arbeit, die Ihre Organisation bereits leistet, nicht ersetzen, sondern durch digitale katechetische Bildung mit unserer Methodik der Katechetischen Neuropädagogik ergänzen, unter Achtung Ihrer Zeitpläne und Ihres eigenen Charismas.
+
+4. Der Anschluss ist mit keinen Kosten oder Verwaltungsaufwand verbunden. Sie müssen lediglich die Registrierung mit den Daten Ihrer Organisation abschließen; unser Team wird sich mit Ihnen in Verbindung setzen, um die nächsten Schritte zu begleiten.
+
+Anschließend können Sie die Registrierung und den Anschluss Ihrer Organisation vornehmen und die Plattformordnung, die Allgemeinen Geschäftsbedingungen und die Datenschutzerklärung einsehen.`},
+    pt:{title:"Afiliação de outra organização ou instituição",icon:"🏢",body:`Agradecemos seu interesse em afiliar sua organização ou instituição ao Centro Internacional de Catequese a Distância (CICADI).
+
+A seguir explicamos as características desta afiliação:
+
+1. Sabemos que o trabalho de evangelização e formação na fé é vivido em muitos âmbitos que nem sempre se encaixam nas categorias habituais: movimentos, associações, colégios, universidades, capelanias, casas de retiro, comunidades religiosas, fundações e outras obras de inspiração católica. Esta opção destina-se a todas elas.
+
+2. Ao indicar o tipo de organização ou instituição que representa, nossa equipe poderá analisar sua solicitação e propor a modalidade de colaboração mais adequada à sua missão — seja o acesso à formação sacramental, a divulgação entre seus membros ou uma aliança pastoral sob medida.
+
+3. No Catecumen não buscamos substituir o valioso trabalho que sua organização já realiza, mas complementá-lo a partir da formação catequética digital, com nossa metodologia de Neuropedagogia Catequética, respeitando seus horários e seu carisma próprio.
+
+4. A afiliação não implica nenhum custo nem carga administrativa. Basta formalizar o registro com os dados da sua organização; nossa equipe entrará em contato para acompanhar os próximos passos.
+
+A seguir você poderá realizar o registro e a afiliação da sua organização e conhecer o Regulamento da Plataforma, os Termos e Condições e o Aviso de Privacidade.`},
+    it:{title:"Affiliazione di un'altra organizzazione o istituzione",icon:"🏢",body:`Ti ringraziamo per il tuo interesse ad affiliare la tua organizzazione o istituzione al Centro Internazionale di Catechesi a Distanza (CICADI).
+
+Di seguito ti spieghiamo le caratteristiche di questa affiliazione:
+
+1. Sappiamo che il lavoro di evangelizzazione e formazione nella fede si vive in molti ambiti che non sempre rientrano nelle categorie abituali: movimenti, associazioni, scuole, università, cappellanie, case di ritiro, comunità religiose, fondazioni e altre opere di ispirazione cattolica. Questa opzione è pensata per tutte.
+
+2. Indicando il tipo di organizzazione o istituzione che rappresenti, il nostro team potrà esaminare la tua richiesta e proporti la forma di collaborazione più adatta alla tua missione — sia l'accesso alla formazione sacramentale, la diffusione tra i tuoi membri o un'alleanza pastorale su misura.
+
+3. In Catecumen non cerchiamo di sostituire il prezioso lavoro che la tua organizzazione già svolge, ma di completarlo con la formazione catechetica digitale, con la nostra metodologia di Neuropedagogia Catechetica, nel rispetto dei tuoi tempi e del tuo carisma.
+
+4. L'affiliazione non comporta alcun costo né onere amministrativo. È sufficiente formalizzare la registrazione con i dati della tua organizzazione; il nostro team ti contatterà per accompagnarti nei passi successivi.
+
+Potrai ora procedere con la registrazione e l'affiliazione della tua organizzazione e prendere visione del Regolamento della Piattaforma, dei Termini e Condizioni e dell'Informativa sulla Privacy.`}
+  },
+
 };

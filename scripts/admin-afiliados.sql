@@ -14,6 +14,34 @@
 -- nombre_obispo, nombre_contacto, email_contacto, codigo_pais_tel, telefono,
 -- registro_id, aprobada). Idempotente y re-ejecutable.
 
+-- ── Tabla para "otras" organizaciones/instituciones no previstas ────────────
+-- (movimientos, colegios, universidades, capellanías, fundaciones, comunidades
+-- religiosas, etc.). El interesado indica el `tipo_organizacion` al registrarse.
+create table if not exists public.organizaciones_otro (
+  id                 uuid primary key default gen_random_uuid(),
+  registro_id        text,
+  nombre             text not null,
+  tipo_organizacion  text,
+  pais               text,
+  codigo_iso         text,
+  nombre_contacto    text,
+  email_contacto     text,
+  codigo_pais_tel    text,
+  telefono           text,
+  estado             text,
+  municipio          text,
+  direccion          text,
+  aprobada           boolean not null default false,
+  suspendida         boolean not null default false,
+  created_at         timestamptz default now()
+);
+-- El registro de afiliación ocurre ANTES de tener cuenta: permitir INSERT anónimo.
+-- La lectura/gestión es solo del admin (vía las RPCs SECURITY DEFINER de abajo).
+alter table public.organizaciones_otro enable row level security;
+drop policy if exists org_otro_insert on public.organizaciones_otro;
+create policy org_otro_insert on public.organizaciones_otro
+  for insert to anon, authenticated with check (true);
+
 -- Columna de suspensión (nueva). El resto ya existen (las usan el directorio y el registro).
 alter table public.parroquias      add column if not exists suspendida boolean not null default false;
 alter table public.diocesis        add column if not exists suspendida boolean not null default false;
@@ -35,7 +63,7 @@ create or replace function public.admin_afiliados_listar(
   id uuid, tipo text, nombre text, responsable text, contacto text, email text,
   telefono text, pais text, estado text, municipio text, direccion text,
   registro_id text, aprobada boolean, suspendida boolean, situacion text,
-  creado timestamptz
+  creado timestamptz, tipo_org text
 )
 language plpgsql security definer set search_path = public
 as $$
@@ -48,7 +76,7 @@ begin
            concat_ws(' ', p.codigo_pais_tel, p.telefono) as telefono,
            p.pais, p.estado, p.municipio, p.direccion, p.registro_id,
            coalesce(p.aprobada,false) as aprobada, coalesce(p.suspendida,false) as suspendida,
-           p.created_at as creado
+           p.created_at as creado, null::text as tipo_org
       from public.parroquias p
     union all
     select d.id, 'diocesis'::text, d.nombre, d.nombre_obispo,
@@ -56,7 +84,7 @@ begin
            concat_ws(' ', d.codigo_pais_tel, d.telefono),
            d.pais, d.estado, d.municipio, d.direccion, d.registro_id,
            coalesce(d.aprobada,false), coalesce(d.suspendida,false),
-           d.created_at
+           d.created_at, null::text
       from public.diocesis d
     union all
     -- Centros de tratamiento de adicciones (sin clero; dirección = calle + número).
@@ -65,8 +93,17 @@ begin
            concat_ws(' ', c.codigo_pais_tel, c.telefono),
            c.pais, c.estado, c.municipio, nullif(concat_ws(' ', c.calle, c.numero),''), c.registro_id,
            coalesce(c.aprobada,false), coalesce(c.suspendida,false),
-           c.created_at
+           c.created_at, null::text
       from public.centros_adiccion c
+    union all
+    -- Otras organizaciones/instituciones: el tipo lo señaló el interesado.
+    select o.id, 'otro'::text, o.nombre, null::text,
+           o.nombre_contacto, o.email_contacto,
+           concat_ws(' ', o.codigo_pais_tel, o.telefono),
+           o.pais, o.estado, o.municipio, o.direccion, o.registro_id,
+           coalesce(o.aprobada,false), coalesce(o.suspendida,false),
+           o.created_at, o.tipo_organizacion
+      from public.organizaciones_otro o
   ), calc as (
     select b.*, case when b.suspendida then 'suspendida'
                      when b.aprobada  then 'activa'
@@ -75,12 +112,12 @@ begin
   )
   select c.id, c.tipo, c.nombre, c.responsable, c.contacto, c.email, c.telefono,
          c.pais, c.estado, c.municipio, c.direccion, c.registro_id,
-         c.aprobada, c.suspendida, c.situacion, c.creado
+         c.aprobada, c.suspendida, c.situacion, c.creado, c.tipo_org
     from calc c
    where (p_tipo   is null or p_tipo   = '' or c.tipo = p_tipo)
      and (p_estado is null or p_estado = '' or c.situacion = p_estado)
      and (p_q is null or p_q = '' or
-          concat_ws(' ', c.nombre, c.pais, c.estado, c.municipio, c.registro_id, c.email)
+          concat_ws(' ', c.nombre, c.pais, c.estado, c.municipio, c.registro_id, c.email, c.tipo_org)
             ilike '%'||p_q||'%')
    order by (c.situacion='pendiente') desc, c.creado desc nulls last, c.nombre;
 end;
@@ -128,6 +165,14 @@ begin
       update public.centros_adiccion set aprobada=false, suspendida=true  where id=p_id returning nombre into v_nombre;
     else
       delete from public.centros_adiccion where id=p_id returning nombre into v_nombre;
+    end if;
+  elsif p_tipo = 'otro' then
+    if p_accion = 'aprobar' then
+      update public.organizaciones_otro set aprobada=true,  suspendida=false where id=p_id returning nombre into v_nombre;
+    elsif p_accion = 'suspender' then
+      update public.organizaciones_otro set aprobada=false, suspendida=true  where id=p_id returning nombre into v_nombre;
+    else
+      delete from public.organizaciones_otro where id=p_id returning nombre into v_nombre;
     end if;
   else
     raise exception 'tipo invalido';

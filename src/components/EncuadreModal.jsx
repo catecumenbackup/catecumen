@@ -47,7 +47,7 @@ export default function EncuadreModal({ encKey, onRegister, onBack }) {
   const d = ENCUADRES[encKey];
   if (!d) return null;
   const { title, icon, body } = PICK(d);
-  const isOrg = encKey === "parroquia" || encKey === "diocesis";
+  const isOrg = encKey === "parroquia" || encKey === "diocesis" || encKey === "centroadiccion" || encKey === "otro";
 
   // Parseo genérico del cuerpo: párrafos guía / ítems numerados / cierre.
   // Numeración CONTINUA: los ítems pueden venir como "N." (sacramentos) o como

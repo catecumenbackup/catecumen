@@ -376,6 +376,7 @@
             <option value="parroquia">Parroquias</option>
             <option value="diocesis">Diócesis</option>
             <option value="centro">Centros de adicciones</option>
+            <option value="otro">Otras organizaciones</option>
           </select>
         </label>
         <label>Situación:
@@ -822,7 +823,8 @@
       const t=sit==='activa'?'ACTIVA':sit==='suspendida'?'SUSPENDIDA':'PENDIENTE';
       return `<span style="margin-left:8px;font-size:10px;font-weight:700;letter-spacing:.06em;color:${c};border:1px solid ${c}66;border-radius:99px;padding:2px 9px">${t}</span>`; };
     cont.innerHTML=rows.map(r=>{
-      const icono=r.tipo==='diocesis'?'🏛️':r.tipo==='centro'?'🏥':'⛪';
+      const icono=r.tipo==='diocesis'?'🏛️':r.tipo==='centro'?'🏥':r.tipo==='otro'?'🏢':'⛪';
+      const tipoOrg=r.tipo==='otro'&&r.tipo_org?` <span style="color:var(--ivory-m);font-size:11px">(${esc(r.tipo_org)})</span>`:'';
       let btns='';
       if(r.situacion==='pendiente') btns=`<button class="btn" onclick="window.afiAccion('${r.tipo}','${r.id}','aprobar')">Aprobar</button>`;
       else if(r.situacion==='activa') btns=`<button class="btn ghost" onclick="window.afiAccion('${r.tipo}','${r.id}','suspender')">Suspender</button>`;
@@ -832,7 +834,7 @@
       const linea3=[esc(r.email||''),esc(r.telefono||''),r.registro_id?esc(r.registro_id):''].filter(Boolean).join(' · ');
       return `<div style="display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid rgba(200,169,81,.2);border-radius:8px;margin-bottom:6px;${r.situacion==='suspendida'?'opacity:.65':''}">
         <div style="min-width:0">
-          <div>${icono} <b style="color:var(--gold)">${esc(r.nombre)}</b>${pill(r.situacion)}</div>
+          <div>${icono} <b style="color:var(--gold)">${esc(r.nombre)}</b>${tipoOrg}${pill(r.situacion)}</div>
           ${linea2?`<div style="color:var(--ivory-m);font-size:12px;margin-top:2px">${linea2}</div>`:''}
           ${linea3?`<div style="color:var(--ivory-m);font-size:12px">${linea3}</div>`:''}
           ${r.direccion?`<div style="color:var(--ivory-m);font-size:11px;margin-top:2px">${esc(r.direccion)}</div>`:''}
