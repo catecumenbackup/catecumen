@@ -60,7 +60,14 @@ export default function DirectorioAfiliados({ onClose }) {
         const et = r.tipo === "diocesis"
           ? T("Diócesis", "Diocese", "Diocèse", "Diözese", "Diocese", "Diocesi")
           : T("Parroquia", "Parish", "Paroisse", "Pfarrei", "Paróquia", "Parrocchia");
-        lay.addLayer(L.marker([r.lat, r.lng]).bindPopup(`<b>${r.nombre}</b><br>${et}<br>${r.direccion || ""}`));
+        // Parroquia: monograma de Catecumen en círculo dorado. Diócesis: insignia
+        // dorada destacada con 🏛️ (jerarquía superior → marcador más grande).
+        const icon = r.tipo === "diocesis"
+          ? L.divIcon({ className: "", iconSize: [40, 40], iconAnchor: [20, 20], popupAnchor: [0, -18],
+              html: '<div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#F0D68A,#9C7A28);display:flex;align-items:center;justify-content:center;font-size:21px;border:2.5px solid #F5E6B8;box-shadow:0 3px 9px rgba(0,0,0,.55)">🏛️</div>' })
+          : L.divIcon({ className: "", iconSize: [32, 32], iconAnchor: [16, 16], popupAnchor: [0, -15],
+              html: '<div style="width:32px;height:32px;border-radius:50%;overflow:hidden;border:2px solid #C8A951;box-shadow:0 2px 6px rgba(0,0,0,.5);background:#0B1526"><img src="/icon-192.png" alt="" style="width:100%;height:100%;object-fit:cover"></div>' });
+        lay.addLayer(L.marker([r.lat, r.lng], { icon }).bindPopup(`<b>${r.nombre}</b><br>${et}<br>${r.direccion || ""}`));
         pts.push([r.lat, r.lng]);
       });
       if (pts.length) mapRef.current.fitBounds(pts, { padding: [30, 30], maxZoom: 12 });
@@ -91,7 +98,7 @@ export default function DirectorioAfiliados({ onClose }) {
     }, { timeout: 10000 });
   };
 
-  const buscarTexto = async () => {
+  const buscar = async () => {
     setErr(""); setCargando(true);
     try {
       const { data, error } = await supabase.rpc("buscar_afiliados_texto", {
@@ -104,6 +111,10 @@ export default function DirectorioAfiliados({ onClose }) {
     } catch { setErr(errBusqueda()); } finally { setCargando(false); }
   };
   const errBusqueda = () => T("No se pudo completar la búsqueda. Intenta de nuevo.", "The search could not be completed. Please try again.", "La recherche n'a pas pu aboutir. Réessayez.", "Die Suche konnte nicht abgeschlossen werden. Bitte erneut versuchen.", "Não foi possível concluir a busca. Tente novamente.", "Impossibile completare la ricerca. Riprova.");
+
+  // Auto-búsqueda: al abrir (país "" = todas → todos los marcadores en el mapa)
+  // y cada vez que cambia país / estado / tipo, sin pulsar "Buscar".
+  useEffect(() => { buscar(); }, [pais, estado, tipo]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const filtros = [
     { k: null, lbl: T("Todas", "All", "Toutes", "Alle", "Todas", "Tutte") },
@@ -129,10 +140,10 @@ export default function DirectorioAfiliados({ onClose }) {
         {/* Controles */}
         <div style={{ padding: "14px 20px", borderBottom: `1px solid ${C.gold}18`, display: "flex", flexDirection: "column", gap: 10 }}>
           <div style={{ display: "flex", gap: 8 }}>
-            <input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") buscarTexto(); }}
+            <input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") buscar(); }}
               placeholder={T("Nombre, ciudad o país…", "Name, city or country…", "Nom, ville ou pays…", "Name, Stadt oder Land…", "Nome, cidade ou país…", "Nome, città o paese…")}
               style={{ flex: 1, background: C.card, color: C.ivory, border: `1px solid ${C.borderD}`, borderRadius: 10, padding: "10px 12px", fontFamily: "'Crimson Text',serif", fontSize: 14.5, outline: "none" }} />
-            <button onClick={buscarTexto} disabled={cargando} style={{ ...BTN("pri"), fontSize: 12, padding: "8px 14px" }}>
+            <button onClick={buscar} disabled={cargando} style={{ ...BTN("pri"), fontSize: 12, padding: "8px 14px" }}>
               🔍 {T("Buscar", "Search", "Chercher", "Suchen", "Buscar", "Cerca")}
             </button>
           </div>
