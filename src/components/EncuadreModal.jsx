@@ -19,7 +19,7 @@ function SubItem({ texto }) {
       background: "rgba(255,255,255,0.035)", border: `1px solid ${C.gold}1f`,
       borderRadius: 9, padding: "8px 11px" }}>
       <span style={{ color: C.gold, fontSize: 13, lineHeight: 1.5, marginTop: 1, flexShrink: 0 }}>◆</span>
-      <span style={{ fontFamily: AR, fontSize: 13.5, lineHeight: 1.55, color: C.ivory }}>
+      <span style={{ fontFamily: AR, fontSize: 13.5, lineHeight: 1.55, color: C.ivory, textAlign: "left" }}>
         {m ? (<><strong style={{ color: C.goldL, fontWeight: 700 }}>{m[1].trim()}</strong>
           <span style={{ color: C.ivoryM }}> — {m[2].trim()}</span></>)
           : texto}
@@ -58,7 +58,7 @@ export default function EncuadreModal({ encKey, onRegister, onBack }) {
             fontFamily: AR, fontWeight: 800, fontSize: 14,
             boxShadow: "0 2px 6px rgba(0,0,0,0.35)" }}>{m[1]}</span>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ margin: 0, fontFamily: AR, fontSize: 14.5, lineHeight: 1.65, color: C.ivory }}>{principal}</p>
+            <p style={{ margin: 0, fontFamily: AR, fontSize: 14.5, lineHeight: 1.65, color: C.ivory, textAlign: "justify" }}>{principal}</p>
             {sub.length > 0 && (
               <div style={{ display: "flex", flexDirection: "column", gap: 7, marginTop: 10 }}>
                 {sub.map((s, j) => <SubItem key={j} texto={s} />)}
@@ -85,12 +85,12 @@ export default function EncuadreModal({ encKey, onRegister, onBack }) {
       return (
         <p key={i} style={{ margin: 0, fontFamily: AR, fontSize: 14, lineHeight: 1.65, color: C.ivory,
           background: "rgba(200,169,81,0.08)", borderLeft: `3px solid ${C.gold}`,
-          borderRadius: "0 10px 10px 0", padding: "12px 15px", fontStyle: "italic" }}>{b}</p>
+          borderRadius: "0 10px 10px 0", padding: "12px 15px", fontStyle: "italic", textAlign: "justify" }}>{b}</p>
       );
     }
     // Párrafo guía (intro).
     return (
-      <p key={i} style={{ margin: 0, fontFamily: AR, fontSize: 15.5, lineHeight: 1.7, color: C.ivory }}>{b}</p>
+      <p key={i} style={{ margin: 0, fontFamily: AR, fontSize: 15.5, lineHeight: 1.7, color: C.ivory, textAlign: "justify" }}>{b}</p>
     );
   });
 
