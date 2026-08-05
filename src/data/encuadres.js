@@ -1244,7 +1244,7 @@ A continuación le explicamos las características de esta afiliación:
 
 1. Conscientes de los grandes desafíos que afronta la Nueva Evangelización en los tiempos actuales, particularmente en lo que respecta a la formación de adultos, la dispersión geográfica y las complejas agendas de los fieles, nuestro propósito es poner al servicio de su Diócesis una propuesta pastoral y tecnológica diseñada para fortalecer las estructuras parroquiales, aliviar la carga de los párrocos y potenciar la evangelización en toda su jurisdicción eclesiástica.
 
-✝️ Un Apoyo Pastoral Integral para las Parroquias de la Diócesis: En el Catecumen no pretendemos sustituir la indispensable vida comunitaria y presencial de las parroquias, sino ofrecer una extensión digital que actúe como un brazo colaborador. Nuestra oferta formativa diocesana abarca tres pilares fundamentales:
+✝️ Un Apoyo Pastoral Integral para las Parroquias de la Diócesis: En CICADI no pretendemos sustituir la indispensable vida comunitaria y presencial de las parroquias, sino ofrecer una extensión digital que actúe como un brazo colaborador. Nuestra oferta formativa diocesana abarca tres pilares fundamentales:
 • Sacramentos de Iniciación Cristiana: Preparación integral para adultos encaminada al Bautismo, Confirmación y Primera Comunión.
 • Pláticas Prebautismales: Formación accesible y profunda para padres y padrinos.
 • Formación de Agentes de Evangelización: Capacitación especializada para el cuerpo de catequistas de la diócesis.
@@ -1281,7 +1281,7 @@ The following explains the characteristics of this affiliation:
 
 1. Aware of the great challenges facing the New Evangelization in today's times — particularly regarding the formation of adults, geographic dispersion, and the complex schedules of the faithful — our purpose is to place at the service of your Diocese a pastoral and technological proposal designed to strengthen parish structures, alleviate the burden on pastors, and enhance evangelization throughout your entire ecclesiastical jurisdiction.
 
-✝️ Comprehensive Pastoral Support for the Parishes of the Diocese: At Catecumen we do not intend to replace the indispensable community and in-person life of parishes, but to offer a digital extension that acts as a collaborative arm. Our diocesan formation offering covers three fundamental pillars:
+✝️ Comprehensive Pastoral Support for the Parishes of the Diocese: At ICDC we do not intend to replace the indispensable community and in-person life of parishes, but to offer a digital extension that acts as a collaborative arm. Our diocesan formation offering covers three fundamental pillars:
 • Sacraments of Christian Initiation: Comprehensive preparation for adults on the path to Baptism, Confirmation, and First Communion.
 • Pre-Baptismal Sessions: Accessible and profound formation for parents and godparents.
 • Formation of Evangelization Agents: Specialized training for the diocesan corps of catechists.
@@ -1318,7 +1318,7 @@ Voici les caractéristiques de cette affiliation :
 
 1. Conscients des grands défis auxquels fait face la Nouvelle Évangélisation à notre époque — en particulier en ce qui concerne la formation des adultes, la dispersion géographique et les agendas complexes des fidèles — notre objectif est de mettre au service de votre Diocèse une proposition pastorale et technologique conçue pour renforcer les structures paroissiales, alléger la charge des curés et intensifier l'évangélisation dans toute votre juridiction ecclésiastique.
 
-✝️ Un soutien pastoral intégral pour les paroisses du diocèse : Chez Catecumen, nous n'avons pas l'intention de remplacer la vie communautaire et présentielle indispensable des paroisses, mais d'offrir une extension numérique agissant comme un bras collaborateur. Notre offre de formation diocésaine couvre trois piliers fondamentaux :
+✝️ Un soutien pastoral intégral pour les paroisses du diocèse : À l'ICDC, nous n'avons pas l'intention de remplacer la vie communautaire et présentielle indispensable des paroisses, mais d'offrir une extension numérique agissant comme un bras collaborateur. Notre offre de formation diocésaine couvre trois piliers fondamentaux :
 • Sacrements de l'Initiation Chrétienne : Préparation intégrale des adultes en chemin vers le Baptême, la Confirmation et la Première Communion.
 • Rencontres pré-baptismales : Formation accessible et approfondie pour les parents et parrains/marraines.
 • Formation des Agents d'Évangélisation : Formation spécialisée pour le corps diocésain des catéchistes.
@@ -1355,7 +1355,7 @@ Im Folgenden erläutern wir Ihnen die Merkmale dieses Anschlusses:
 
 1. In dem Bewusstsein der großen Herausforderungen, denen sich die Neuevangelisierung heute gegenübersieht — insbesondere hinsichtlich der Bildung von Erwachsenen, der geografischen Streuung und der komplexen Terminpläne der Gläubigen — ist es unser Anliegen, Ihrer Diözese einen pastoralen und technologischen Vorschlag zur Verfügung zu stellen, der die pfarreilichen Strukturen stärken, die Belastung der Pfarrer verringern und die Evangelisierung in Ihrem gesamten kirchlichen Zuständigkeitsbereich fördern soll.
 
-✝️ Eine umfassende pastorale Unterstützung für die Pfarreien der Diözese: Bei Catecumen beabsichtigen wir nicht, das unverzichtbare gemeinschaftliche und persönliche Leben der Pfarreien zu ersetzen, sondern eine digitale Erweiterung anzubieten, die als mitwirkender Arm fungiert. Unser diözesanes Bildungsangebot umfasst drei grundlegende Säulen:
+✝️ Eine umfassende pastorale Unterstützung für die Pfarreien der Diözese: Beim ICDC beabsichtigen wir nicht, das unverzichtbare gemeinschaftliche und persönliche Leben der Pfarreien zu ersetzen, sondern eine digitale Erweiterung anzubieten, die als mitwirkender Arm fungiert. Unser diözesanes Bildungsangebot umfasst drei grundlegende Säulen:
 • Sakramente der christlichen Initiation: Umfassende Vorbereitung von Erwachsenen auf dem Weg zur Taufe, Firmung und Erstkommunion.
 • Taufvorbereitungsgespräche: Zugängliche und fundierte Bildung für Eltern und Paten.
 • Bildung von Evangelisierungsträgern: Spezialisierte Schulung für den diözesanen Katechetenstab.
@@ -1392,7 +1392,7 @@ A seguir explicamos as características desta afiliação:
 
 1. Conscientes dos grandes desafios que a Nova Evangelização enfrenta nos tempos atuais, particularmente no que se refere à formação de adultos, à dispersão geográfica e às complexas agendas dos fiéis, nosso propósito é colocar a serviço de sua Diocese uma proposta pastoral e tecnológica desenhada para fortalecer as estruturas paroquiais, aliviar a carga dos párocos e potencializar a evangelização em toda a sua jurisdição eclesiástica.
 
-✝️ Um Apoio Pastoral Integral para as Paróquias da Diocese: Na Catecumen não pretendemos substituir a indispensável vida comunitária e presencial das paróquias, mas oferecer uma extensão digital que atue como um braço colaborador. Nossa oferta formativa diocesana abrange três pilares fundamentais:
+✝️ Um Apoio Pastoral Integral para as Paróquias da Diocese: No ICDC não pretendemos substituir a indispensável vida comunitária e presencial das paróquias, mas oferecer uma extensão digital que atue como um braço colaborador. Nossa oferta formativa diocesana abrange três pilares fundamentais:
 • Sacramentos de Iniciação Cristã: Preparação integral para adultos a caminho do Batismo, Crisma e Primeira Comunhão.
 • Palestras Pré-batismais: Formação acessível e profunda para pais e padrinhos.
 • Formação de Agentes de Evangelização: Capacitação especializada para o corpo de catequistas da diocese.
@@ -1429,7 +1429,7 @@ Di seguito le spieghiamo le caratteristiche di questa affiliazione:
 
 1. Consapevoli delle grandi sfide che la Nuova Evangelizzazione affronta nei tempi attuali, in particolare per quanto riguarda la formazione degli adulti, la dispersione geografica e le complesse agende dei fedeli, il nostro proposito è mettere al servizio della sua Diocesi una proposta pastorale e tecnologica pensata per rafforzare le strutture parrocchiali, alleggerire il carico dei parroci e potenziare l'evangelizzazione in tutta la sua giurisdizione ecclesiastica.
 
-✝️ Un Supporto Pastorale Integrale per le Parrocchie della Diocesi: In Catecumen non intendiamo sostituire l'indispensabile vita comunitaria e in presenza delle parrocchie, ma offrire un'estensione digitale che funga da braccio collaboratore. La nostra offerta formativa diocesana abbraccia tre pilastri fondamentali:
+✝️ Un Supporto Pastorale Integrale per le Parrocchie della Diocesi: All'ICDC non intendiamo sostituire l'indispensabile vita comunitaria e in presenza delle parrocchie, ma offrire un'estensione digitale che funga da braccio collaboratore. La nostra offerta formativa diocesana abbraccia tre pilastri fondamentali:
 • Sacramenti dell'Iniziazione Cristiana: Preparazione integrale per adulti in cammino verso il Battesimo, la Cresima e la Prima Comunione.
 • Incontri Pre-battesimali: Formazione accessibile e approfondita per genitori e padrini.
 • Formazione di Agenti di Evangelizzazione: Formazione specializzata per il corpo diocesano dei catechisti.
@@ -1466,7 +1466,7 @@ A continuación le explicamos las características de esta afiliación:
 
 1. Entendemos que la recuperación integral del ser humano no se limita a los aspectos físicos y psicológicos, sino que incluye también la dimensión espiritual. La catequesis ha demostrado ser un poderoso apoyo en los procesos de rehabilitación, ayudando a los pacientes a encontrar sentido de propósito, comunidad y esperanza durante su proceso de recuperación.
 
-En el Catecumen no buscamos sustituir ningún programa terapéutico existente en su institución, sino complementarlo desde la formación espiritual y sacramental. Nuestra plataforma permite que los pacientes accedan a la catequesis en formato digital, respetando los horarios y dinámicas internas de su Centro.
+En CICADI no buscamos sustituir ningún programa terapéutico existente en su institución, sino complementarlo desde la formación espiritual y sacramental. Nuestra plataforma permite que los pacientes accedan a la catequesis en formato digital, respetando los horarios y dinámicas internas de su Centro.
 
 Nuestra oferta formativa incluye:
 • Sacramentos de Iniciación Cristiana: Bautismo, Confirmación y Primera Comunión para adultos.
@@ -1491,7 +1491,7 @@ The following explains the characteristics of this affiliation:
 
 1. We understand that the integral recovery of the human person is not limited to the physical and psychological aspects, but also includes the spiritual dimension. Catechesis has proven to be a powerful support in rehabilitation processes, helping patients find a sense of purpose, community, and hope during their recovery journey.
 
-At Catecumen we do not seek to replace any existing therapeutic program in your institution, but to complement it through spiritual and sacramental formation. Our platform allows patients to access catechesis in a digital format, respecting the schedules and internal dynamics of your Center.
+At ICDC we do not seek to replace any existing therapeutic program in your institution, but to complement it through spiritual and sacramental formation. Our platform allows patients to access catechesis in a digital format, respecting the schedules and internal dynamics of your Center.
 
 Our formation offering includes:
 • Sacraments of Christian Initiation: Baptism, Confirmation, and First Communion for adults.
@@ -1516,7 +1516,7 @@ Voici les caractéristiques de cette affiliation :
 
 1. Nous comprenons que le rétablissement intégral de la personne humaine ne se limite pas aux aspects physiques et psychologiques, mais inclut également la dimension spirituelle. La catéchèse s'est révélée être un puissant soutien dans les processus de réhabilitation, aidant les patients à trouver un sens, une communauté et de l'espérance tout au long de leur parcours de rétablissement.
 
-Chez Catecumen, nous ne cherchons pas à remplacer un quelconque programme thérapeutique existant dans votre établissement, mais à le compléter par la formation spirituelle et sacramentelle. Notre plateforme permet aux patients d'accéder à la catéchèse au format numérique, dans le respect des horaires et de la dynamique interne de votre Centre.
+À l'ICDC, nous ne cherchons pas à remplacer un quelconque programme thérapeutique existant dans votre établissement, mais à le compléter par la formation spirituelle et sacramentelle. Notre plateforme permet aux patients d'accéder à la catéchèse au format numérique, dans le respect des horaires et de la dynamique interne de votre Centre.
 
 Notre offre de formation comprend :
 • Sacrements de l'Initiation Chrétienne : Baptême, Confirmation et Première Communion pour adultes.
@@ -1541,7 +1541,7 @@ Im Folgenden erläutern wir Ihnen die Merkmale dieses Anschlusses:
 
 1. Wir verstehen, dass die ganzheitliche Genesung des Menschen sich nicht auf die physischen und psychologischen Aspekte beschränkt, sondern auch die spirituelle Dimension einschließt. Die Katechese hat sich als kraftvolle Unterstützung in Rehabilitationsprozessen erwiesen und hilft Patienten, während ihres Genesungswegs Sinn, Gemeinschaft und Hoffnung zu finden.
 
-Bei Catecumen wollen wir kein bestehendes therapeutisches Programm Ihrer Einrichtung ersetzen, sondern es durch geistliche und sakramentale Bildung ergänzen. Unsere Plattform ermöglicht es Patienten, die Katechese in digitaler Form zu nutzen, unter Berücksichtigung der Zeitpläne und internen Abläufe Ihres Zentrums.
+Beim ICDC wollen wir kein bestehendes therapeutisches Programm Ihrer Einrichtung ersetzen, sondern es durch geistliche und sakramentale Bildung ergänzen. Unsere Plattform ermöglicht es Patienten, die Katechese in digitaler Form zu nutzen, unter Berücksichtigung der Zeitpläne und internen Abläufe Ihres Zentrums.
 
 Unser Bildungsangebot umfasst:
 • Sakramente der christlichen Initiation: Taufe, Firmung und Erstkommunion für Erwachsene.
@@ -1566,7 +1566,7 @@ A seguir explicamos as características desta afiliação:
 
 1. Entendemos que a recuperação integral do ser humano não se limita aos aspectos físicos e psicológicos, mas inclui também a dimensão espiritual. A catequese tem demonstrado ser um poderoso apoio nos processos de reabilitação, ajudando os pacientes a encontrar sentido de propósito, comunidade e esperança durante seu processo de recuperação.
 
-Na Catecumen não buscamos substituir nenhum programa terapêutico existente em sua instituição, mas complementá-lo a partir da formação espiritual e sacramental. Nossa plataforma permite que os pacientes acessem a catequese em formato digital, respeitando os horários e dinâmicas internas de seu Centro.
+No ICDC não buscamos substituir nenhum programa terapêutico existente em sua instituição, mas complementá-lo a partir da formação espiritual e sacramental. Nossa plataforma permite que os pacientes acessem a catequese em formato digital, respeitando os horários e dinâmicas internas de seu Centro.
 
 Nossa oferta formativa inclui:
 • Sacramentos de Iniciação Cristã: Batismo, Crisma e Primeira Comunhão para adultos.
@@ -1591,7 +1591,7 @@ Di seguito ti spieghiamo le caratteristiche di questa affiliazione:
 
 1. Comprendiamo che il recupero integrale dell'essere umano non si limita agli aspetti fisici e psicologici, ma include anche la dimensione spirituale. La catechesi si è dimostrata un potente sostegno nei processi di riabilitazione, aiutando i pazienti a trovare senso di scopo, comunità e speranza durante il loro percorso di recupero.
 
-In Catecumen non cerchiamo di sostituire alcun programma terapeutico esistente nella tua istituzione, ma di completarlo attraverso la formazione spirituale e sacramentale. La nostra piattaforma consente ai pazienti di accedere alla catechesi in formato digitale, rispettando gli orari e le dinamiche interne del tuo Centro.
+All'ICDC non cerchiamo di sostituire alcun programma terapeutico esistente nella tua istituzione, ma di completarlo attraverso la formazione spirituale e sacramentale. La nostra piattaforma consente ai pazienti di accedere alla catechesi in formato digitale, rispettando gli orari e le dinamiche interne del tuo Centro.
 
 La nostra offerta formativa include:
 • Sacramenti dell'Iniziazione Cristiana: Battesimo, Cresima e Prima Comunione per adulti.
@@ -1621,7 +1621,7 @@ A continuación le explicamos las características de esta afiliación:
 
 2. Al indicar el tipo de organización o institución que representa, nuestro equipo podrá revisar su solicitud y proponerle la modalidad de colaboración más adecuada a su misión, ya sea el acceso a la formación sacramental, la difusión entre sus miembros o una alianza pastoral a la medida.
 
-3. En el Catecumen no buscamos sustituir la valiosa labor que su organización ya realiza, sino complementarla desde la formación catequética digital, con nuestra metodología de Neuropedagogía Catequética, respetando sus tiempos y su carisma propio.
+3. En CICADI no buscamos sustituir la valiosa labor que su organización ya realiza, sino complementarla desde la formación catequética digital, con nuestra metodología de Neuropedagogía Catequética, respetando sus tiempos y su carisma propio.
 
 4. La afiliación no implica ningún costo ni carga administrativa. Solo se requiere formalizar el registro con los datos de su organización; nuestro equipo se pondrá en contacto para acompañar los siguientes pasos.
 
@@ -1634,7 +1634,7 @@ The following explains the characteristics of this affiliation:
 
 2. By indicating the type of organization or institution you represent, our team will be able to review your request and propose the form of collaboration best suited to your mission — whether access to sacramental formation, outreach among your members, or a tailored pastoral partnership.
 
-3. At Catecumen we do not seek to replace the valuable work your organization already does, but to complement it through digital catechetical formation, with our Catechetical Neuropedagogy methodology, respecting your schedules and your own charism.
+3. At ICDC we do not seek to replace the valuable work your organization already does, but to complement it through digital catechetical formation, with our Catechetical Neuropedagogy methodology, respecting your schedules and your own charism.
 
 4. Affiliation involves no cost or administrative burden. You only need to complete the registration with your organization's information; our team will get in touch to guide the next steps.
 
@@ -1647,7 +1647,7 @@ Voici les caractéristiques de cette affiliation :
 
 2. En indiquant le type d'organisation ou d'institution que vous représentez, notre équipe pourra examiner votre demande et vous proposer la forme de collaboration la mieux adaptée à votre mission : accès à la formation sacramentelle, diffusion auprès de vos membres ou un partenariat pastoral sur mesure.
 
-3. Chez Catecumen, nous ne cherchons pas à remplacer le précieux travail que votre organisation accomplit déjà, mais à le compléter par une formation catéchétique numérique, avec notre méthodologie de Neuropédagogie Catéchétique, dans le respect de vos horaires et de votre charisme propre.
+3. À l'ICDC, nous ne cherchons pas à remplacer le précieux travail que votre organisation accomplit déjà, mais à le compléter par une formation catéchétique numérique, avec notre méthodologie de Neuropédagogie Catéchétique, dans le respect de vos horaires et de votre charisme propre.
 
 4. L'affiliation n'entraîne aucun coût ni charge administrative. Il suffit de formaliser l'inscription avec les données de votre organisation ; notre équipe vous contactera pour vous accompagner dans les étapes suivantes.
 
@@ -1660,7 +1660,7 @@ Im Folgenden erläutern wir die Merkmale dieses Anschlusses:
 
 2. Wenn Sie die Art Ihrer Organisation oder Institution angeben, kann unser Team Ihre Anfrage prüfen und Ihnen die für Ihre Mission am besten geeignete Form der Zusammenarbeit vorschlagen — sei es der Zugang zur sakramentalen Bildung, die Verbreitung unter Ihren Mitgliedern oder eine maßgeschneiderte pastorale Partnerschaft.
 
-3. Bei Catecumen möchten wir die wertvolle Arbeit, die Ihre Organisation bereits leistet, nicht ersetzen, sondern durch digitale katechetische Bildung mit unserer Methodik der Katechetischen Neuropädagogik ergänzen, unter Achtung Ihrer Zeitpläne und Ihres eigenen Charismas.
+3. Beim ICDC möchten wir die wertvolle Arbeit, die Ihre Organisation bereits leistet, nicht ersetzen, sondern durch digitale katechetische Bildung mit unserer Methodik der Katechetischen Neuropädagogik ergänzen, unter Achtung Ihrer Zeitpläne und Ihres eigenen Charismas.
 
 4. Der Anschluss ist mit keinen Kosten oder Verwaltungsaufwand verbunden. Sie müssen lediglich die Registrierung mit den Daten Ihrer Organisation abschließen; unser Team wird sich mit Ihnen in Verbindung setzen, um die nächsten Schritte zu begleiten.
 
@@ -1673,7 +1673,7 @@ A seguir explicamos as características desta afiliação:
 
 2. Ao indicar o tipo de organização ou instituição que representa, nossa equipe poderá analisar sua solicitação e propor a modalidade de colaboração mais adequada à sua missão — seja o acesso à formação sacramental, a divulgação entre seus membros ou uma aliança pastoral sob medida.
 
-3. No Catecumen não buscamos substituir o valioso trabalho que sua organização já realiza, mas complementá-lo a partir da formação catequética digital, com nossa metodologia de Neuropedagogia Catequética, respeitando seus horários e seu carisma próprio.
+3. No ICDC não buscamos substituir o valioso trabalho que sua organização já realiza, mas complementá-lo a partir da formação catequética digital, com nossa metodologia de Neuropedagogia Catequética, respeitando seus horários e seu carisma próprio.
 
 4. A afiliação não implica nenhum custo nem carga administrativa. Basta formalizar o registro com os dados da sua organização; nossa equipe entrará em contato para acompanhar os próximos passos.
 
@@ -1686,7 +1686,7 @@ Di seguito ti spieghiamo le caratteristiche di questa affiliazione:
 
 2. Indicando il tipo di organizzazione o istituzione che rappresenti, il nostro team potrà esaminare la tua richiesta e proporti la forma di collaborazione più adatta alla tua missione — sia l'accesso alla formazione sacramentale, la diffusione tra i tuoi membri o un'alleanza pastorale su misura.
 
-3. In Catecumen non cerchiamo di sostituire il prezioso lavoro che la tua organizzazione già svolge, ma di completarlo con la formazione catechetica digitale, con la nostra metodologia di Neuropedagogia Catechetica, nel rispetto dei tuoi tempi e del tuo carisma.
+3. All'ICDC non cerchiamo di sostituire il prezioso lavoro che la tua organizzazione già svolge, ma di completarlo con la formazione catechetica digitale, con la nostra metodologia di Neuropedagogia Catechetica, nel rispetto dei tuoi tempi e del tuo carisma.
 
 4. L'affiliazione non comporta alcun costo né onere amministrativo. È sufficiente formalizzare la registrazione con i dati della tua organizzazione; il nostro team ti contatterà per accompagnarti nei passi successivi.
 
