@@ -41,6 +41,11 @@ export default function DirectorioAfiliados({ onClose }) {
   const [err, setErr] = useState("");
   const [buscado, setBuscado] = useState(false);
   const [sel, setSel] = useState(null); // afiliado seleccionado al hacer clic en su marcador
+  const [localizando, setLocalizando] = useState(false); // pidiendo ubicación
+  // Opciones de geolocalización: sin alta precisión (más rápido por WiFi/red) y
+  // aceptando una posición reciente en caché (maximumAge) para respuesta casi
+  // inmediata en vez de forzar un fix nuevo (que tarda varios segundos).
+  const GEO_OPTS = { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 };
   const [desktop, setDesktop] = useState(typeof window !== "undefined" && window.innerWidth >= 900);
   const mapDiv = useRef(null), mapRef = useRef(null), layerRef = useRef(null);
 
@@ -107,7 +112,7 @@ export default function DirectorioAfiliados({ onClose }) {
     }, () => {
       setCargando(false);
       setErr(T("No pudimos obtener tu ubicación. Búscala por nombre o ciudad.", "We couldn't get your location. Search by name or city.", "Nous n'avons pas pu obtenir votre position. Recherchez par nom ou ville.", "Wir konnten Ihren Standort nicht ermitteln. Suchen Sie nach Name oder Stadt.", "Não conseguimos obter sua localização. Busque por nome ou cidade.", "Non è stato possibile ottenere la tua posizione. Cerca per nome o città."));
-    }, { timeout: 10000 });
+    }, GEO_OPTS);
   };
 
   const buscar = async () => {
@@ -133,6 +138,7 @@ export default function DirectorioAfiliados({ onClose }) {
   useEffect(() => {
     if (typeof navigator === "undefined" || !navigator.geolocation) return;
     let vivo = true;
+    setLocalizando(true);
     navigator.geolocation.getCurrentPosition(async (pos) => {
       try {
         const { data, error } = await supabase.rpc("buscar_afiliados_cercanos",
@@ -140,7 +146,8 @@ export default function DirectorioAfiliados({ onClose }) {
         if (!vivo || error) return;
         setResultados(Array.isArray(data) ? data : []); setBuscado(true); setSel(null);
       } catch { /* silencioso */ }
-    }, () => { /* denegada / sin ubicación: se queda con "todas", sin error */ }, { timeout: 8000 });
+      finally { if (vivo) setLocalizando(false); }
+    }, () => { if (vivo) setLocalizando(false); /* denegada / sin ubicación: se queda con "todas", sin error */ }, GEO_OPTS);
     return () => { vivo = false; };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -188,6 +195,10 @@ export default function DirectorioAfiliados({ onClose }) {
             style={{ ...BTN(tipo === f.k ? "pri" : "sec"), fontSize: 11.5, padding: "7px 6px", flex: "1 1 0", justifyContent: "center" }}>{f.lbl}</button>
         ))}
       </div>
+      {localizando && <p style={{ color: C.goldL, fontSize: 12.5, margin: 0, display: "flex", alignItems: "center", gap: 6 }}>
+        <span style={{ display: "inline-block", width: 11, height: 11, border: `2px solid ${C.gold}`, borderTopColor: "transparent", borderRadius: "50%", animation: "dirSpin .7s linear infinite" }} />
+        {T("Buscando cerca de ti…", "Finding places near you…", "Recherche près de vous…", "Suche in deiner Nähe…", "Buscando perto de você…", "Ricerca vicino a te…")}
+      </p>}
       {err && <p style={{ color: "#F87171", fontSize: 13, margin: 0 }}>⚠️ {err}</p>}
     </div>
   );
@@ -260,6 +271,7 @@ export default function DirectorioAfiliados({ onClose }) {
         style={{ ...MODAL, position: "fixed", top: desktop ? 24 : 10, bottom: desktop ? 24 : 10, left: desktop ? 24 : 10, right: desktop ? 24 : 10, margin: "auto",
           width: "auto", maxWidth: desktop ? 1160 : 760, height: "auto", maxHeight: "none",
           display: "flex", flexDirection: "column", padding: 0, overflow: "hidden" }}>
+        <style>{`@keyframes dirSpin{to{transform:rotate(360deg)}}`}</style>
         {/* Encabezado */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "16px 20px", borderBottom: `1px solid ${C.gold}25` }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
