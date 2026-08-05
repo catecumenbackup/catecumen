@@ -77,7 +77,8 @@ export default function DirectorioAfiliados({ onClose }) {
           : L.divIcon({ className: "", iconSize: [32, 32], iconAnchor: [16, 16], popupAnchor: [0, -15],
               html: '<div style="width:32px;height:32px;border-radius:50%;overflow:hidden;border:2px solid #C8A951;box-shadow:0 2px 6px rgba(0,0,0,.5);background:#0B1526"><img src="/icon-192.png" alt="" style="width:100%;height:100%;object-fit:cover"></div>' });
         const mk = L.marker([r.lat, r.lng], { icon });
-        mk.on("click", () => setSel(r)); // muestra los datos en el panel propio (React)
+        // Muestra los datos en el panel propio (React) y hace zoom sobre el marcador.
+        mk.on("click", () => { setSel(r); if (mapRef.current) mapRef.current.setView([r.lat, r.lng], 14, { animate: true }); });
         lay.addLayer(mk);
         pts.push([r.lat, r.lng]);
       });
@@ -127,6 +128,22 @@ export default function DirectorioAfiliados({ onClose }) {
   // y cada vez que cambia país / estado / tipo, sin pulsar "Buscar".
   useEffect(() => { buscar(); }, [pais, estado, tipo]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Al abrir, solicita la ubicación del usuario. Si la concede, muestra las más
+  // cercanas; si la niega o falla, se queda con "todas" (sin mostrar error).
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) return;
+    let vivo = true;
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      try {
+        const { data, error } = await supabase.rpc("buscar_afiliados_cercanos",
+          { p_lat: pos.coords.latitude, p_lng: pos.coords.longitude, p_tipo: tipo });
+        if (!vivo || error) return;
+        setResultados(Array.isArray(data) ? data : []); setBuscado(true); setSel(null);
+      } catch { /* silencioso */ }
+    }, () => { /* denegada / sin ubicación: se queda con "todas", sin error */ }, { timeout: 8000 });
+    return () => { vivo = false; };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const filtros = [
     { k: null, lbl: T("Todas", "All", "Toutes", "Alle", "Todas", "Tutte") },
     { k: "parroquia", lbl: T("Parroquias", "Parishes", "Paroisses", "Pfarreien", "Paróquias", "Parrocchie") },
@@ -162,14 +179,13 @@ export default function DirectorioAfiliados({ onClose }) {
             style={{ ...selStyle, width: 160 }} />
         )}
       </div>
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-        <button onClick={buscarCerca} disabled={cargando} style={{ ...BTN("sec"), fontSize: 12 }}>
-          📍 {T("Cerca de mí", "Near me", "Près de moi", "In meiner Nähe", "Perto de mim", "Vicino a me")}
-        </button>
-        <span style={{ width: 1, height: 20, background: `${C.gold}30` }} />
+      <button onClick={buscarCerca} disabled={cargando} style={{ ...BTN("sec"), fontSize: 12, width: "100%", justifyContent: "center" }}>
+        📍 {T("Cerca de mí", "Near me", "Près de moi", "In meiner Nähe", "Perto de mim", "Vicino a me")}
+      </button>
+      <div style={{ display: "flex", gap: 6 }}>
         {filtros.map((f) => (
           <button key={String(f.k)} onClick={() => setTipo(f.k)}
-            style={{ ...BTN(tipo === f.k ? "pri" : "sec"), fontSize: 11.5, padding: "6px 12px" }}>{f.lbl}</button>
+            style={{ ...BTN(tipo === f.k ? "pri" : "sec"), fontSize: 11.5, padding: "7px 6px", flex: "1 1 0", justifyContent: "center" }}>{f.lbl}</button>
         ))}
       </div>
       {err && <p style={{ color: "#F87171", fontSize: 13, margin: 0 }}>⚠️ {err}</p>}
@@ -252,10 +268,10 @@ export default function DirectorioAfiliados({ onClose }) {
 
         {desktop ? (
           <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
-            {/* Mapa grande a la izquierda */}
-            <div ref={mapDiv} style={{ flex: "1.9 1 0", minWidth: 0, background: C.card }} />
-            {/* Columna derecha: controles + info + resultados */}
-            <div style={{ flex: "1 1 0", minWidth: 340, maxWidth: 400, display: "flex", flexDirection: "column", minHeight: 0, borderLeft: `1px solid ${C.gold}22` }}>
+            {/* Mapa (mitad izquierda) */}
+            <div ref={mapDiv} style={{ flex: "1 1 0", minWidth: 0, background: C.card }} />
+            {/* Columna derecha (mitad): controles + info + resultados */}
+            <div style={{ flex: "1 1 0", minWidth: 320, display: "flex", flexDirection: "column", minHeight: 0, borderLeft: `1px solid ${C.gold}22` }}>
               {controles}
               {panelInfo}
               <div style={{ flex: 1, overflowY: "auto", padding: "12px 16px" }}>{listaResultados}</div>
