@@ -85,4 +85,13 @@ function genRegistrationId(country,userType){
   return `${cc}-${rp}-${yr}-${seqStr}`;
 }
 
-export { PHONE_CODES, CDOCS, COUNTRIES, COUNTRY_ISO, ROLE_PREFIX, genRegistrationId };
+// Estados de México (para el buscador de afiliados y el registro de organizaciones).
+const MX_ESTADOS = [
+  "Aguascalientes","Baja California","Baja California Sur","Campeche","Chiapas","Chihuahua",
+  "Ciudad de México","Coahuila","Colima","Durango","Estado de México","Guanajuato","Guerrero",
+  "Hidalgo","Jalisco","Michoacán","Morelos","Nayarit","Nuevo León","Oaxaca","Puebla","Querétaro",
+  "Quintana Roo","San Luis Potosí","Sinaloa","Sonora","Tabasco","Tamaulipas","Tlaxcala","Veracruz",
+  "Yucatán","Zacatecas",
+];
+
+export { PHONE_CODES, CDOCS, COUNTRIES, COUNTRY_ISO, ROLE_PREFIX, genRegistrationId, MX_ESTADOS };

@@ -1435,6 +1435,7 @@ export default function App(){
         registro_id, nombre:data.nombre, pais:data.country||"", codigo_iso:iso,
         nombre_contacto:data.contacto||"", email_contacto:data.email||"",
         codigo_pais_tel:data.phoneCode||null, telefono:data.phone||null,
+        estado:data.estado||null, municipio:data.municipio||null,
       };
       let table,fila;
       if(orgType==="parroquia"){

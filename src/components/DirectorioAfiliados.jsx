@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "../supabaseClient.js";
+import { COUNTRIES, MX_ESTADOS } from "../data/countries.js";
 import { C, BTN, MODAL, OVERLAY } from "../ui.js";
 import { T } from "../i18n.js";
 
@@ -30,6 +31,11 @@ function cargarLeaflet() {
 export default function DirectorioAfiliados({ onClose }) {
   const [q, setQ] = useState("");
   const [tipo, setTipo] = useState(null);      // null | 'parroquia' | 'diocesis'
+  const [pais, setPais] = useState("");        // país seleccionado ('' = todos)
+  const [estado, setEstado] = useState("");    // estado (solo México)
+  const [municipio, setMunicipio] = useState(""); // municipio (solo México, texto)
+  const esMexico = pais === "México";
+  const selStyle = { background: C.card, color: C.ivory, border: `1px solid ${C.borderD}`, borderRadius: 10, padding: "8px 10px", fontFamily: "'Crimson Text',serif", fontSize: 13.5, outline: "none" };
   const [resultados, setResultados] = useState([]);
   const [cargando, setCargando] = useState(false);
   const [err, setErr] = useState("");
@@ -88,7 +94,11 @@ export default function DirectorioAfiliados({ onClose }) {
   const buscarTexto = async () => {
     setErr(""); setCargando(true);
     try {
-      const { data, error } = await supabase.rpc("buscar_afiliados_texto", { p_q: q, p_tipo: tipo });
+      const { data, error } = await supabase.rpc("buscar_afiliados_texto", {
+        p_q: q, p_tipo: tipo, p_pais: pais || null,
+        p_estado: esMexico ? (estado || null) : null,
+        p_municipio: esMexico ? (municipio || null) : null,
+      });
       if (error) throw error;
       setResultados(Array.isArray(data) ? data : []); setBuscado(true);
     } catch { setErr(errBusqueda()); } finally { setCargando(false); }
@@ -125,6 +135,24 @@ export default function DirectorioAfiliados({ onClose }) {
             <button onClick={buscarTexto} disabled={cargando} style={{ ...BTN("pri"), fontSize: 12, padding: "8px 14px" }}>
               🔍 {T("Buscar", "Search", "Chercher", "Suchen", "Buscar", "Cerca")}
             </button>
+          </div>
+          {/* País (y, para México, estado + municipio) */}
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+            <select value={pais} onChange={(e) => { setPais(e.target.value); setEstado(""); setMunicipio(""); }} style={selStyle}>
+              <option value="">{T("Todos los países", "All countries", "Tous les pays", "Alle Länder", "Todos os países", "Tutti i paesi")}</option>
+              {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+            {esMexico && (
+              <select value={estado} onChange={(e) => setEstado(e.target.value)} style={selStyle}>
+                <option value="">{T("Todos los estados", "All states", "Tous les états", "Alle Bundesstaaten", "Todos os estados", "Tutti gli stati")}</option>
+                {MX_ESTADOS.map((s) => <option key={s} value={s}>{s}</option>)}
+              </select>
+            )}
+            {esMexico && (
+              <input value={municipio} onChange={(e) => setMunicipio(e.target.value)}
+                placeholder={T("Municipio", "Municipality", "Municipalité", "Gemeinde", "Município", "Comune")}
+                style={{ ...selStyle, width: 160 }} />
+            )}
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
             <button onClick={buscarCerca} disabled={cargando} style={{ ...BTN("sec"), fontSize: 12 }}>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { COUNTRIES } from "../data/countries.js";
+import { COUNTRIES, MX_ESTADOS } from "../data/countries.js";
 import { FRow, Input, PhoneField } from "./fields.jsx";
 import { SoporteLink } from "./support.jsx";
 import { C, BTN, INP, MODAL, OVERLAY } from "../ui.js";
@@ -29,6 +29,19 @@ export default function RegisterDiocesisForm({onNext,onBack}){
           <Input value={d.curia} onChange={v=>set("curia",v)}
             placeholder={T("Calle, número, municipio, estado","Street, number, municipality, state","Rue, numéro, municipalité, état","Straße, Nummer, Gemeinde, Bundesland","Rua, número, município, estado","Via, numero, comune, stato")}/>
         </FRow>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+          <FRow label={T("Estado / Provincia","State / Province","État / Province","Bundesland / Provinz","Estado / Província","Stato / Provincia")}>
+            {d.country==="México"
+              ? <select value={d.estado||""} onChange={e=>set("estado",e.target.value)} style={INP}>
+                  <option value="">{T("Selecciona","Select","Sélectionnez","Wählen","Selecione","Seleziona")}</option>
+                  {MX_ESTADOS.map(s=><option key={s} value={s}>{s}</option>)}
+                </select>
+              : <Input value={d.estado} onChange={v=>set("estado",v)} placeholder={T("Estado o provincia","State or province","État ou province","Bundesland","Estado ou província","Stato o provincia")}/>}
+          </FRow>
+          <FRow label={T("Municipio / Alcaldía","Municipality / Borough","Municipalité","Gemeinde / Bezirk","Município","Comune")}>
+            <Input value={d.municipio} onChange={v=>set("municipio",v)} placeholder={T("Municipio o alcaldía","Municipality","Municipalité","Gemeinde","Município","Comune")}/>
+          </FRow>
+        </div>
         <FRow label={T("Nombre completo del Señor Obispo","Full name of the Bishop","Nom complet de Monseigneur l'Évêque","Vollständiger Name des Bischofs","Nome completo do Senhor Bispo","Nome completo di Sua Eccellenza il Vescovo")}>
           <Input value={d.obispo} onChange={v=>set("obispo",v)} placeholder="Mons. Juan Ejemplo García"/>
         </FRow>
