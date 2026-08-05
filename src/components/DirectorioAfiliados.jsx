@@ -252,9 +252,14 @@ export default function DirectorioAfiliados({ onClose }) {
   );
 
   return (
-    <div style={{ ...OVERLAY, background: "rgba(9,16,28,0.9)" }} onClick={onClose}>
+    <div style={{ ...OVERLAY, background: "rgba(9,16,28,0.9)", padding: 0 }} onClick={onClose}>
+      {/* Modal ANCLADO a la ventana (position:fixed, pinado a los 4 bordes). Así
+          nunca puede recortarse arriba/abajo por más alto que sea el contenido:
+          las áreas internas (mapa fijo, resultados) hacen scroll dentro. */}
       <div className="catePanel" onClick={(e) => e.stopPropagation()}
-        style={{ ...MODAL, maxWidth: desktop ? 1040 : 760, width: desktop ? "min(1040px,96vw)" : "min(760px,96vw)", display: "flex", flexDirection: "column", height: "min(88vh, 900px)", maxHeight: "88dvh", padding: 0, overflow: "hidden" }}>
+        style={{ ...MODAL, position: "fixed", top: desktop ? 24 : 10, bottom: desktop ? 24 : 10, left: 0, right: 0, margin: "auto",
+          width: desktop ? "min(1160px, calc(100vw - 48px))" : "min(760px, calc(100vw - 20px))",
+          maxWidth: "none", maxHeight: "none", height: "auto", display: "flex", flexDirection: "column", padding: 0, overflow: "hidden" }}>
         {/* Encabezado */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "16px 20px", borderBottom: `1px solid ${C.gold}25` }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
