@@ -218,31 +218,7 @@ export default function FilterModal({onSelect,onBack}){
           );
           const tFormacion=T("Formación","Formation","Formation","Bildung","Formação","Formazione");
           const tAfiliacion=T("Afiliación","Affiliation","Affiliation","Anbindung","Afiliação","Affiliazione");
-          const Columna=({titulo,items})=>(
-            <div style={{flex:"1 1 0",display:"flex",flexDirection:"column",gap:10,minWidth:0}}>
-              <Encabezado texto={titulo}/>
-              {items.map(OptBtn)}
-            </div>
-          );
-          return desktop?(
-            <div style={{display:"flex",gap:22,alignItems:"stretch"}}>
-              <Columna titulo={tFormacion} items={formacion}/>
-              <div style={{width:1,alignSelf:"stretch",background:`${C.gold}22`}}/>
-              <Columna titulo={tAfiliacion} items={afiliacion}/>
-            </div>
-          ):(
-            <div style={{display:"flex",flexDirection:"column",gap:10}}>
-              <Encabezado texto={tFormacion}/>
-              {formacion.map(OptBtn)}
-              <div style={{height:6}}/>
-              <Encabezado texto={tAfiliacion}/>
-              {afiliacion.map(OptBtn)}
-            </div>
-          );
-        })()}
-        {/* Volver al modal de bienvenida (esquina inferior derecha) */}
-        {onBack&&(
-          <div style={{display:"flex",justifyContent:"flex-end",marginTop:18}}>
+          const backBtn=onBack?(
             <button onClick={onBack}
               style={{background:"none",border:"none",cursor:"pointer",padding:"4px 2px",
                 color:C.gold,fontFamily:"'Cinzel',serif",fontSize:13,letterSpacing:"0.06em",
@@ -251,8 +227,34 @@ export default function FilterModal({onSelect,onBack}){
               onMouseLeave={e=>e.currentTarget.style.opacity=0.85}>
               ← {T("Volver al inicio","Back to start","Retour à l'accueil","Zurück zum Start","Voltar ao início","Torna all'inizio")}
             </button>
-          </div>
-        )}
+          ):null;
+          return desktop?(
+            <div style={{display:"flex",gap:22,alignItems:"stretch"}}>
+              <div style={{flex:"1 1 0",display:"flex",flexDirection:"column",gap:10,minWidth:0}}>
+                <Encabezado texto={tFormacion}/>
+                {formacion.map(OptBtn)}
+              </div>
+              <div style={{width:1,alignSelf:"stretch",background:`${C.gold}22`}}/>
+              {/* Columna derecha (más corta): las opciones arriba y el enlace de
+                  regreso pegado al fondo (marginTop:auto) para llenar el hueco
+                  sin alargar el modal ni forzar scroll. */}
+              <div style={{flex:"1 1 0",display:"flex",flexDirection:"column",gap:10,minWidth:0}}>
+                <Encabezado texto={tAfiliacion}/>
+                {afiliacion.map(OptBtn)}
+                {backBtn&&<div style={{marginTop:"auto",paddingTop:16,display:"flex",justifyContent:"flex-end"}}>{backBtn}</div>}
+              </div>
+            </div>
+          ):(
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              <Encabezado texto={tFormacion}/>
+              {formacion.map(OptBtn)}
+              <div style={{height:6}}/>
+              <Encabezado texto={tAfiliacion}/>
+              {afiliacion.map(OptBtn)}
+              {backBtn&&<div style={{display:"flex",justifyContent:"flex-end",marginTop:14}}>{backBtn}</div>}
+            </div>
+          );
+        })()}
       </div>
     </div>
   );
