@@ -15,11 +15,15 @@
 -- registro_id, aprobada). Idempotente y re-ejecutable.
 
 -- Columna de suspensión (nueva). El resto ya existen (las usan el directorio y el registro).
-alter table public.parroquias add column if not exists suspendida boolean not null default false;
-alter table public.diocesis  add column if not exists suspendida boolean not null default false;
+alter table public.parroquias      add column if not exists suspendida boolean not null default false;
+alter table public.diocesis        add column if not exists suspendida boolean not null default false;
+alter table public.centros_adiccion add column if not exists suspendida boolean not null default false;
+-- Los centros no pasaron por directorio-afiliados.sql: asegúrales `aprobada`.
+alter table public.centros_adiccion add column if not exists aprobada  boolean not null default false;
 -- Defensivo por si faltara (tablas base): marca de tiempo de alta.
-alter table public.parroquias add column if not exists created_at timestamptz default now();
-alter table public.diocesis  add column if not exists created_at timestamptz default now();
+alter table public.parroquias      add column if not exists created_at timestamptz default now();
+alter table public.diocesis        add column if not exists created_at timestamptz default now();
+alter table public.centros_adiccion add column if not exists created_at timestamptz default now();
 
 -- ── LISTAR (parroquias + diócesis, con su situación) ────────────────────────
 drop function if exists public.admin_afiliados_listar(text, text, text);
@@ -54,6 +58,15 @@ begin
            coalesce(d.aprobada,false), coalesce(d.suspendida,false),
            d.created_at
       from public.diocesis d
+    union all
+    -- Centros de tratamiento de adicciones (sin clero; dirección = calle + número).
+    select c.id, 'centro'::text, c.nombre, null::text,
+           c.nombre_contacto, c.email_contacto,
+           concat_ws(' ', c.codigo_pais_tel, c.telefono),
+           c.pais, c.estado, c.municipio, nullif(concat_ws(' ', c.calle, c.numero),''), c.registro_id,
+           coalesce(c.aprobada,false), coalesce(c.suspendida,false),
+           c.created_at
+      from public.centros_adiccion c
   ), calc as (
     select b.*, case when b.suspendida then 'suspendida'
                      when b.aprobada  then 'activa'
@@ -107,6 +120,14 @@ begin
       update public.diocesis set aprobada=false, suspendida=true  where id=p_id returning nombre into v_nombre;
     else
       delete from public.diocesis where id=p_id returning nombre into v_nombre;
+    end if;
+  elsif p_tipo = 'centro' then
+    if p_accion = 'aprobar' then
+      update public.centros_adiccion set aprobada=true,  suspendida=false where id=p_id returning nombre into v_nombre;
+    elsif p_accion = 'suspender' then
+      update public.centros_adiccion set aprobada=false, suspendida=true  where id=p_id returning nombre into v_nombre;
+    else
+      delete from public.centros_adiccion where id=p_id returning nombre into v_nombre;
     end if;
   else
     raise exception 'tipo invalido';

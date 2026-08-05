@@ -375,6 +375,7 @@
             <option value="">Todas</option>
             <option value="parroquia">Parroquias</option>
             <option value="diocesis">Diócesis</option>
+            <option value="centro">Centros de adicciones</option>
           </select>
         </label>
         <label>Situación:
@@ -821,7 +822,7 @@
       const t=sit==='activa'?'ACTIVA':sit==='suspendida'?'SUSPENDIDA':'PENDIENTE';
       return `<span style="margin-left:8px;font-size:10px;font-weight:700;letter-spacing:.06em;color:${c};border:1px solid ${c}66;border-radius:99px;padding:2px 9px">${t}</span>`; };
     cont.innerHTML=rows.map(r=>{
-      const icono=r.tipo==='diocesis'?'🏛️':'⛪';
+      const icono=r.tipo==='diocesis'?'🏛️':r.tipo==='centro'?'🏥':'⛪';
       let btns='';
       if(r.situacion==='pendiente') btns=`<button class="btn" onclick="window.afiAccion('${r.tipo}','${r.id}','aprobar')">Aprobar</button>`;
       else if(r.situacion==='activa') btns=`<button class="btn ghost" onclick="window.afiAccion('${r.tipo}','${r.id}','suspender')">Suspender</button>`;
