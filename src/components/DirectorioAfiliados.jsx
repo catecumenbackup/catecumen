@@ -236,7 +236,7 @@ export default function DirectorioAfiliados({ onClose }) {
   );
 
   return (
-    <div style={OVERLAY} onClick={onClose}>
+    <div style={{ ...OVERLAY, background: "rgba(9,16,28,0.9)" }} onClick={onClose}>
       <div className="catePanel" onClick={(e) => e.stopPropagation()}
         style={{ ...MODAL, maxWidth: desktop ? 1040 : 760, width: desktop ? "min(1040px,96vw)" : "min(760px,96vw)", display: "flex", flexDirection: "column", maxHeight: "90vh", padding: 0, overflow: "hidden" }}>
         {/* Encabezado */}

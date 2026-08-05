@@ -577,6 +577,8 @@ function WelcomeModal({onContinue,onLogin}){
     const h=(e)=>{ if(e.key==="ArrowRight")go(1); if(e.key==="ArrowLeft")go(-1); };
     window.addEventListener("keydown",h); return()=>window.removeEventListener("keydown",h);
   },[n]);
+  const [desktop,setDesktop]=useState(typeof window!=="undefined"&&window.innerWidth>=900);
+  useEffect(()=>{ const h=()=>setDesktop(window.innerWidth>=900); window.addEventListener("resize",h); return()=>window.removeEventListener("resize",h); },[]);
   const arrowBtn=(dir,disabled)=>(
     <button aria-label={dir<0?"Anterior":"Siguiente"} onClick={()=>go(dir)} disabled={disabled}
       style={{width:38,height:38,borderRadius:"50%",flexShrink:0,cursor:disabled?"default":"pointer",
@@ -585,82 +587,124 @@ function WelcomeModal({onContinue,onLogin}){
       {dir<0?"‹":"›"}
     </button>
   );
+  const branding=(
+    <div style={{textAlign:"center"}}>
+      <img src="/catecumenlogo.webp" alt="Logo Catecumen" width="300" height="100"
+        style={{maxWidth:230,width:"100%",height:"auto",margin:"0 auto 2px",
+          filter:"drop-shadow(0 2px 10px rgba(200,169,81,0.55)) drop-shadow(0 0 2px rgba(120,90,20,0.35))"}}/>
+      <p style={{fontStyle:"italic",color:C.ivoryM,fontSize:16,marginTop:-2,marginBottom:0,letterSpacing:"0.04em"}}>
+        {T("El Aula Global de la Catequesis","The Global Classroom of Catechesis","La Salle de Classe Mondiale de la Catéchèse","Das globale Klassenzimmer der Katechese","A Sala de Aula Global da Catequese","L'Aula Globale della Catechesi")}
+      </p>
+    </div>
+  );
+
+  const botones=(
+    <div style={{display:"flex",flexDirection:"column",gap:10}}>
+      {desktop?(
+        <>
+          <button onClick={onContinue} style={{...BTN("pri"),width:"100%",justifyContent:"center",fontSize:15}}>
+            ✝️ {T("Registrarme","Register","M'inscrire","Registrieren","Registrar-me","Registrati")}
+          </button>
+          <button onClick={onLogin} style={{width:"100%",justifyContent:"center",fontSize:14,cursor:"pointer",
+            display:"inline-flex",alignItems:"center",gap:8,fontFamily:"'Cinzel',serif",fontWeight:700,letterSpacing:"0.05em",
+            background:"rgba(70,120,190,0.18)",color:C.ivory,border:"1px solid rgba(70,120,190,0.55)",borderRadius:10,padding:"12px 14px"}}>
+            🔑 {T("Iniciar sesión","Sign in","Se connecter","Anmelden","Entrar","Accedi")}
+          </button>
+        </>
+      ):(
+        <div style={{display:"flex",gap:10}}>
+          <button onClick={onContinue} style={{...BTN("pri"),flex:"1.7 1 0",justifyContent:"center",fontSize:15}}>
+            ✝️ {T("Registrarme","Register","M'inscrire","Registrieren","Registrar-me","Registrati")}
+          </button>
+          <button onClick={onLogin} style={{flex:"1 1 0",justifyContent:"center",fontSize:14,cursor:"pointer",
+            display:"inline-flex",alignItems:"center",gap:8,fontFamily:"'Cinzel',serif",fontWeight:700,letterSpacing:"0.05em",
+            background:"rgba(70,120,190,0.18)",color:C.ivory,border:"1px solid rgba(70,120,190,0.55)",borderRadius:10,padding:"12px 14px"}}>
+            🔑 {T("Iniciar sesión","Sign in","Se connecter","Anmelden","Entrar","Accedi")}
+          </button>
+        </div>
+      )}
+      <DirectorioButton estilo={{width:"100%"}} tono="green"/>
+    </div>
+  );
+
+  const tour=(
+    <div style={{display:"flex",alignItems:"center",gap:8,width:"100%"}}>
+      <div style={{display:desktop?"block":"none"}}>{arrowBtn(-1,i===0)}</div>
+      <div onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}
+        style={{flex:1,minHeight:270,background:`linear-gradient(145deg,${C.card} 0%,rgba(200,169,81,0.06) 100%)`,
+          border:`1px solid ${C.borderD}`,borderRadius:16,padding:"16px 18px 18px",
+          display:"flex",flexDirection:"column",justifyContent:"flex-start"}}>
+        <TourScene key={cur.scene} tipo={cur.scene} video={cur.video} webm={cur.webm} poster={cur.poster}/>
+        <div style={{display:"flex",gap:9,alignItems:"flex-start",marginTop:12,textAlign:"left"}}>
+          <span style={{color:C.gold,flexShrink:0,marginTop:2,fontSize:16}}>✦</span>
+          <span style={{color:C.ivory,fontFamily:FONT_READ,fontSize:16.5,lineHeight:1.7}}>{cur.t}</span>
+        </div>
+      </div>
+      <div style={{display:desktop?"block":"none"}}>{arrowBtn(1,i===n-1)}</div>
+    </div>
+  );
+
+  const navegacion=(
+    <>
+      <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:2,margin:"10px 0 4px"}}>
+        {cards.map((_,k)=>(
+          <button key={k} aria-label={`Ir a ${k+1}`} aria-current={k===i?"true":undefined} onClick={()=>setI(k)}
+            style={{width:24,height:24,padding:0,border:"none",background:"none",cursor:"pointer",
+              display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <span style={{width:k===i?22:8,height:8,borderRadius:99,display:"block",
+              background:k===i?C.gold:`${C.gold}45`,transition:"all .25s"}}/>
+          </button>
+        ))}
+      </div>
+      <p style={{color:C.ivoryM,fontSize:12.5,marginBottom:4,textAlign:"center"}}>
+        {i+1} / {n} · <span style={{opacity:.8}}>{T("desliza o usa las flechas","swipe or use arrows","glissez ou flèches","wischen oder Pfeile","deslize ou use as setas","scorri o usa le frecce")}</span>
+      </p>
+      {i<n-1&&(
+        <button onClick={onContinue}
+          style={{background:"none",border:"none",color:C.ivoryM,fontSize:13,cursor:"pointer",
+            textDecoration:"underline",marginBottom:6,alignSelf:"center"}}>
+          {T("Omitir presentación","Skip intro","Passer l'introduction","Einführung überspringen","Pular apresentação","Salta introduzione")}
+        </button>
+      )}
+    </>
+  );
+
+  const conoceMas=(
+    <p style={{marginTop:6,color:C.goldL,textAlign:"center",fontSize:14}}>
+      {T("Conoce más en: ","Learn more at: ","En savoir plus sur : ","Mehr erfahren unter: ","Saiba mais em: ","Scopri di più su: ")}
+      <a href="https://www.catecumen.com/info" target="_blank" rel="noreferrer" style={{color:C.gold}}>www.catecumen.com/info</a>
+    </p>
+  );
+
   return(
     <div style={OVERLAY}>
-      <div style={{...MODAL, textAlign:"center", maxWidth:560, display:"flex", flexDirection:"column"}}>
-        <img src="/catecumenlogo.webp" alt="Logo Catecumen" width="300" height="100"
-          style={{maxWidth:230,width:"100%",height:"auto",margin:"0 auto 2px",
-            filter:"drop-shadow(0 2px 10px rgba(200,169,81,0.55)) drop-shadow(0 0 2px rgba(120,90,20,0.35))"}}/>
-        <p style={{fontStyle:"italic",color:C.ivoryM,fontSize:16,marginTop:-2,marginBottom:12,letterSpacing:"0.04em"}}>
-          {T("El Aula Global de la Catequesis","The Global Classroom of Catechesis","La Salle de Classe Mondiale de la Catéchèse","Das globale Klassenzimmer der Katechese","A Sala de Aula Global da Catequese","L'Aula Globale della Catechesi")}
-        </p>
-
-        {/* Tarjeta del tour */}
-        <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <div style={{display:window.innerWidth>560?"block":"none"}}>{arrowBtn(-1,i===0)}</div>
-          <div onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}
-            style={{flex:1,minHeight:270,background:`linear-gradient(145deg,${C.card} 0%,rgba(200,169,81,0.06) 100%)`,
-              border:`1px solid ${C.borderD}`,borderRadius:16,padding:"16px 18px 18px",
-              display:"flex",flexDirection:"column",justifyContent:"flex-start"}}>
-            <TourScene key={cur.scene} tipo={cur.scene}
-              video={cur.video} webm={cur.webm} poster={cur.poster}/>
-            <div style={{display:"flex",gap:9,alignItems:"flex-start",marginTop:12,textAlign:"left"}}>
-              <span style={{color:C.gold,flexShrink:0,marginTop:2,fontSize:16}}>✦</span>
-              <span style={{color:C.ivory,fontFamily:FONT_READ,fontSize:16.5,lineHeight:1.7}}>{cur.t}</span>
+      <div style={{...MODAL, padding:0, maxWidth:desktop?1080:560, width:desktop?"min(1080px,96vw)":undefined,
+        maxHeight:"92vh", display:"flex", flexDirection:"column", overflow:"hidden"}}>
+        {desktop?(
+          <div style={{display:"flex",flex:1,minHeight:0}}>
+            {/* Izquierda: panel independiente de marca + acciones */}
+            <div style={{flex:"0 0 380px",display:"flex",flexDirection:"column",justifyContent:"center",gap:22,
+              padding:"28px 26px",borderRight:`1px solid ${C.gold}22`,background:"rgba(200,169,81,0.05)"}}>
+              {branding}
+              {botones}
+            </div>
+            {/* Derecha: presentación (tour) */}
+            <div style={{flex:1,minWidth:0,display:"flex",flexDirection:"column",padding:"24px 28px",overflowY:"auto"}}>
+              {tour}
+              {navegacion}
+              {conoceMas}
             </div>
           </div>
-          <div style={{display:window.innerWidth>560?"block":"none"}}>{arrowBtn(1,i===n-1)}</div>
-        </div>
-
-        {/* Puntitos indicadores + contador. El botón mide 24x24 (objetivo
-            táctil accesible) con el punto visible pequeño dentro. */}
-        <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:2,margin:"10px 0 4px"}}>
-          {cards.map((_,k)=>(
-            <button key={k} aria-label={`Ir a ${k+1}`} aria-current={k===i?"true":undefined} onClick={()=>setI(k)}
-              style={{width:24,height:24,padding:0,border:"none",background:"none",cursor:"pointer",
-                display:"flex",alignItems:"center",justifyContent:"center"}}>
-              <span style={{width:k===i?22:8,height:8,borderRadius:99,display:"block",
-                background:k===i?C.gold:`${C.gold}45`,transition:"all .25s"}}/>
-            </button>
-          ))}
-        </div>
-        <p style={{color:C.ivoryM,fontSize:12.5,marginBottom:4}}>
-          {i+1} / {n} · <span style={{opacity:.8}}>{T("desliza o usa las flechas","swipe or use arrows","glissez ou flèches","wischen oder Pfeile","deslize ou use as setas","scorri o usa le frecce")}</span>
-        </p>
-        {i<n-1&&(
-          <button onClick={onContinue}
-            style={{background:"none",border:"none",color:C.ivoryM,fontSize:13,cursor:"pointer",
-              textDecoration:"underline",marginBottom:6}}>
-            {T("Omitir presentación","Skip intro","Passer l'introduction","Einführung überspringen","Pular apresentação","Salta introduzione")}
-          </button>
-        )}
-
-        {/* Conoce más (se mantiene visible) */}
-        <p style={{marginTop:6,color:C.goldL,textAlign:"center",fontSize:14}}>
-          {T("Conoce más en: ","Learn more at: ","En savoir plus sur : ","Mehr erfahren unter: ","Saiba mais em: ","Scopri di più su: ")}
-          <a href="https://www.catecumen.com/info" target="_blank" rel="noreferrer" style={{color:C.gold}}>www.catecumen.com/info</a>
-        </p>
-
-        {/* Botones fijos (siempre a la vista). Cada uno con contenedor de color
-            diferenciado: Registrarme (dorado) + Iniciar sesión (azul) comparten
-            fila; Buscar parroquia (verde) va aparte con su etiqueta admin. */}
-        <div style={{display:"flex",flexDirection:"column",gap:10,marginTop:14}}>
-          <div style={{display:"flex",gap:10}}>
-            <button onClick={onContinue}
-              style={{...BTN("pri"),flex:"1.7 1 0",justifyContent:"center",fontSize:15}}>
-              ✝️ {T("Registrarme","Register","M'inscrire","Registrieren","Registrar-me","Registrati")}
-            </button>
-            <button onClick={onLogin}
-              style={{flex:"1 1 0",justifyContent:"center",fontSize:14,cursor:"pointer",
-                display:"inline-flex",alignItems:"center",gap:8,
-                fontFamily:"'Cinzel',serif",fontWeight:700,letterSpacing:"0.05em",
-                background:"rgba(70,120,190,0.18)",color:C.ivory,
-                border:"1px solid rgba(70,120,190,0.55)",borderRadius:10,padding:"12px 14px"}}>
-              🔑 {T("Iniciar sesión","Sign in","Se connecter","Anmelden","Entrar","Accedi")}
-            </button>
+        ):(
+          <div style={{padding:"32px 28px",display:"flex",flexDirection:"column",overflowY:"auto"}}>
+            {branding}
+            <div style={{height:12}}/>
+            {tour}
+            {navegacion}
+            {conoceMas}
+            <div style={{marginTop:14}}>{botones}</div>
           </div>
-          <DirectorioButton estilo={{width:"100%"}} tono="green"/>
-        </div>
+        )}
       </div>
     </div>
   );
