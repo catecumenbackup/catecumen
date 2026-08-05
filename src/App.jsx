@@ -1649,7 +1649,10 @@ export default function App(){
             }}>
             {T("Cerrar sesión","Sign out","Se déconnecter","Abmelden","Sair","Esci")} ↪
           </button>
-        ):(
+        ):phase!=="welcome"?(
+          // En "welcome" NO se muestra: el modal de bienvenida ya tiene "Iniciar
+          // sesión" (evita el botón "Ingresar" duplicado). En las demás fases sí,
+          // porque ahí es el único acceso a login.
           <button onClick={()=>setPhase("login")}
             style={{
               height:40,padding:"0 16px",borderRadius:20,cursor:"pointer",
@@ -1661,7 +1664,7 @@ export default function App(){
             }}>
             🔑 {T("Ingresar","Sign in","Se connecter","Anmelden","Entrar","Accedi")}
           </button>
-        )}
+        ):null}
         <ThemeSwitcher value={themePref} onChange={setThemePref}/>
         <LanguageSwitcher/>
       </div>
