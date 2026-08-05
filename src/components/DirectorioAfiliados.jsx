@@ -40,6 +40,7 @@ export default function DirectorioAfiliados({ onClose }) {
   const [cargando, setCargando] = useState(false);
   const [err, setErr] = useState("");
   const [buscado, setBuscado] = useState(false);
+  const [sel, setSel] = useState(null); // afiliado seleccionado al hacer clic en su marcador
   const mapDiv = useRef(null), mapRef = useRef(null), layerRef = useRef(null);
 
   // Mapa: crea/actualiza marcadores cuando cambian los resultados.
@@ -57,9 +58,6 @@ export default function DirectorioAfiliados({ onClose }) {
       const pts = [];
       resultados.forEach((r) => {
         if (r.lat == null || r.lng == null) return;
-        const et = r.tipo === "diocesis"
-          ? T("Diócesis", "Diocese", "Diocèse", "Diözese", "Diocese", "Diocesi")
-          : T("Parroquia", "Parish", "Paroisse", "Pfarrei", "Paróquia", "Parrocchia");
         // Parroquia: monograma de Catecumen en círculo dorado. Diócesis: insignia
         // dorada destacada con 🏛️ (jerarquía superior → marcador más grande).
         const icon = r.tipo === "diocesis"
@@ -67,7 +65,9 @@ export default function DirectorioAfiliados({ onClose }) {
               html: '<div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#F0D68A,#9C7A28);display:flex;align-items:center;justify-content:center;font-size:21px;border:2.5px solid #F5E6B8;box-shadow:0 3px 9px rgba(0,0,0,.55)">🏛️</div>' })
           : L.divIcon({ className: "", iconSize: [32, 32], iconAnchor: [16, 16], popupAnchor: [0, -15],
               html: '<div style="width:32px;height:32px;border-radius:50%;overflow:hidden;border:2px solid #C8A951;box-shadow:0 2px 6px rgba(0,0,0,.5);background:#0B1526"><img src="/icon-192.png" alt="" style="width:100%;height:100%;object-fit:cover"></div>' });
-        lay.addLayer(L.marker([r.lat, r.lng], { icon }).bindPopup(`<b>${r.nombre}</b><br>${et}<br>${r.direccion || ""}`));
+        const mk = L.marker([r.lat, r.lng], { icon });
+        mk.on("click", () => setSel(r)); // muestra los datos en el panel propio (React)
+        lay.addLayer(mk);
         pts.push([r.lat, r.lng]);
       });
       if (pts.length) mapRef.current.fitBounds(pts, { padding: [30, 30], maxZoom: 12 });
@@ -79,7 +79,7 @@ export default function DirectorioAfiliados({ onClose }) {
   useEffect(() => () => { if (mapRef.current) { mapRef.current.remove(); mapRef.current = null; } }, []);
 
   const buscarCerca = () => {
-    setErr("");
+    setErr(""); setSel(null);
     if (!navigator.geolocation) {
       setErr(T("Tu navegador no permite geolocalización. Busca por nombre o ciudad.", "Your browser doesn't support geolocation. Search by name or city.", "Votre navigateur ne prend pas en charge la géolocalisation. Recherchez par nom ou ville.", "Ihr Browser unterstützt keine Geolokalisierung. Suchen Sie nach Name oder Stadt.", "Seu navegador não suporta geolocalização. Busque por nome ou cidade.", "Il tuo browser non supporta la geolocalizzazione. Cerca per nome o città."));
       return;
@@ -99,7 +99,7 @@ export default function DirectorioAfiliados({ onClose }) {
   };
 
   const buscar = async () => {
-    setErr(""); setCargando(true);
+    setErr(""); setSel(null); setCargando(true);
     try {
       const { data, error } = await supabase.rpc("buscar_afiliados_texto", {
         p_q: q, p_tipo: tipo, p_pais: pais || null,
@@ -180,6 +180,28 @@ export default function DirectorioAfiliados({ onClose }) {
 
         {/* Mapa */}
         <div ref={mapDiv} style={{ height: 240, background: C.card, flexShrink: 0 }} />
+
+        {/* Panel de información del marcador seleccionado */}
+        {sel && (
+          <div style={{ padding: "10px 20px", borderBottom: `1px solid ${C.gold}30`, background: "rgba(200,169,81,0.09)", flexShrink: 0 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+              <span style={{ color: C.gold, fontFamily: "'Cinzel',serif", fontSize: 14.5 }}>
+                {sel.tipo === "diocesis" ? "🏛️" : "⛪"} {sel.nombre}
+              </span>
+              <button onClick={() => setSel(null)} aria-label="cerrar"
+                style={{ background: "none", border: "none", color: C.ivoryM, cursor: "pointer", fontSize: 16, lineHeight: 1, flexShrink: 0 }}>✕</button>
+            </div>
+            {sel.responsable && <p style={{ color: C.ivory, fontFamily: "'Crimson Text',serif", fontSize: 13.5, margin: "3px 0 0" }}>{sel.responsable}</p>}
+            <p style={{ color: C.ivoryM, fontSize: 12.5, margin: "3px 0 0" }}>
+              {[sel.direccion, sel.pais].filter(Boolean).join(" · ")}
+              {sel.distancia_km != null ? ` · ${sel.distancia_km} km` : ""}
+            </p>
+            <div style={{ display: "flex", gap: 14, marginTop: 6, flexWrap: "wrap" }}>
+              {sel.email && <a href={`mailto:${sel.email}`} style={{ color: C.gold, fontSize: 12.5 }}>✉️ {sel.email}</a>}
+              {sel.telefono && <a href={`tel:${String(sel.telefono).replace(/\s/g, "")}`} style={{ color: C.gold, fontSize: 12.5 }}>📞 {sel.telefono}</a>}
+            </div>
+          </div>
+        )}
 
         {/* Resultados */}
         <div style={{ flex: 1, overflowY: "auto", padding: "12px 20px" }}>
