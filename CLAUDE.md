@@ -261,7 +261,8 @@ Pendiente/opcional: respaldo en **GitHub privado** (`git remote add origin ...` 
 - **EncuadreModal:** presentación rica (parsea el body: párrafo guía + ítems numerados con insignia dorada + sublista de módulos como sub-tarjetas + cierre como callout), **numeración continua** para secciones con emoji (organizaciones), tipografía **Arial**, texto **justificado**. Genérico, sin tocar `data/encuadres.js`.
 - **Encuadres — texto:** "En el Catecumen no buscamos/pretendemos sustituir…" → acrónimo institucional (es `CICADI`; en/fr/de/pt/it `ICDC`) en parroquia/centro/otro.
 - **Bienvenida (tour):** eliminada la diapositiva 2 (`institucion`) del `cardsBase`; tarjeta `sacerdotes` → "En colaboración con diócesis, parroquias e instituciones católicas de todo el mundo"; tarjeta final `muestra` → nuevo texto + **video** (`public/tour/muestra.{mp4,webm,webp}`, `muestra` añadido a `CON_VIDEO`). **Cuidado:** si la tabla `tour_tarjetas` tiene filas, `obtener_tour` **reemplaza** las tarjetas del código (los cambios en `cardsBase` solo aplican si esa tabla está vacía; si no, editar desde el panel → Tour).
-- **SW `CACHE_VERSION` = `catecumen-v82`** al cierre de la sesión (subió en cada release).
+- **Página `/info` — tercer perfil.** En la sección "Sobre los Fundadores" de `info/index.html` se añadió una tercera `tarjeta` (misma estructura que Nelly/Jorge, icono ⛰️, 6 idiomas): **Pbro. Mtro. Laureano López Saloma — Asesor Eclesiástico (cargo honorario)**. Requiere `npm run build` + subir `dist/info/`.
+- **SW `CACHE_VERSION` = `catecumen-v83`** al cierre de la sesión (subió en cada release).
 
 ## Cambios recientes (julio 2026)
 
