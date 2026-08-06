@@ -262,7 +262,8 @@ Pendiente/opcional: respaldo en **GitHub privado** (`git remote add origin ...` 
 - **Encuadres — texto:** "En el Catecumen no buscamos/pretendemos sustituir…" → acrónimo institucional (es `CICADI`; en/fr/de/pt/it `ICDC`) en parroquia/centro/otro.
 - **Bienvenida (tour):** eliminada la diapositiva 2 (`institucion`) del `cardsBase`; tarjeta `sacerdotes` → "En colaboración con diócesis, parroquias e instituciones católicas de todo el mundo"; tarjeta final `muestra` → nuevo texto + **video** (`public/tour/muestra.{mp4,webm,webp}`, `muestra` añadido a `CON_VIDEO`). **Cuidado:** si la tabla `tour_tarjetas` tiene filas, `obtener_tour` **reemplaza** las tarjetas del código (los cambios en `cardsBase` solo aplican si esa tabla está vacía; si no, editar desde el panel → Tour).
 - **Página `/info` — tercer perfil.** En la sección "Sobre los Fundadores" de `info/index.html` se añadió una tercera `tarjeta` (misma estructura que Nelly/Jorge, icono ⛰️, 6 idiomas): **Pbro. Mtro. Laureano López Saloma — Asesor Eclesiástico (cargo honorario)**. Requiere `npm run build` + subir `dist/info/`.
-- **SW `CACHE_VERSION` = `catecumen-v83`** al cierre de la sesión (subió en cada release).
+- **Página `/info` — ancho + grid de perfiles.** `.wrap` pasó de `max-width:880px` a `1120px` (mejor lectura y aprovecha el escritorio); `.h2sub` 680→820. Los tres perfiles (Nelly, Jorge, Laureano) van al mismo nivel con la clase `grid-3` (`grid-template-columns:repeat(auto-fit,minmax(300px,1fr))`) — solo esa grid, sin tocar el `.grid` global de 2 columnas de las demás secciones.
+- **SW `CACHE_VERSION` = `catecumen-v84`** al cierre de la sesión (subió en cada release).
 
 ## Cambios recientes (julio 2026)
 
