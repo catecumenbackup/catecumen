@@ -161,31 +161,30 @@ export default function DirectorioAfiliados({ onClose }) {
   // mapa va grande a la izquierda y controles + info + resultados a la derecha.
   const controles = (
     <div style={{ padding: "9px 16px", borderBottom: `1px solid ${C.gold}18`, display: "flex", flexDirection: "column", gap: 7 }}>
-      <div style={{ display: "flex", gap: 8 }}>
+      {/* Buscador por palabra + país + Buscar en una sola línea */}
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
         <input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") buscar(); }}
           placeholder={T("Nombre, ciudad o país…", "Name, city or country…", "Nom, ville ou pays…", "Name, Stadt oder Land…", "Nome, cidade ou país…", "Nome, città o paese…")}
-          style={{ flex: 1, minWidth: 0, background: C.card, color: C.ivory, border: `1px solid ${C.borderD}`, borderRadius: 10, padding: "8px 12px", fontFamily: "'Crimson Text',serif", fontSize: 14.5, outline: "none" }} />
+          style={{ flex: "1 1 130px", minWidth: 110, background: C.card, color: C.ivory, border: `1px solid ${C.borderD}`, borderRadius: 10, padding: "8px 12px", fontFamily: "'Crimson Text',serif", fontSize: 14.5, outline: "none" }} />
+        <select value={pais} onChange={(e) => { setPais(e.target.value); setEstado(""); setMunicipio(""); }} style={{ ...selStyle, flex: "0 1 auto" }}>
+          <option value="">{T("Todos los países", "All countries", "Tous les pays", "Alle Länder", "Todos os países", "Tutti i paesi")}</option>
+          {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
+        </select>
         <button onClick={buscar} disabled={cargando} style={{ ...BTN("pri"), fontSize: 12, padding: "8px 14px" }}>
           🔍 {T("Buscar", "Search", "Chercher", "Suchen", "Buscar", "Cerca")}
         </button>
       </div>
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-        <select value={pais} onChange={(e) => { setPais(e.target.value); setEstado(""); setMunicipio(""); }} style={selStyle}>
-          <option value="">{T("Todos los países", "All countries", "Tous les pays", "Alle Länder", "Todos os países", "Tutti i paesi")}</option>
-          {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
-        </select>
-        {esMexico && (
+      {esMexico && (
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
           <select value={estado} onChange={(e) => setEstado(e.target.value)} style={selStyle}>
             <option value="">{T("Todos los estados", "All states", "Tous les états", "Alle Bundesstaaten", "Todos os estados", "Tutti gli stati")}</option>
             {MX_ESTADOS.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
-        )}
-        {esMexico && (
           <input value={municipio} onChange={(e) => setMunicipio(e.target.value)}
             placeholder={T("Municipio", "Municipality", "Municipalité", "Gemeinde", "Município", "Comune")}
             style={{ ...selStyle, width: 160 }} />
-        )}
-      </div>
+        </div>
+      )}
       {/* "Cerca de mí" + filtros en una sola fila para ahorrar altura */}
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
         <button onClick={buscarCerca} disabled={cargando}
