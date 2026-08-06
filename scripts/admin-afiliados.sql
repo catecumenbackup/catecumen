@@ -41,6 +41,8 @@ alter table public.organizaciones_otro enable row level security;
 drop policy if exists org_otro_insert on public.organizaciones_otro;
 create policy org_otro_insert on public.organizaciones_otro
   for insert to anon, authenticated with check (true);
+-- Privilegio a nivel de tabla (la política RLS no basta si el rol no tiene GRANT).
+grant insert on public.organizaciones_otro to anon, authenticated;
 
 -- Columna de suspensión (nueva). El resto ya existen (las usan el directorio y el registro).
 alter table public.parroquias      add column if not exists suspendida boolean not null default false;
