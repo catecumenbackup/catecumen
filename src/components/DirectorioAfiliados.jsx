@@ -46,6 +46,9 @@ export default function DirectorioAfiliados({ onClose }) {
   // aceptando una posición reciente en caché (maximumAge) para respuesta casi
   // inmediata en vez de forzar un fix nuevo (que tarda varios segundos).
   const GEO_OPTS = { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 };
+  // Identificador de la última búsqueda: evita que una respuesta que llega tarde
+  // (p. ej. el "todas" inicial) sobrescriba a una más reciente (las "cercanas").
+  const reqRef = useRef(0);
   const [desktop, setDesktop] = useState(typeof window !== "undefined" && window.innerWidth >= 900);
   const mapDiv = useRef(null), mapRef = useRef(null), layerRef = useRef(null);
 
@@ -103,12 +106,15 @@ export default function DirectorioAfiliados({ onClose }) {
     }
     setCargando(true);
     navigator.geolocation.getCurrentPosition(async (pos) => {
+      const id = ++reqRef.current;
       try {
         const { data, error } = await supabase.rpc("buscar_afiliados_cercanos",
           { p_lat: pos.coords.latitude, p_lng: pos.coords.longitude, p_tipo: tipo });
+        if (id !== reqRef.current) return;
         if (error) throw error;
         setResultados(Array.isArray(data) ? data : []); setBuscado(true);
-      } catch { setErr(errBusqueda()); } finally { setCargando(false); }
+      } catch { if (id === reqRef.current) setErr(errBusqueda()); }
+      finally { setCargando(false); }
     }, () => {
       setCargando(false);
       setErr(T("No pudimos obtener tu ubicación. Búscala por nombre o ciudad.", "We couldn't get your location. Search by name or city.", "Nous n'avons pas pu obtenir votre position. Recherchez par nom ou ville.", "Wir konnten Ihren Standort nicht ermitteln. Suchen Sie nach Name oder Stadt.", "Não conseguimos obter sua localização. Busque por nome ou cidade.", "Non è stato possibile ottenere la tua posizione. Cerca per nome o città."));
@@ -117,15 +123,18 @@ export default function DirectorioAfiliados({ onClose }) {
 
   const buscar = async () => {
     setErr(""); setSel(null); setCargando(true);
+    const id = ++reqRef.current;
     try {
       const { data, error } = await supabase.rpc("buscar_afiliados_texto", {
         p_q: q, p_tipo: tipo, p_pais: pais || null,
         p_estado: esMexico ? (estado || null) : null,
         p_municipio: esMexico ? (municipio || null) : null,
       });
+      if (id !== reqRef.current) return; // llegó tarde: hay una búsqueda más reciente
       if (error) throw error;
       setResultados(Array.isArray(data) ? data : []); setBuscado(true);
-    } catch { setErr(errBusqueda()); } finally { setCargando(false); }
+    } catch { if (id === reqRef.current) setErr(errBusqueda()); }
+    finally { setCargando(false); }
   };
   const errBusqueda = () => T("No se pudo completar la búsqueda. Intenta de nuevo.", "The search could not be completed. Please try again.", "La recherche n'a pas pu aboutir. Réessayez.", "Die Suche konnte nicht abgeschlossen werden. Bitte erneut versuchen.", "Não foi possível concluir a busca. Tente novamente.", "Impossibile completare la ricerca. Riprova.");
 
@@ -140,10 +149,13 @@ export default function DirectorioAfiliados({ onClose }) {
     let vivo = true;
     setLocalizando(true);
     navigator.geolocation.getCurrentPosition(async (pos) => {
+      // Toma el id DESPUÉS de obtener la posición, así gana a la búsqueda "todas"
+      // inicial aunque ésta resuelva un instante después.
+      const id = ++reqRef.current;
       try {
         const { data, error } = await supabase.rpc("buscar_afiliados_cercanos",
           { p_lat: pos.coords.latitude, p_lng: pos.coords.longitude, p_tipo: tipo });
-        if (!vivo || error) return;
+        if (!vivo || id !== reqRef.current || error) return;
         setResultados(Array.isArray(data) ? data : []); setBuscado(true); setSel(null);
       } catch { /* silencioso */ }
       finally { if (vivo) setLocalizando(false); }
