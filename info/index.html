@@ -206,7 +206,11 @@
      se invierten a tonos oscuros pensados para fondos claros). */
   .tarjeta h3{font-family:'Cinzel',serif;color:#E5C97A;font-size:14px;letter-spacing:.05em;margin-bottom:6px}
   .tarjeta p{color:#EAEAEA;font-size:14.5px}
-  .tarjeta.beca{border-color:rgba(200,169,81,.35);background:linear-gradient(145deg,rgba(200,169,81,.07) 0%,rgba(14,27,46,0.95) 100%)}
+  /* Fondo OSCURO con matiz dorado (opaco): antes arrancaba en un dorado casi
+     transparente que, sobre el fondo claro de la página, dejaba el título dorado
+     ilegible. Ahora contrasta igual que las demás tarjetas. */
+  .tarjeta.beca{border-color:rgba(200,169,81,.5);background:linear-gradient(145deg,rgba(52,43,19,0.94) 0%,rgba(14,27,46,0.96) 100%)}
+  .tarjeta.beca h3{color:#F0D68A}
   .tarjeta .libre{color:var(--green);font-family:'Cinzel',serif;font-size:11px;letter-spacing:.08em;display:block;margin-top:8px}
 
   /* Estilos específicos para las listas en la reseña de fundadores */
