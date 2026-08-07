@@ -123,6 +123,18 @@
     display: inline-block;
     vertical-align: middle;
   }
+  /* En tema claro el emblema (PNG blanco embebido) desaparece sobre el fondo
+     cremita. Lo montamos sobre un medallón oscuro con borde dorado para darle
+     contraste; en tema oscuro no cambia (ya se ve sobre el fondo navy). */
+  [data-theme="light"] .crest{
+    width: fit-content;
+    margin: 0 auto 20px;
+    padding: 14px 28px;
+    border-radius: 20px;
+    border: 1px solid rgba(200,169,81,.55);
+    background: radial-gradient(circle at 50% 35%, #17304f 0%, #0a1421 100%);
+    box-shadow: 0 4px 18px rgba(0,0,0,.22);
+  }
   
   .eyebrow{
     font-family:'Cinzel',serif;font-size:20px;letter-spacing:.3em;text-transform:uppercase;
