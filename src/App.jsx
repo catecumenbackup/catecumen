@@ -390,7 +390,7 @@ function WelcomeImageCarousel({images}){
 function TourScene({tipo,video,webm,poster}){
   const [videoFallo,setVideoFallo]=useState(false);
   // Escenas con video disponible en /tour/<escena>.(mp4|webm)
-  const CON_VIDEO=["bienvenida","institucion","biblia","sacerdotes","ia","documentos","avatares","comunidad","muestra"];
+  const CON_VIDEO=["bienvenida","biblia","sacerdotes","ia","documentos","avatares","comunidad","muestra"];
   // Prioridad: lo que venga de la BD (editable desde el panel) y, si no hay,
   // la convención /tour/<escena>.(webm|mp4) de siempre.
   const srcWebm = webm || (CON_VIDEO.includes(tipo) ? `/tour/${tipo}.webm` : null);
