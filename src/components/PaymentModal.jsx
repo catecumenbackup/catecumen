@@ -72,6 +72,8 @@ async function crearCuentaUsuario(formData,userType,selectedSacs,opts){
     moneda_pago:pb?.cur||null,
     // Preinscripción (sin pago): queda 'preinscrito' hasta que abra la plataforma.
     estado_inscripcion:opts?.preinscrito?"preinscrito":"activo",
+    // Precio previsto (para cobrar la conversión al abrir sin recalcular).
+    importe_previsto:opts?.preinscrito?(pb||null):null,
   };
   const {error:insErr}=await supabase.from("usuarios").insert(fila);
   if(insErr){
@@ -81,7 +83,7 @@ async function crearCuentaUsuario(formData,userType,selectedSacs,opts){
   return {uid,registroId};
 }
 
-export default function PaymentModal({formData,userType,selectedSacs,onSuccess,onBack,preinscripcion}){
+export default function PaymentModal({formData,userType,selectedSacs,onSuccess,onBack,preinscripcion,conversion,usuarioId}){
   const [loading,setLoading]=useState(false);
   const [payingMethod,setPayingMethod]=useState(null); // "online" | "voucher"
   const [err,setErr]=useState("");
@@ -135,6 +137,8 @@ export default function PaymentModal({formData,userType,selectedSacs,onSuccess,o
         descuento_pct:pb.becaDesc||0,
         metodo:metodo||"online",
         retorno:window.location.origin,
+        // Conversión de preinscrito: activa la cuenta existente, no crea otra.
+        conversion:!!conversion, usuario_id:usuarioId||null,
       }});
       if(error||!data?.url){
         // supabase.functions.invoke no expone el mensaje personalizado del

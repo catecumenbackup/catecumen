@@ -1022,6 +1022,7 @@ export default function App(){
   // Modo preinscripción (ajuste global editable desde el panel). Si `activa`,
   // el flujo de alumno termina en "reserva sin costo" en vez de pago.
   const [preinsc,setPreinsc]=useState({activa:false,mensaje:null});
+  const [conversion,setConversion]=useState(null); // {usuarioId} al convertir un preinscrito
   useEffect(()=>{(async()=>{
     try{ const {data}=await supabase.rpc("obtener_ajuste",{p_clave:"preinscripcion"});
       if(data) setPreinsc({activa:!!data.activa, mensaje:data.mensaje||null});
@@ -1348,14 +1349,34 @@ export default function App(){
         setPhase("welcome");
         return;
       }
-      // Usuario PREINSCRITO: aún no tiene acceso al curso; ve la pantalla de
-      // espera hasta que se abra la plataforma (conversión de pago = Fase 2).
+      // Usuario PREINSCRITO. Si el modo preinscripción sigue activo → pantalla de
+      // espera. Si ya se abrió la plataforma → conversión: gratuita (beca 100%)
+      // se activa sola; de pago va a PaymentModal en modo conversión.
       if((u.estado_inscripcion||"activo")==="preinscrito"){
+        let activaModo=preinsc.activa;
+        try{ const {data:aj}=await supabase.rpc("obtener_ajuste",{p_clave:"preinscripcion"}); if(aj) activaModo=!!aj.activa; }catch(e){ console.error("obtener_ajuste(login):",e); }
         setUserType(u.tipo_usuario||"catecumeno");
-        setFormData(p=>({...p, nombre:u.nombre||"", email:u.email||authUser?.email||""}));
-        setPhase("preinscritoEspera");
-        return;
+        setSelectedSacs(Array.isArray(u.sacramentos_elegidos)?u.sacramentos_elegidos:[]);
+        if(activaModo){
+          setFormData(p=>({...p, nombre:u.nombre||"", email:u.email||authUser?.email||""}));
+          setPhase("preinscritoEspera");
+          return;
+        }
+        if(!u.formacion_gratuita){
+          // De pago → completar inscripción con el precio previsto guardado.
+          setFormData(p=>({...p, nombre:u.nombre||"", apellido:u.apellido||"",
+            email:u.email||authUser?.email||"", country:u.pais_residencia||"",
+            priceBreakdown:u.importe_previsto||null,
+            estaInternado:!!u.esta_internado, esPacienteRehabilitacion:!!u.es_paciente_rehab}));
+          setConversion({usuarioId:u.id});
+          setPhase("payment");
+          return;
+        }
+        // Gratuita (beca 100%): activarse y continuar como alumno activo.
+        try{ await supabase.rpc("activar_mi_preinscripcion"); }catch(e){ console.error("activar_mi_preinscripcion:",e); }
+        // (sin return: cae al flujo normal de carga del curso)
       }
+      setConversion(null);
       const uType=u.tipo_usuario||"catecumeno";
       const sacs=Array.isArray(u.sacramentos_elegidos)?u.sacramentos_elegidos:[];
       let age="";
@@ -1907,8 +1928,10 @@ export default function App(){
       {phase==="payment"&&!isOrgFlow&&(
         <Suspense fallback={<div style={OVERLAY}><div style={{color:C.gold,fontFamily:"'Cinzel',serif"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div></div>}>
           <PaymentModal formData={formData} userType={userType} selectedSacs={selectedSacs}
-            preinscripcion={preinsc.activa}
-            onSuccess={handlePaymentSuccess} onBack={()=>setPhase("password")}/>
+            preinscripcion={preinsc.activa&&!conversion}
+            conversion={!!conversion} usuarioId={conversion?.usuarioId}
+            onSuccess={handlePaymentSuccess}
+            onBack={conversion?(async()=>{ try{await supabase.auth.signOut();}catch(e){console.error(e);} setConversion(null); setPhase("welcome"); }):()=>setPhase("password")}/>
         </Suspense>
       )}
 

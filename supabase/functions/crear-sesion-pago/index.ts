@@ -69,11 +69,16 @@ serve(async (req: Request) => {
     const {
       formData, userType, selectedSacs,
       importe, moneda, descuento_pct, retorno, metodo,
+      // Preinscripción Fase 2: si `conversion` es true, la cuenta YA existe
+      // (un preinscrito que ahora paga). No se crea cuenta ni se pide contraseña,
+      // y al confirmar el pago se ACTIVA la cuenta `usuario_id` (no se crea otra).
+      conversion, usuario_id,
     } = await req.json();
 
     // ── Validación de payload ──────────────────────────────────────────────
     if (!formData?.email)    throw new Error("formData.email requerido");
-    if (!formData?.password) throw new Error("formData.password requerido");
+    if (!conversion && !formData?.password) throw new Error("formData.password requerido");
+    if (conversion && !usuario_id) throw new Error("usuario_id requerido para conversión");
     if (!userType)            throw new Error("userType requerido");
     if (!moneda)              throw new Error("moneda requerida");
     if (!retorno)             throw new Error("retorno requerido");
@@ -108,17 +113,21 @@ serve(async (req: Request) => {
 
     // ── Verificación de correo duplicado (autoridad real — el chequeo del
     //    frontend en PasswordModal es solo un aviso temprano, no la garantía) ──
-    const { count, error: countErr } = await supabase
-      .from("usuarios")
-      .select("id", { count: "exact", head: true })
-      .ilike("email", formData.email);
-    if (countErr) console.error("[crear-sesion-pago] check email:", countErr);
-    if ((count ?? 0) > 0) {
-      return new Response(
-        JSON.stringify({ error:
-          "Ya existe una cuenta con este correo. Inicia sesión o recupera tu contraseña." }),
-        { status: 409, headers: { ...CORS, "Content-Type": "application/json" } },
-      );
+    // En conversión NO se valida el duplicado: la cuenta del preinscrito ya
+    // existe en `usuarios` — precisamente esa es la que vamos a activar.
+    if (!conversion) {
+      const { count, error: countErr } = await supabase
+        .from("usuarios")
+        .select("id", { count: "exact", head: true })
+        .ilike("email", formData.email);
+      if (countErr) console.error("[crear-sesion-pago] check email:", countErr);
+      if ((count ?? 0) > 0) {
+        return new Response(
+          JSON.stringify({ error:
+            "Ya existe una cuenta con este correo. Inicia sesión o recupera tu contraseña." }),
+          { status: 409, headers: { ...CORS, "Content-Type": "application/json" } },
+        );
+      }
     }
 
     // ── Guardar el registro como PENDIENTE (aún no es una cuenta real) ────
@@ -134,6 +143,8 @@ serve(async (req: Request) => {
         payload: {
           formData, userType, selectedSacs: selectedSacs || [],
           importe: monto, moneda: moneda, descuento_pct: descuento_pct || 0,
+          // Fase 2: marca de conversión de preinscrito (activar cuenta existente).
+          conversion: !!conversion, usuario_id: usuario_id || null,
         },
       })
       .select("id")

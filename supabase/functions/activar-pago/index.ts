@@ -107,8 +107,34 @@ async function activarRegistro(session: Stripe.Checkout.Session, pendienteId: st
 
   const payload = pendiente.payload as {
     formData: Record<string, any>; userType: string; selectedSacs: string[];
+    conversion?: boolean; usuario_id?: string;
   };
   const { formData, userType, selectedSacs } = payload;
+
+  // ── Fase 2 — CONVERSIÓN de preinscrito: la cuenta YA existe; solo la
+  //    activamos (no se crea otra). Idempotente por el filtro estado. ──────────
+  if (payload.conversion && payload.usuario_id) {
+    const currency = (session.currency || "").toUpperCase();
+    const amountTotal = session.amount_total ?? 0;
+    const importePagado = CERO_DECIMALES.has(currency) ? amountTotal : amountTotal / 100;
+    const { error: updErr } = await supabase.from("usuarios").update({
+      estado_inscripcion: "activo",
+      pago_realizado: true,
+      importe_pagado: importePagado,
+      moneda_pago: currency,
+      stripe_customer_id: (session.customer as string) || null,
+      stripe_payment_id: (session.payment_intent as string) || null,
+    }).eq("id", payload.usuario_id).eq("estado_inscripcion", "preinscrito");
+    if (updErr) {
+      console.error("[activar-pago] Error activando preinscrito:", updErr);
+      return { ok: false, error: updErr.message };
+    }
+    await supabase.from("registros_pendientes").delete().eq("id", pendienteId);
+    await enviarCorreo(formData?.email || "", "✅ Tu pago fue confirmado — Catecumen",
+      emailConfirmado(formData?.nombre || "", null));
+    console.log(`[activar-pago] Preinscrito activado: usuario=${payload.usuario_id} monto=${importePagado} ${currency}`);
+    return { ok: true, uid: payload.usuario_id, note: "preinscrito activado" };
+  }
 
   const { data: authUser, error: authErr } = await supabase.auth.admin.createUser({
     email: formData.email, password: formData.password, email_confirm: true,

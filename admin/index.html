@@ -913,10 +913,16 @@
     if(error){ cont.innerHTML="<p style='color:#F87171'>Error: "+esc(error.message)+"</p>"; return; }
     PRE_ROWS=data||[]; $("pre-count").textContent=PRE_ROWS.length;
     if(!PRE_ROWS.length){ cont.innerHTML="<p style='color:var(--ivory-m)'>Sin preinscritos.</p>"; return; }
-    cont.innerHTML="<table><thead><tr><th>Nombre</th><th>Correo</th><th>Perfil</th><th>País</th><th>Registro</th><th>Fecha</th></tr></thead><tbody>"+
-      PRE_ROWS.map(r=>`<tr><td>${esc(((r.nombre||'')+' '+(r.apellido||'')).trim())}</td><td>${esc(r.email||'')}</td><td>${esc(r.tipo_usuario||'')}</td><td>${esc(r.pais_residencia||'')}</td><td>${esc(r.registro_id||'')}</td><td>${r.creado?new Date(r.creado).toLocaleDateString():''}</td></tr>`).join("")+
+    cont.innerHTML="<table><thead><tr><th>Nombre</th><th>Correo</th><th>Perfil</th><th>País</th><th>Registro</th><th>Fecha</th><th>Acción</th></tr></thead><tbody>"+
+      PRE_ROWS.map(r=>`<tr><td>${esc(((r.nombre||'')+' '+(r.apellido||'')).trim())}</td><td>${esc(r.email||'')}</td><td>${esc(r.tipo_usuario||'')}</td><td>${esc(r.pais_residencia||'')}</td><td>${esc(r.registro_id||'')}</td><td>${r.creado?new Date(r.creado).toLocaleDateString():''}</td><td><button class="btn ghost" onclick="window.preActivar('${r.id}')">Activar</button></td></tr>`).join("")+
       "</tbody></table>";
   }
+  window.preActivar=async(id)=>{
+    if(!confirm("¿Activar a este preinscrito (acceso completo, sin cobro)? Úsalo para becas o cortesías.")) return;
+    const {error}=await sb.rpc("admin_activar_preinscrito",{p_id:id});
+    if(error){ alert("Error: "+error.message); return; }
+    await cargarPreinscritos();
+  };
   window.preCSV=()=>{
     if(!PRE_ROWS.length){ alert("Sin datos para exportar."); return; }
     const cols=["nombre","apellido","email","tipo_usuario","pais_residencia","registro_id","codigo_pais_tel","telefono","creado"];

@@ -129,8 +129,32 @@ async function activarRegistro(session: Stripe.Checkout.Session, pendienteId: st
 
   const payload = pendiente.payload as {
     formData: Record<string, any>; userType: string; selectedSacs: string[];
+    conversion?: boolean; usuario_id?: string;
   };
   const { formData, userType, selectedSacs } = payload;
+
+  // ── Fase 2 — CONVERSIÓN de preinscrito: la cuenta YA existe; solo la
+  //    activamos (no se crea otra). Idempotente por el filtro estado. ──────────
+  if (payload.conversion && payload.usuario_id) {
+    const cur2 = (session.currency || "").toUpperCase();
+    const amt2 = session.amount_total ?? 0;
+    const pagado2 = CERO_DECIMALES.has(cur2) ? amt2 : amt2 / 100;
+    const { error: updErr } = await supabase.from("usuarios").update({
+      estado_inscripcion: "activo",
+      pago_realizado: true,
+      importe_pagado: pagado2,
+      moneda_pago: cur2,
+      stripe_customer_id: (session.customer as string) || null,
+      stripe_payment_id: (session.payment_intent as string) || null,
+    }).eq("id", payload.usuario_id).eq("estado_inscripcion", "preinscrito");
+    if (updErr) {
+      console.error("[stripe-webhook] Error activando preinscrito:", updErr);
+      return { ok: false, status: 500, error: updErr.message };
+    }
+    await supabase.from("registros_pendientes").delete().eq("id", pendienteId);
+    console.log(`[stripe-webhook] Preinscrito activado: usuario=${payload.usuario_id} monto=${pagado2} ${cur2}`);
+    return { ok: true, note: "preinscrito activado" };
+  }
 
   // Cuenta en Supabase Auth (email ya confirmado, sin depender de la
   // configuración global de "Confirm email")
