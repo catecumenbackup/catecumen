@@ -45,6 +45,9 @@ grant execute on function public.admin_guardar_ajuste(text, jsonb) to authentica
 -- Los usuarios existentes quedan como 'activo' (no se ven afectados).
 -- Los nuevos preinscritos entran como 'preinscrito'.
 alter table public.usuarios add column if not exists estado_inscripcion text not null default 'activo';
+-- Precio previsto guardado al preinscribirse (lo usa la conversión de Fase 2).
+-- Se añade aquí para que el INSERT de la preinscripción no falle antes de Fase 2.
+alter table public.usuarios add column if not exists importe_previsto jsonb;
 -- Defensivo: marca de tiempo de alta (para ordenar la lista de preinscritos).
 alter table public.usuarios add column if not exists created_at timestamptz default now();
 
