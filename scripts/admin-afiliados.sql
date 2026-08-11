@@ -182,8 +182,9 @@ begin
 
   if v_nombre is null then raise exception 'afiliado no encontrado'; end if;
 
+  -- admin_log.detalle es jsonb.
   insert into public.admin_log (admin_id, admin_email, accion, entidad, entidad_id, detalle)
-  values (auth.uid(), v_email, 'afiliado_'||p_accion, p_tipo, p_id::text, v_nombre);
+  values (auth.uid(), v_email, 'afiliado_'||p_accion, p_tipo, p_id::text, to_jsonb(v_nombre));
 
   return v_nombre;
 end;

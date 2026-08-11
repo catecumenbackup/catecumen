@@ -35,8 +35,9 @@ begin
   insert into public.ajustes(clave, valor, updated_at)
   values (p_clave, p_valor, now())
   on conflict (clave) do update set valor = excluded.valor, updated_at = now();
+  -- admin_log.detalle es jsonb → guardamos el valor del ajuste tal cual.
   insert into public.admin_log(admin_id, admin_email, accion, entidad, entidad_id, detalle)
-  values (auth.uid(), v_email, 'ajuste_guardar', 'ajustes', p_clave, left(p_valor::text, 500));
+  values (auth.uid(), v_email, 'ajuste_guardar', 'ajustes', p_clave, p_valor);
 end; $$;
 grant execute on function public.admin_guardar_ajuste(text, jsonb) to authenticated;
 

@@ -43,6 +43,6 @@ begin
    returning nombre into v_nombre;
   if v_nombre is null then raise exception 'preinscrito no encontrado'; end if;
   insert into public.admin_log(admin_id, admin_email, accion, entidad, entidad_id, detalle)
-  values (auth.uid(), v_email, 'preinscrito_activar', 'usuarios', p_id::text, v_nombre);
+  values (auth.uid(), v_email, 'preinscrito_activar', 'usuarios', p_id::text, to_jsonb(v_nombre));
 end; $$;
 grant execute on function public.admin_activar_preinscrito(uuid) to authenticated;
