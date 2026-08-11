@@ -59,9 +59,11 @@ language plpgsql security definer set search_path = public as $$
 begin
   if not public.es_admin() then raise exception 'no autorizado'; end if;
   return query
-  select u.id, u.nombre, u.apellido, u.email, u.tipo_usuario,
-         u.pais_residencia, u.sacramentos_elegidos, u.registro_id,
-         u.codigo_pais_tel, u.telefono, u.created_at
+  -- Casts explícitos: la columna real puede ser varchar y RETURNS TABLE exige
+  -- que el tipo coincida EXACTAMENTE (si no: "structure of query does not match").
+  select u.id::uuid, u.nombre::text, u.apellido::text, u.email::text, u.tipo_usuario::text,
+         u.pais_residencia::text, u.sacramentos_elegidos::jsonb, u.registro_id::text,
+         u.codigo_pais_tel::text, u.telefono::text, u.created_at::timestamptz
     from public.usuarios u
    where coalesce(u.estado_inscripcion, 'activo') = 'preinscrito'
      and coalesce(u.suspendido, false) = false

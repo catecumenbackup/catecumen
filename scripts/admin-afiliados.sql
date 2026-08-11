@@ -112,9 +112,10 @@ begin
                      else 'pendiente' end as situacion
       from base b
   )
-  select c.id, c.tipo, c.nombre, c.responsable, c.contacto, c.email, c.telefono,
-         c.pais, c.estado, c.municipio, c.direccion, c.registro_id,
-         c.aprobada, c.suspendida, c.situacion, c.creado, c.tipo_org
+  -- Casts explícitos (la columna real puede ser varchar; RETURNS TABLE exige coincidencia exacta).
+  select c.id::uuid, c.tipo::text, c.nombre::text, c.responsable::text, c.contacto::text, c.email::text, c.telefono::text,
+         c.pais::text, c.estado::text, c.municipio::text, c.direccion::text, c.registro_id::text,
+         c.aprobada::boolean, c.suspendida::boolean, c.situacion::text, c.creado::timestamptz, c.tipo_org::text
     from calc c
    where (p_tipo   is null or p_tipo   = '' or c.tipo = p_tipo)
      and (p_estado is null or p_estado = '' or c.situacion = p_estado)
