@@ -1662,17 +1662,18 @@ export default function App(){
     <div role="main" style={{minHeight:"100vh",backgroundImage:`url(${effectiveTheme==="light"?fondoBgClaro:fondoBg})`,backgroundRepeat:"repeat",backgroundSize:"650px auto",backgroundPosition:"top left",fontFamily:"'Crimson Text',serif"}}>
       <style>{`
         :root, [data-theme="dark"]{
-          --c-bg:#060D18; --c-surface:#0C1829; --c-card:#112038; --c-cardH:#162843;
-          --c-border:rgba(200,169,81,0.18); --c-borderD:rgba(255,255,255,0.07);
+          /* Azul marino (no demasiado oscuro). */
+          --c-bg:#14294A; --c-surface:#193458; --c-card:#1E3C64; --c-cardH:#264A73;
+          --c-border:rgba(200,169,81,0.22); --c-borderD:rgba(255,255,255,0.09);
           --c-gold:#C8A951; --c-goldL:#E5C97A; --c-goldDeep:#9A7A2A;
-          --c-ivory:#F0EAD6; --c-ivoryM:#9A8F7A; --c-tM:#5A6070;
+          --c-ivory:#F0EAD6; --c-ivoryM:#A9A08C; --c-tM:#6A7488;
           --c-wine:#8B1A2E; --c-green:#2D7A5A; --c-greenB:#3DA070;
           --c-blue:#2058A8; --c-blueB:#3070D0; --c-gray:#3A4556;
-          --c-inputBg:rgba(255,255,255,0.04); --c-label:#FFFFFF; --c-btnPriText:#060D18;
-          --c-cardEnd:#0E1B2E; --c-cardShadow:0 4px 20px rgba(0,0,0,0.35);
-          --c-modalStart:#0E1F36; --c-modalEnd:#09111E;
-          --c-modalShadow:0 24px 64px rgba(0,0,0,0.7),0 1px 0 rgba(200,169,81,0.15) inset;
-          --c-selectBg:#0C1829; --c-scrollTrack:#060D18; --c-scheme:dark;
+          --c-inputBg:rgba(255,255,255,0.05); --c-label:#FFFFFF; --c-btnPriText:#0A1A30;
+          --c-cardEnd:#183156; --c-cardShadow:0 4px 20px rgba(0,0,0,0.28);
+          --c-modalStart:#204268; --c-modalEnd:#183358;
+          --c-modalShadow:0 24px 60px rgba(0,0,0,0.48),0 1px 0 rgba(200,169,81,0.15) inset;
+          --c-selectBg:#193458; --c-scrollTrack:#14294A; --c-scheme:dark;
         }
         [data-theme="light"]{
           --c-bg:#FBF6EA; --c-surface:#F5EDDA; --c-card:#FFFFFF; --c-cardH:#FAF2DF;
