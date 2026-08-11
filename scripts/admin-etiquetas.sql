@@ -160,8 +160,30 @@ END;
 $$;
 
 -- ─────────────────────────────────────────────────────────────────────────
+-- 5) Admin: alternar si la etiqueta BLOQUEA el acceso (sin abrir el editor)
+-- ─────────────────────────────────────────────────────────────────────────
+DROP FUNCTION IF EXISTS public.admin_etiqueta_bloquea(uuid, boolean);
+CREATE FUNCTION public.admin_etiqueta_bloquea(p_id uuid, p_bloquea boolean)
+RETURNS void
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public
+AS $$
+BEGIN
+  IF NOT public.es_admin() THEN RAISE EXCEPTION 'no autorizado'; END IF;
+  UPDATE public.opciones_etiquetas SET bloquea = p_bloquea WHERE id = p_id;
+  IF NOT FOUND THEN RAISE EXCEPTION 'La etiqueta no existe'; END IF;
+  INSERT INTO public.admin_log (admin_id, admin_email, accion, entidad, entidad_id, detalle)
+  VALUES (auth.uid(),
+          (SELECT a.email FROM public.admins a WHERE a.user_id = auth.uid()),
+          CASE WHEN p_bloquea THEN 'etiqueta_bloquear' ELSE 'etiqueta_no_bloquear' END,
+          'opciones_etiquetas', p_id::text, jsonb_build_object('bloquea', p_bloquea));
+END;
+$$;
+
+-- ─────────────────────────────────────────────────────────────────────────
 -- Permisos
 -- ─────────────────────────────────────────────────────────────────────────
+REVOKE ALL ON FUNCTION public.admin_etiqueta_bloquea(uuid, boolean) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.admin_etiqueta_bloquea(uuid,boolean) TO authenticated;
 REVOKE ALL ON FUNCTION public.obtener_etiquetas_opciones()          FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.admin_listar_etiquetas()              FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.admin_guardar_etiqueta(uuid, jsonb)   FROM PUBLIC;

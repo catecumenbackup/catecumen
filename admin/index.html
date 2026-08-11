@@ -2082,6 +2082,7 @@
         <td><div class="actions-cell">
           <button class="btn ghost sm" onclick="window.__editarEtiqueta('${e.id}')">Editar</button>
           <button class="btn ghost sm" onclick="window.__etqActivo('${e.id}',${e.activo?"false":"true"})">${e.activo?"Ocultar":"Mostrar"}</button>
+          <button class="btn ghost sm" onclick="window.__etqBloquea('${e.id}',${e.bloquea!==false?"false":"true"})">${e.bloquea!==false?"No bloquear":"Bloquear"}</button>
         </div></td>
       </tr>`;
     }).join(""):`<tr><td colspan="5" class="empty">Sin etiquetas. Ejecuta admin-etiquetas.sql.</td></tr>`;
@@ -2132,6 +2133,11 @@
   };
   window.__etqActivo=async(id,activo)=>{
     try{ const {error}=await sb.rpc("admin_etiqueta_activo",{p_id:id,p_activo:activo});
+      if(error)throw error; await cargarEtiquetas();
+    }catch(e){ $("etq-msg").className="msg err"; $("etq-msg").textContent="Error: "+(e.message||e); }
+  };
+  window.__etqBloquea=async(id,bloquea)=>{
+    try{ const {error}=await sb.rpc("admin_etiqueta_bloquea",{p_id:id,p_bloquea:bloquea});
       if(error)throw error; await cargarEtiquetas();
     }catch(e){ $("etq-msg").className="msg err"; $("etq-msg").textContent="Error: "+(e.message||e); }
   };
