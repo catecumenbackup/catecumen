@@ -104,8 +104,22 @@ export default function PaymentModal({formData,userType,selectedSacs,onSuccess,o
   const handlePreinscribir=async()=>{
     setLoading(true);setErr("");
     try{
-      const res=await crearCuentaUsuario(formData,userType,selectedSacs,{preinscrito:true});
-      onSuccess({...res,preinscrito:true});
+      // La cuenta se crea EN EL SERVIDOR (service-role): evita el bloqueo de RLS
+      // y resuelve de forma segura un auth.user huérfano de un intento previo.
+      const iso=COUNTRY_ISO[formData.country]||"XX";
+      const tipoDocumento=(CDOCS[formData.country]?.l)||"";
+      const {data,error}=await supabase.functions.invoke("preinscribir",{body:{
+        formData:{...formData,codigo_iso_pais:iso,tipo_documento:tipoDocumento,idioma:LANG},
+        userType, selectedSacs, importe_previsto:pb,
+      }});
+      if(error||data?.error){
+        let msg=data?.error||error?.message;
+        try{ const body=await error?.context?.json?.(); if(body?.error) msg=body.error; }catch{}
+        throw new Error(msg||T("No se pudo completar tu preinscripción. Intenta de nuevo.","Your pre-registration could not be completed. Please try again.","Votre préinscription n'a pas pu être finalisée. Réessayez.","Ihre Voranmeldung konnte nicht abgeschlossen werden. Bitte erneut versuchen.","Não foi possível concluir sua pré-inscrição. Tente novamente.","Non è stato possibile completare la tua preiscrizione. Riprova."));
+      }
+      // Iniciar sesión para quedar autenticado y ver la pantalla de espera.
+      await supabase.auth.signInWithPassword({email:formData.email,password:formData.password});
+      onSuccess({uid:data?.uid,preinscrito:true});
     }catch(e){setErr(e.message);}
     finally{setLoading(false);}
   };
