@@ -603,7 +603,7 @@ function WelcomeModal({onContinue,onLogin}){
     <div style={{display:"flex",flexDirection:"column",gap:10}}>
       {desktop?(
         <>
-          <button onClick={onContinue} style={{...BTN("pri"),width:"100%",justifyContent:"center",fontSize:15}}>
+          <button onClick={onContinue} style={{...BTN("pri"),width:"100%",justifyContent:"center",fontSize:15,color:"#FFFFFF"}}>
             ✝️ {T("Registrarme","Register","M'inscrire","Registrieren","Registrar-me","Registrati")}
           </button>
           <button onClick={onLogin} style={{width:"100%",justifyContent:"center",fontSize:14,cursor:"pointer",
@@ -614,7 +614,7 @@ function WelcomeModal({onContinue,onLogin}){
         </>
       ):(
         <div style={{display:"flex",gap:10}}>
-          <button onClick={onContinue} style={{...BTN("pri"),flex:"1.7 1 0",justifyContent:"center",fontSize:15}}>
+          <button onClick={onContinue} style={{...BTN("pri"),flex:"1.7 1 0",justifyContent:"center",fontSize:15,color:"#FFFFFF"}}>
             ✝️ {T("Registrarme","Register","M'inscrire","Registrieren","Registrar-me","Registrati")}
           </button>
           <button onClick={onLogin} style={{flex:"1 1 0",justifyContent:"center",fontSize:14,cursor:"pointer",
