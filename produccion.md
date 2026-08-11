@@ -56,7 +56,8 @@ supabase functions deploy <nombre> --use-api
 
 Funciones: `crear-sesion-pago`, `activar-pago`, `stripe-webhook`, `reanudar-pago`,
 `admin-eliminar-usuario`, `firmar-video`, `consultar-magisterium`,
-`geocodificar-afiliados`, `geocodificar-uno`.
+`geocodificar-afiliados`, `geocodificar-uno`, **`preinscribir`** (crea la cuenta del
+preinscrito con service-role — desplegar para que la preinscripción funcione).
 
 Solo redesplegar las que cambiaron. Secrets manuales requeridos (una vez):
 `BUNNY_TOKEN_KEY`, `BUNNY_CDN_HOST` (firmar-video); `MAGISTERIUM_API_KEY`
