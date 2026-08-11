@@ -99,6 +99,31 @@
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:520px){.row2{grid-template-columns:1fr}}
   .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
   .actions-cell{display:flex;gap:6px;flex-wrap:wrap}
+
+  /* ═══════════ TEMA CLARO + ARIAL (override global) ═══════════ */
+  /* Redefine las variables a una paleta clara; el resto de reglas las usan. */
+  :root{
+    --bg:#F4F0E6; --surface:#FFFFFF; --card:#FFFFFF;
+    --gold:#8A6B1E; --gold-l:#A6832A;
+    --ivory:#22272E; --ivory-m:#5B6169;
+    --border:rgba(138,107,30,.35); --border-d:rgba(0,0,0,.12);
+  }
+  /* Tipografía Arial en todo el panel (reemplaza Cinzel/Crimson). */
+  *{ font-family:Arial, Helvetica, sans-serif !important; }
+  body{ background:#F4F0E6 !important; color:var(--ivory) !important; }
+  /* Contenedores oscuros fijos → claros. */
+  .gate{ background:#FFFFFF !important; box-shadow:0 10px 34px rgba(0,0,0,.12) !important; }
+  .modal{ background:#FFFFFF !important; box-shadow:0 14px 44px rgba(0,0,0,.20) !important; }
+  .card,.panelbox,.stat,.coment{ box-shadow:0 3px 14px rgba(0,0,0,.07) !important; }
+  /* Texto oscuro sobre botones/pestañas doradas (antes usaban color:var(--bg)). */
+  .btn,.ltab.active{ color:#3A2A05 !important; }
+  .btn.ghost{ color:var(--gold) !important; }
+  /* Campos de formulario: fondo blanco, borde visible, texto oscuro. */
+  input,select,textarea{ background:#FFFFFF !important; color:var(--ivory) !important; border:1px solid rgba(0,0,0,.20) !important; }
+  select option{ background-color:#FFFFFF !important; color:#22272E !important; }
+  select optgroup{ background-color:#F2EEDF !important; color:#8A6B1E !important; }
+  /* Encabezados de tabla un poco más oscuros para contraste sobre blanco. */
+  th{ color:#7A5F18 !important; }
 </style>
 </head>
 <body>
