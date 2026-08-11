@@ -57,6 +57,7 @@ const RegisterParroquiaForm = lazy(() => import("./components/RegisterParroquiaF
 const RegisterDiocesisForm = lazy(() => import("./components/RegisterDiocesisForm.jsx"));
 const RegisterCentroForm = lazy(() => import("./components/RegisterCentroForm.jsx"));
 const RegisterOtroForm = lazy(() => import("./components/RegisterOtroForm.jsx"));
+const PreinscripcionEspera = lazy(() => import("./components/PreinscripcionEspera.jsx"));
 const PasswordModal = lazy(() => import("./components/PasswordModal.jsx"));
 const ThankYouModal = lazy(() => import("./components/ThankYouModal.jsx"));
 const OrgThankYouModal = lazy(() => import("./components/OrgThankYouModal.jsx"));
@@ -1018,6 +1019,14 @@ export default function App(){
   const [seqIdx,setSeqIdx]=useState(0);
   const [progress,setProgress]=useState({}); // {secId:{vidId:{visto,passed,score}}}
   const [bridge,setBridge]=useState(null);   // puente frontend↔BD (Parte B)
+  // Modo preinscripción (ajuste global editable desde el panel). Si `activa`,
+  // el flujo de alumno termina en "reserva sin costo" en vez de pago.
+  const [preinsc,setPreinsc]=useState({activa:false,mensaje:null});
+  useEffect(()=>{(async()=>{
+    try{ const {data}=await supabase.rpc("obtener_ajuste",{p_clave:"preinscripcion"});
+      if(data) setPreinsc({activa:!!data.activa, mensaje:data.mensaje||null});
+    }catch(e){ console.error("obtener_ajuste:",e); }
+  })();},[]);
   const [insBySec,setInsBySec]=useState({}); // {secId: inscripcion_id} (Parte B)
   const [activeVideo,setActiveVideo]=useState(null); // {secId,vid}
   const [activeEval,setActiveEval]=useState(null);
@@ -1249,6 +1258,8 @@ export default function App(){
   };
 
   const handlePaymentSuccess=(info)=>{
+    // Preinscripción: cuenta creada sin pago → pantalla de espera (no curso).
+    if(info?.preinscrito){ setPhase("preinscritoEspera"); return; }
     if(orgType){setPhase("orgThankYou");return;}
     const regId=info?.registroId||genRegistrationId(formData.country||"XX",userType);
     setFormData(p=>({...p,registrationId:regId}));
@@ -1335,6 +1346,14 @@ export default function App(){
         setSequence([]); setSeqIdx(0); setProgress({}); setInsBySec({});
         setCuentaSuspendida({motivo:u.suspendido_motivo||null, eliminada:!!u.eliminado});
         setPhase("welcome");
+        return;
+      }
+      // Usuario PREINSCRITO: aún no tiene acceso al curso; ve la pantalla de
+      // espera hasta que se abra la plataforma (conversión de pago = Fase 2).
+      if((u.estado_inscripcion||"activo")==="preinscrito"){
+        setUserType(u.tipo_usuario||"catecumeno");
+        setFormData(p=>({...p, nombre:u.nombre||"", email:u.email||authUser?.email||""}));
+        setPhase("preinscritoEspera");
         return;
       }
       const uType=u.tipo_usuario||"catecumeno";
@@ -1888,7 +1907,15 @@ export default function App(){
       {phase==="payment"&&!isOrgFlow&&(
         <Suspense fallback={<div style={OVERLAY}><div style={{color:C.gold,fontFamily:"'Cinzel',serif"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div></div>}>
           <PaymentModal formData={formData} userType={userType} selectedSacs={selectedSacs}
+            preinscripcion={preinsc.activa}
             onSuccess={handlePaymentSuccess} onBack={()=>setPhase("password")}/>
+        </Suspense>
+      )}
+
+      {phase==="preinscritoEspera"&&(
+        <Suspense fallback={<div style={OVERLAY}><div style={{color:C.gold,fontFamily:"'Cinzel',serif"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div></div>}>
+          <PreinscripcionEspera mensaje={preinsc.mensaje} nombre={formData.nombre}
+            onLogout={async()=>{ try{await supabase.auth.signOut();}catch(e){console.error(e);} setPhase("welcome"); }}/>
         </Suspense>
       )}
 

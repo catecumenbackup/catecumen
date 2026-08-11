@@ -9,7 +9,7 @@ import { T, LANG } from "../i18n.js";
 // crearCuentaUsuario es su único consumidor, por eso vive aquí.
 // CRÍTICO: la cuenta de pago se crea SOLO tras confirmar el pago (webhook);
 // esta pantalla solo guarda el registro pendiente y redirige a Stripe.
-async function crearCuentaUsuario(formData,userType,selectedSacs){
+async function crearCuentaUsuario(formData,userType,selectedSacs,opts){
   // 1) Cuenta en Supabase Auth
   const {data:auth,error:authErr}=await supabase.auth.signUp({
     email:formData.email,password:formData.password});
@@ -70,6 +70,8 @@ async function crearCuentaUsuario(formData,userType,selectedSacs){
     pago_realizado:false,
     importe_pagado:formData.freeRegistration?0:null,
     moneda_pago:pb?.cur||null,
+    // Preinscripción (sin pago): queda 'preinscrito' hasta que abra la plataforma.
+    estado_inscripcion:opts?.preinscrito?"preinscrito":"activo",
   };
   const {error:insErr}=await supabase.from("usuarios").insert(fila);
   if(insErr){
@@ -79,7 +81,7 @@ async function crearCuentaUsuario(formData,userType,selectedSacs){
   return {uid,registroId};
 }
 
-export default function PaymentModal({formData,userType,selectedSacs,onSuccess,onBack}){
+export default function PaymentModal({formData,userType,selectedSacs,onSuccess,onBack,preinscripcion}){
   const [loading,setLoading]=useState(false);
   const [payingMethod,setPayingMethod]=useState(null); // "online" | "voucher"
   const [err,setErr]=useState("");
@@ -94,6 +96,17 @@ export default function PaymentModal({formData,userType,selectedSacs,onSuccess,o
   const VOUCHER_METHOD={MXN:"oxxo",BRL:"boleto",EUR:"multibanco"};
   const VOUCHER_BRAND={oxxo:"OXXO",boleto:"Boleto",multibanco:"Multibanco"};
   const voucherMethod=pb?VOUCHER_METHOD[String(pb.cur).toUpperCase()]:null;
+
+  // ── Ruta de PREINSCRIPCIÓN (plataforma aún no abierta): crea la cuenta en
+  //    estado 'preinscrito' SIN pago; el usuario queda a la espera de la apertura.
+  const handlePreinscribir=async()=>{
+    setLoading(true);setErr("");
+    try{
+      const res=await crearCuentaUsuario(formData,userType,selectedSacs,{preinscrito:true});
+      onSuccess({...res,preinscrito:true});
+    }catch(e){setErr(e.message);}
+    finally{setLoading(false);}
+  };
 
   // ── Ruta gratuita (beca 100% o afiliación): crea cuenta y entra ──
   const handleFree=async()=>{
@@ -141,6 +154,38 @@ export default function PaymentModal({formData,userType,selectedSacs,onSuccess,o
   };
 
   const esCatequistaVerificado=!esBeca&&formData.orgVerificada;
+
+  // ── Modo PREINSCRIPCIÓN: reemplaza el pago por "reserva tu lugar sin costo" ──
+  if(preinscripcion){
+    return(
+      <div style={OVERLAY}>
+        <div style={{...MODAL,maxWidth:500,textAlign:"center"}}>
+          <div style={{fontSize:46,marginBottom:12}}>📝</div>
+          <h2 style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:19,marginBottom:12}}>
+            {T("Preinscripción sin costo","Free pre-registration","Préinscription sans frais","Kostenlose Voranmeldung","Pré-inscrição sem custo","Preiscrizione gratuita")}
+          </h2>
+          <div style={{...CARD,background:"rgba(200,169,81,0.08)",marginBottom:20}}>
+            <p style={{color:C.ivory,fontFamily:"'Crimson Text',serif",fontSize:16,lineHeight:1.65}}>
+              {T("Aún no realizarás ningún pago. Reserva tu lugar ahora y te avisaremos en cuanto se abra el acceso completo a la plataforma; en ese momento podrás completar tu inscripción.","No payment yet. Reserve your spot now and we'll notify you as soon as full access to the platform opens; at that point you'll be able to complete your registration.","Aucun paiement pour l'instant. Réservez votre place maintenant et nous vous préviendrons dès l'ouverture de l'accès complet à la plateforme ; vous pourrez alors finaliser votre inscription.","Noch keine Zahlung. Reservieren Sie jetzt Ihren Platz und wir benachrichtigen Sie, sobald der vollständige Zugang zur Plattform freigeschaltet wird; dann können Sie Ihre Anmeldung abschließen.","Ainda sem pagamento. Reserve seu lugar agora e avisaremos assim que o acesso completo à plataforma for aberto; nesse momento você poderá concluir sua inscrição.","Nessun pagamento per ora. Prenota il tuo posto adesso e ti avviseremo non appena si aprirà l'accesso completo alla piattaforma; a quel punto potrai completare la tua iscrizione.")}
+            </p>
+          </div>
+          {err&&<p style={{color:"#F87171",fontFamily:"'Crimson Text',serif",fontSize:14,marginBottom:14}}>⚠️ {err}</p>}
+          <div style={{display:"flex",gap:12}}>
+            <button onClick={onBack} disabled={loading}
+              style={{...BTN("sec"),flex:1,justifyContent:"center",opacity:loading?0.4:1}}>
+              ← {T("Regresar","Back","Retour","Zurück","Voltar","Indietro")}
+            </button>
+            <button onClick={handlePreinscribir} disabled={loading}
+              style={{...BTN("pri"),flex:2,justifyContent:"center",opacity:loading?0.5:1,cursor:loading?"wait":"pointer"}}>
+              {loading?T("Reservando tu lugar…","Reserving your spot…","Réservation de votre place…","Ihr Platz wird reserviert…","Reservando seu lugar…","Prenotazione del tuo posto…")
+                :T("Reservar mi lugar","Reserve my spot","Réserver ma place","Meinen Platz reservieren","Reservar meu lugar","Prenota il mio posto")} →
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if(isFree){
     return(
       <div style={OVERLAY}>

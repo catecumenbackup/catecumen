@@ -143,6 +143,7 @@
       <button class="tab" data-tab="precios">💰 Precios</button>
       <button class="tab" data-tab="constancias">🏆 Constancias</button>
       <button class="tab" data-tab="afiliados">⛪ Afiliados</button>
+      <button class="tab" data-tab="preinscripcion">📝 Preinscripción</button>
       <button class="tab" data-tab="scholas">📖 Scholas</button>
       <button class="tab" data-tab="auditoria">📜 Auditoría</button>
     </div>
@@ -391,6 +392,36 @@
         <button class="btn ghost" onclick="cargarAfiliados()">↻ Recargar</button>
       </div>
       <div id="afiliados-lista" class="scroll"></div>
+    </div>
+
+    <!-- TAB PREINSCRIPCIÓN -->
+    <div id="tab-preinscripcion" class="tabpane hidden">
+      <h2>📝 Preinscripción</h2>
+      <p style="color:var(--ivory-m);font-size:13px;margin:0 0 12px">
+        Con el modo activado, los alumnos se registran <b>sin pago</b> (quedan como "preinscritos" y ven una pantalla de espera). Al abrir la plataforma, desactívalo para que completen su inscripción.
+      </p>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px;padding:12px 14px;border:1px solid rgba(200,169,81,.3);border-radius:10px;background:rgba(200,169,81,.05)">
+        <label style="display:flex;align-items:center;gap:8px;font-size:15px">
+          <input type="checkbox" id="pre-activa" onchange="window.preGuardar()" style="width:18px;height:18px">
+          <b>Modo preinscripción activado</b>
+        </label>
+        <span id="pre-estado" style="font-size:12px;color:var(--ivory-m)"></span>
+      </div>
+      <p style="color:var(--ivory-m);font-size:12px;margin:0 0 6px">Mensaje que verá el preinscrito en la pantalla de espera (por idioma; opcional, hay un texto por defecto):</p>
+      <div id="pre-mensaje"></div>
+      <div class="modal-actions" style="margin-top:8px">
+        <button class="btn" onclick="window.preGuardar()">Guardar mensaje</button>
+      </div>
+
+      <hr style="border-color:rgba(200,169,81,.2);margin:18px 0">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
+        <h3 style="color:var(--gold);font-family:'Cinzel',serif;margin:0">Preinscritos <span id="pre-count" class="pill"></span></h3>
+        <label>Buscar: <input id="pre-q" type="search" placeholder="nombre, correo, país…" style="width:220px;display:inline-block" oninput="cargarPreinscritos()"/></label>
+        <button class="btn ghost" onclick="cargarPreinscritos()">↻ Recargar</button>
+        <button class="btn ghost" onclick="window.preCSV()">⬇️ Exportar CSV</button>
+        <button class="btn" onclick="window.preDifundir()">📢 Mensaje a todos</button>
+      </div>
+      <div id="preinscritos-lista" class="scroll"></div>
     </div>
 
     <!-- TAB SCHOLAS -->
@@ -853,6 +884,55 @@
     await cargarAfiliados();
   };
 
+  // ---------- PREINSCRIPCIÓN ----------
+  const PRE_LANGS=["es","en","fr","de","pt","it"];
+  let PRE_ROWS=[];
+  function _preBuild(){
+    const c=$("pre-mensaje"); if(!c||c.dataset.built) return;
+    c.dataset.built="1"; c.style.display="grid"; c.style.gridTemplateColumns="repeat(2,1fr)"; c.style.gap="6px";
+    PRE_LANGS.forEach(l=>{ const t=document.createElement("textarea"); t.dataset.lang=l; t.placeholder=l.toUpperCase(); t.rows=2; c.appendChild(t); });
+  }
+  function _preGetMsg(){ const o={}; let any=false; $("pre-mensaje").querySelectorAll("[data-lang]").forEach(e=>{ if(e.value.trim()){o[e.dataset.lang]=e.value.trim(); any=true;} }); return any?o:null; }
+  function _preSetMsg(obj){ $("pre-mensaje").querySelectorAll("[data-lang]").forEach(e=>e.value=(obj&&obj[e.dataset.lang])||""); }
+  function _preEstado(activa){ $("pre-estado").textContent=activa?"● Activo — los nuevos alumnos se preinscriben SIN pago":"○ Inactivo — registro con pago normal"; }
+  async function cargarPreinscripcion(){
+    _preBuild();
+    const {data,error}=await sb.rpc("obtener_ajuste",{p_clave:"preinscripcion"});
+    if(!error && data){ $("pre-activa").checked=!!data.activa; _preSetMsg(data.mensaje||{}); _preEstado(!!data.activa); }
+    await cargarPreinscritos();
+  }
+  window.preGuardar=async()=>{
+    const valor={activa:$("pre-activa").checked}; const msg=_preGetMsg(); if(msg) valor.mensaje=msg;
+    const {error}=await sb.rpc("admin_guardar_ajuste",{p_clave:"preinscripcion",p_valor:valor});
+    if(error){ alert("Error: "+error.message); return; }
+    _preEstado(valor.activa);
+  };
+  async function cargarPreinscritos(){
+    const cont=$("preinscritos-lista");
+    const {data,error}=await sb.rpc("admin_preinscritos_listar",{p_q:$("pre-q").value||null});
+    if(error){ cont.innerHTML="<p style='color:#F87171'>Error: "+esc(error.message)+"</p>"; return; }
+    PRE_ROWS=data||[]; $("pre-count").textContent=PRE_ROWS.length;
+    if(!PRE_ROWS.length){ cont.innerHTML="<p style='color:var(--ivory-m)'>Sin preinscritos.</p>"; return; }
+    cont.innerHTML="<table><thead><tr><th>Nombre</th><th>Correo</th><th>Perfil</th><th>País</th><th>Registro</th><th>Fecha</th></tr></thead><tbody>"+
+      PRE_ROWS.map(r=>`<tr><td>${esc(((r.nombre||'')+' '+(r.apellido||'')).trim())}</td><td>${esc(r.email||'')}</td><td>${esc(r.tipo_usuario||'')}</td><td>${esc(r.pais_residencia||'')}</td><td>${esc(r.registro_id||'')}</td><td>${r.creado?new Date(r.creado).toLocaleDateString():''}</td></tr>`).join("")+
+      "</tbody></table>";
+  }
+  window.preCSV=()=>{
+    if(!PRE_ROWS.length){ alert("Sin datos para exportar."); return; }
+    const cols=["nombre","apellido","email","tipo_usuario","pais_residencia","registro_id","codigo_pais_tel","telefono","creado"];
+    const linea=r=>cols.map(c=>{ let v=(c==="creado"&&r.creado)?new Date(r.creado).toISOString():(r[c]==null?"":String(r[c])); return '"'+v.replace(/"/g,'""')+'"'; }).join(",");
+    const csv=cols.join(",")+"\n"+PRE_ROWS.map(linea).join("\n");
+    const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"})); a.download="preinscritos.csv"; a.click();
+  };
+  window.preDifundir=async()=>{
+    if(!PRE_ROWS.length){ alert("No hay preinscritos."); return; }
+    const cuerpo=prompt("Mensaje (mensajería interna) para los "+PRE_ROWS.length+" preinscritos:");
+    if(!cuerpo||!cuerpo.trim()) return;
+    let ok=0,fail=0;
+    for(const r of PRE_ROWS){ const {error}=await sb.rpc("admin_enviar_a_usuario",{p_usuario_id:r.id,p_cuerpo:cuerpo.trim()}); if(error) fail++; else ok++; }
+    alert("Enviados: "+ok+(fail?(" · Fallidos: "+fail):""));
+  };
+
   // ---------- TABS ----------
   document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{
     document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
@@ -864,6 +944,7 @@
     if(t.dataset.tab==="mensajes") cargarConversaciones();
     if(t.dataset.tab==="constancias") cargarConstancias();
     if(t.dataset.tab==="afiliados") cargarAfiliados();
+    if(t.dataset.tab==="preinscripcion") cargarPreinscripcion();
     if(t.dataset.tab==="sesiones") cargarSesiones();
     if(t.dataset.tab==="atencion") cargarAtencion();
     if(t.dataset.tab==="precios") cargarCuotas();

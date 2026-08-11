@@ -44,6 +44,7 @@ Módulos adicionales (idempotentes, re-ejecutables):
 | `scripts/directorio-afiliados.sql` → `scripts/directorio-mx.sql` → **`scripts/directorio-flexible.sql`** | Directorio público de parroquias/diócesis (cercanía + texto flexible sin acentos/erratas) |
 | **`scripts/admin-afiliados.sql`** | Gestión de afiliados (parroquias/diócesis/centros/otro): crea `organizaciones_otro` (RLS + GRANT INSERT anon), añade `suspendida`, RPCs `admin_afiliados_listar`/`admin_afiliado_estado` |
 | `scripts/directorio-datos-prueba.sql` | (Opcional) 2 parroquias + 2 diócesis de prueba para ver el mapa; borrar al terminar |
+| **`scripts/preinscripcion.sql`** | Modo preinscripción: tabla `ajustes`, columna `usuarios.estado_inscripcion`, RPCs `obtener_ajuste`/`admin_guardar_ajuste`/`admin_preinscritos_listar`. El modo arranca APAGADO; se activa desde el panel (pestaña Preinscripción). |
 
 ## 4. Edge Functions (Supabase — terminal, no SQL Editor)
 
@@ -87,3 +88,4 @@ Pendiente/opcional: remoto en GitHub privado (`git remote add origin … && git 
 5. **`generar_registro_id` para "otro":** la afiliación "otro" depende de que esa función reconozca el tipo `otro`; si no, la fila queda sin `registro_id` (no rompe el registro). Revisar/ampliar si se requiere el folio oficial.
 6. **Afiliados nuevos entran como `pendiente`** (parroquias/diócesis/centros/otro): hay que **aprobarlos** desde el panel para que aparezcan en el directorio público.
 7. **Troceo por pantallas restante / rendimiento:** ver CLAUDE.md (sección PageSpeed).
+8. **Preinscripción — Fase 2 (conversión al abrir):** hoy funciona la captura (alumno se preinscribe sin pago → estado `preinscrito` → pantalla de espera) y el control del admin (activar/desactivar, lista, CSV, difusión). Falta la **conversión**: cuando el admin apague el modo, el preinscrito debe poder **pagar para activarse**. Requiere extender `crear-sesion-pago`/`activar-pago`/`stripe-webhook` para "activar cuenta existente" (`estado_inscripcion='activo'` + crear inscripciones) en vez de crear una cuenta nueva. Es el flujo de pago (máximo riesgo): abordarlo con calma cerca del lanzamiento y con Stripe en test.
