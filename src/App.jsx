@@ -1334,9 +1334,10 @@ export default function App(){
         let esAdmin=false;
         try{ const {data:ad}=await supabase.rpc("es_admin"); esAdmin=!!ad; }catch(e){ console.error("es_admin:",e); }
         if(esAdmin){ window.location.href="/admin/"; return; }
-        // Sesión sin perfil (huérfana, p. ej. cuenta borrada): cerrar sesión y
-        // volver al inicio en vez de dejar la plataforma en blanco.
-        try{ await supabase.auth.signOut(); }catch(e){ console.error("signOut:",e); }
+        // Sesión sin perfil (huérfana, p. ej. intento previo o cuenta borrada):
+        // limpiar SOLO localmente. El signOut global puede dar 403 si el token
+        // ya está invalidado; scope:"local" borra la sesión del navegador sin esa llamada.
+        try{ await supabase.auth.signOut({scope:"local"}); }catch(e){ console.error("signOut:",e); }
         setSequence([]); setSeqIdx(0); setProgress({}); setInsBySec({});
         setPhase("welcome");
         return;
