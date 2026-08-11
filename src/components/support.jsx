@@ -274,16 +274,17 @@ export function ConsultarDudasButton({contexto="",size="sec"}){
 export function DirectorioButton({size="sec",estilo={},tono=null}){
   const [open,setOpen]=useState(false);
   const etiquetas=useEtiquetasOpciones();
-  const etq=etiquetas["buscar_parroquia"];
+  const etq=etiquetas["buscar_parroquia"];        // hay etiqueta → se muestra el chip
+  const bloqueado=!!(etq&&etq.bloquea);           // …y además bloquea si el admin lo indicó
   const full=estilo.width==="100%";
   const tonos={
     green:{background:"rgba(45,122,90,0.18)",color:C.ivory,border:"1px solid rgba(45,122,90,0.55)"},
   };
   return(
     <div style={{display:full?"block":"inline-block",...estilo}}>
-      <button onClick={etq?undefined:()=>setOpen(true)} disabled={!!etq} aria-disabled={!!etq}
+      <button onClick={bloqueado?undefined:()=>setOpen(true)} disabled={bloqueado} aria-disabled={bloqueado}
         style={{...BTN(size),fontSize:12,...(full?{width:"100%",justifyContent:"center"}:{}),
-          ...(tono&&tonos[tono]?tonos[tono]:{}),...(etq?{opacity:0.55,cursor:"not-allowed"}:{})}}>
+          ...(tono&&tonos[tono]?tonos[tono]:{}),...(bloqueado?{opacity:0.55,cursor:"not-allowed"}:{})}}>
         ⛪ {T("Buscar parroquia afiliada","Find affiliated parish","Trouver une paroisse affiliée","Angeschlossene Pfarrei finden","Buscar paróquia afiliada","Trova parrocchia affiliata")}
         {etq&&(
           <span style={{marginLeft:8,background:etq.bg,color:etq.fg,fontFamily:"'Cinzel',serif",
@@ -291,7 +292,7 @@ export function DirectorioButton({size="sec",estilo={},tono=null}){
             padding:"2px 8px",borderRadius:99,border:`1px solid ${etq.fg}55`}}>{etq.txt}</span>
         )}
       </button>
-      {open&&!etq&&(
+      {open&&!bloqueado&&(
         <Suspense fallback={<div style={OVERLAY}><div style={{color:C.gold,fontFamily:"'Cinzel',serif"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div></div>}>
           <DirectorioAfiliados onClose={()=>setOpen(false)}/>
         </Suspense>

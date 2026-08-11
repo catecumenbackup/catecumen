@@ -97,6 +97,7 @@ serve(async (req: Request) => {
         .from("opciones_etiquetas")
         .select("clave")
         .eq("activo", true)
+        .eq("bloquea", true)  // solo bloquean las etiquetas marcadas como bloqueantes
         .in("clave", clavesAValidar);
       if (etqErr) {
         // Falla ABIERTA: si no se puede leer la tabla (p.ej. aún no existe),

@@ -2078,7 +2078,7 @@
         <td style="font-size:13px">${esc(e.texto_es||"—")}
           ${faltan.length?`<br><span class="pill off">falta: ${faltan.join(" ")}</span>`:""}</td>
         <td>${prev}</td>
-        <td class="num">${e.activo?'<span class="pill ok">visible</span>':'<span class="pill off">oculta</span>'}</td>
+        <td class="num">${e.activo?'<span class="pill ok">visible</span>':'<span class="pill off">oculta</span>'} ${e.bloquea!==false?'<span class="pill bad">bloquea</span>':'<span class="pill off">no bloquea</span>'}</td>
         <td><div class="actions-cell">
           <button class="btn ghost sm" onclick="window.__editarEtiqueta('${e.id}')">Editar</button>
           <button class="btn ghost sm" onclick="window.__etqActivo('${e.id}',${e.activo?"false":"true"})">${e.activo?"Ocultar":"Mostrar"}</button>
@@ -2105,6 +2105,10 @@
           <select id="et-activo" style="width:110px">
             <option value="true" ${e.activo?"selected":""}>Sí</option>
             <option value="false" ${!e.activo?"selected":""}>No</option></select></div>
+        <div><label class="fld">Bloquea acceso</label>
+          <select id="et-bloquea" style="width:130px">
+            <option value="true" ${e.bloquea!==false?"selected":""}>Sí (inhabilita)</option>
+            <option value="false" ${e.bloquea===false?"selected":""}>No (solo etiqueta)</option></select></div>
       </div>
       <p id="et-msg" class="msg"></p>
       <div class="modal-actions">
@@ -2115,7 +2119,7 @@
   };
   window.__guardarEtiqueta=async(id,clave)=>{
     const datos={clave:clave, color_fondo:$("et-bg").value, color_texto:$("et-fg").value,
-                 activo:$("et-activo").value==="true"};
+                 activo:$("et-activo").value==="true", bloquea:$("et-bloquea").value==="true"};
     ["es","en","fr","de","pt","it"].forEach(c=>{ datos["texto_"+c]=$("et-"+c).value.trim(); });
     if(!datos.texto_es){ $("et-msg").className="msg err"; $("et-msg").textContent="El texto en español es obligatorio."; return; }
     $("et-msg").className="msg"; $("et-msg").textContent="Guardando…";

@@ -25,12 +25,13 @@ export default function SacSelectModal({onContinue,onBack}){
         </p>
         <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:24}}>
           {sacs.map(s=>{
-            const etq=etiquetas[s.k];   // etiqueta activa → sacramento inhabilitado
+            const etq=etiquetas[s.k];   // hay etiqueta → se muestra el chip
+            const bloqueado=!!(etq&&etq.bloquea); // …y además inhabilita si el admin lo indicó
             return(
-            <button key={s.k} onClick={etq?undefined:()=>toggle(s.k)}
-              disabled={!!etq} aria-disabled={!!etq}
-              style={{...CARD,cursor:etq?"not-allowed":"pointer",display:"flex",alignItems:"center",gap:14,
-                border:`1.5px solid ${sel.includes(s.k)?C.gold:C.borderD}`,opacity:etq?0.55:1,
+            <button key={s.k} onClick={bloqueado?undefined:()=>toggle(s.k)}
+              disabled={bloqueado} aria-disabled={bloqueado}
+              style={{...CARD,cursor:bloqueado?"not-allowed":"pointer",display:"flex",alignItems:"center",gap:14,
+                border:`1.5px solid ${sel.includes(s.k)?C.gold:C.borderD}`,opacity:bloqueado?0.55:1,
                 background:sel.includes(s.k)?"rgba(200,169,81,0.12)":C.card,transition:"all .2s"}}>
               {s.icon==="__caliz__"?<CalizIcon size={30}/>
                :s.icon==="__bautismo_img__"?<img src={iconoBautismo} width={30} height={30} style={{objectFit:"contain",filter:"sepia(1) saturate(3) brightness(0.95)"}} alt=""/>
@@ -45,7 +46,7 @@ export default function SacSelectModal({onContinue,onBack}){
                     padding:"3px 9px",borderRadius:99,border:`1px solid ${etq.fg}55`}}>{etq.txt}</span>
                 )}
               </span>
-              {etq?<span style={{marginLeft:"auto",fontSize:16}}>🔒</span>
+              {bloqueado?<span style={{marginLeft:"auto",fontSize:16}}>🔒</span>
                :sel.includes(s.k)&&<span style={{marginLeft:"auto",color:C.gold,fontSize:18}}>✓</span>}
             </button>
           );})}

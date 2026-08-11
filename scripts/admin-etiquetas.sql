@@ -16,8 +16,11 @@ CREATE TABLE IF NOT EXISTS public.opciones_etiquetas (
   color_fondo   text NOT NULL DEFAULT '#B3261E',   -- rojo
   color_texto   text NOT NULL DEFAULT '#E5C97A',   -- dorado
   activo        boolean NOT NULL DEFAULT false,    -- false = no se muestra
+  bloquea       boolean NOT NULL DEFAULT true,      -- true = además inhabilita la opción
   creado        timestamptz DEFAULT now()
 );
+-- Por si la tabla ya existía sin la columna:
+ALTER TABLE public.opciones_etiquetas ADD COLUMN IF NOT EXISTS bloquea boolean NOT NULL DEFAULT true;
 
 -- ─────────────────────────────────────────────────────────────────────────
 -- Semilla: una fila por cada opción del modal, con "Próximamente" traducido.
@@ -57,12 +60,12 @@ CREATE FUNCTION public.obtener_etiquetas_opciones()
 RETURNS TABLE (
   clave text,
   texto_es text, texto_en text, texto_fr text, texto_de text, texto_pt text, texto_it text,
-  color_fondo text, color_texto text
+  color_fondo text, color_texto text, bloquea boolean
 )
 LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public
 AS $$
   SELECT e.clave, e.texto_es, e.texto_en, e.texto_fr, e.texto_de, e.texto_pt, e.texto_it,
-         e.color_fondo, e.color_texto
+         e.color_fondo, e.color_texto, e.bloquea
   FROM public.opciones_etiquetas e
   WHERE e.activo = true;
 $$;
@@ -99,14 +102,15 @@ BEGIN
   IF p_id IS NULL THEN
     INSERT INTO public.opciones_etiquetas
       (clave, texto_es, texto_en, texto_fr, texto_de, texto_pt, texto_it,
-       color_fondo, color_texto, activo)
+       color_fondo, color_texto, activo, bloquea)
     VALUES (v_clave,
        NULLIF(p_datos->>'texto_es',''), NULLIF(p_datos->>'texto_en',''),
        NULLIF(p_datos->>'texto_fr',''), NULLIF(p_datos->>'texto_de',''),
        NULLIF(p_datos->>'texto_pt',''), NULLIF(p_datos->>'texto_it',''),
        COALESCE(NULLIF(p_datos->>'color_fondo',''),'#B3261E'),
        COALESCE(NULLIF(p_datos->>'color_texto',''),'#E5C97A'),
-       COALESCE((p_datos->>'activo')::boolean, false))
+       COALESCE((p_datos->>'activo')::boolean, false),
+       COALESCE((p_datos->>'bloquea')::boolean, true))
     RETURNING id INTO v_id;
   ELSE
     UPDATE public.opciones_etiquetas SET
@@ -116,7 +120,8 @@ BEGIN
       texto_pt = NULLIF(p_datos->>'texto_pt',''), texto_it = NULLIF(p_datos->>'texto_it',''),
       color_fondo = COALESCE(NULLIF(p_datos->>'color_fondo',''), color_fondo),
       color_texto = COALESCE(NULLIF(p_datos->>'color_texto',''), color_texto),
-      activo      = COALESCE((p_datos->>'activo')::boolean, activo)
+      activo      = COALESCE((p_datos->>'activo')::boolean, activo),
+      bloquea     = COALESCE((p_datos->>'bloquea')::boolean, bloquea)
     WHERE id = p_id
     RETURNING id INTO v_id;
     IF v_id IS NULL THEN RAISE EXCEPTION 'La etiqueta no existe'; END IF;

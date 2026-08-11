@@ -17,7 +17,10 @@ export default function useEtiquetasOpciones(){
           const txt=PICK({es:e.texto_es,en:e.texto_en,fr:e.texto_fr,
                           de:e.texto_de,pt:e.texto_pt,it:e.texto_it});
           if(txt&&txt.trim())m[e.clave]={txt:txt.trim(),
-            bg:e.color_fondo||"#B3261E", fg:e.color_texto||"#E5C97A"};
+            bg:e.color_fondo||"#B3261E", fg:e.color_texto||"#E5C97A",
+            // El admin decide si la etiqueta BLOQUEA el acceso o solo se muestra.
+            // Si la columna aún no existe (undefined) → por defecto bloquea (seguro).
+            bloquea:e.bloquea!==false};
         });
         if(vivo)setEtiquetas(m);
       }catch{/* sin conexión: sin etiquetas */}

@@ -176,22 +176,26 @@ export default function FilterModal({onSelect,onBack}){
               <span style={{height:1,flex:1,background:`linear-gradient(90deg,${C.gold},transparent)`}}/>
             </div>
           );
-          const OptBtn=(o)=>(
-            <button key={o.k} onClick={etiquetas[o.k]?undefined:()=>onSelect(o.k)}
-              disabled={!!etiquetas[o.k]}
-              aria-disabled={!!etiquetas[o.k]}
-              style={{cursor:etiquetas[o.k]?"not-allowed":"pointer",textAlign:"left",display:"flex",alignItems:"center",width:"100%",
+          const OptBtn=(o)=>{
+            // etq = hay etiqueta (se muestra el chip). bloqueado = además inhabilita.
+            const etq=etiquetas[o.k];
+            const bloqueado=!!(etq&&etq.bloquea);
+            return(
+            <button key={o.k} onClick={bloqueado?undefined:()=>onSelect(o.k)}
+              disabled={bloqueado}
+              aria-disabled={bloqueado}
+              style={{cursor:bloqueado?"not-allowed":"pointer",textAlign:"left",display:"flex",alignItems:"center",width:"100%",
                 gap:16,padding:"14px 18px",borderRadius:14,transition:"all .22s ease",
                 background:`linear-gradient(145deg,${C.card} 0%,rgba(200,169,81,0.10) 100%)`,
-                border:`1px solid ${C.borderD}`,opacity:etiquetas[o.k]?0.55:1,
+                border:`1px solid ${C.borderD}`,opacity:bloqueado?0.55:1,
                 boxShadow:"0 2px 12px rgba(0,0,0,0.3)"}}
-              onMouseEnter={etiquetas[o.k]?undefined:e=>{
+              onMouseEnter={bloqueado?undefined:e=>{
                 e.currentTarget.style.background=`linear-gradient(145deg,${C.cardH} 0%,rgba(200,169,81,0.22) 100%)`;
                 e.currentTarget.style.border=`1px solid ${C.gold}50`;
                 e.currentTarget.style.transform="translateX(4px)";
                 e.currentTarget.style.boxShadow=`0 4px 20px rgba(200,169,81,0.15)`;
               }}
-              onMouseLeave={etiquetas[o.k]?undefined:e=>{
+              onMouseLeave={bloqueado?undefined:e=>{
                 e.currentTarget.style.background=`linear-gradient(145deg,${C.card} 0%,rgba(200,169,81,0.10) 100%)`;
                 e.currentTarget.style.border=`1px solid ${C.borderD}`;
                 e.currentTarget.style.transform="translateX(0)";
@@ -202,21 +206,22 @@ export default function FilterModal({onSelect,onBack}){
               <div>
                 <span style={{color:C.ivory,fontFamily:"'Crimson Text',serif",fontSize:16.5,
                   display:"block"}}>{T(o.es,o.en,o.fr,o.de,o.pt,o.it)}</span>
-                {etiquetas[o.k]&&(
+                {etq&&(
                   <span style={{display:"inline-block",marginTop:6,
-                    background:etiquetas[o.k].bg,color:etiquetas[o.k].fg,
+                    background:etq.bg,color:etq.fg,
                     fontFamily:"'Cinzel',serif",fontSize:10.5,fontWeight:700,
                     letterSpacing:"0.12em",textTransform:"uppercase",
                     padding:"3px 10px",borderRadius:99,
-                    border:`1px solid ${etiquetas[o.k].fg}55`,
+                    border:`1px solid ${etq.fg}55`,
                     boxShadow:"0 1px 6px rgba(0,0,0,0.35)"}}>
-                    {etiquetas[o.k].txt}
+                    {etq.txt}
                   </span>
                 )}
               </div>
-              <span style={{marginLeft:"auto",color:C.gold,fontSize:16,opacity:0.5}}>{etiquetas[o.k]?"🔒":"›"}</span>
+              <span style={{marginLeft:"auto",color:C.gold,fontSize:16,opacity:0.5}}>{bloqueado?"🔒":"›"}</span>
             </button>
-          );
+            );
+          };
           const tFormacion=T("Formación","Formation","Formation","Bildung","Formação","Formazione");
           const tAfiliacion=T("Afiliación","Affiliation","Affiliation","Anbindung","Afiliação","Affiliazione");
           const backBtn=onBack?(
