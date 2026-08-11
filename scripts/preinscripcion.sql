@@ -62,7 +62,7 @@ begin
   -- Casts explícitos: la columna real puede ser varchar y RETURNS TABLE exige
   -- que el tipo coincida EXACTAMENTE (si no: "structure of query does not match").
   select u.id::uuid, u.nombre::text, u.apellido::text, u.email::text, u.tipo_usuario::text,
-         u.pais_residencia::text, u.sacramentos_elegidos::jsonb, u.registro_id::text,
+         u.pais_residencia::text, to_jsonb(u.sacramentos_elegidos) as sacramentos_elegidos, u.registro_id::text,
          u.codigo_pais_tel::text, u.telefono::text, u.created_at::timestamptz
     from public.usuarios u
    where coalesce(u.estado_inscripcion, 'activo') = 'preinscrito'
