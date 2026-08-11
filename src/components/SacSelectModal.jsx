@@ -26,7 +26,7 @@ export default function SacSelectModal({onContinue,onBack}){
         <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:24}}>
           {sacs.map(s=>{
             const etq=etiquetas[s.k];   // hay etiqueta → se muestra el chip
-            const bloqueado=!!(etq&&etq.bloquea); // …y además inhabilita si el admin lo indicó
+            const bloqueado=!!etq&&etq.bloquea!==false; // …y además inhabilita salvo que el admin ponga bloquea=false
             return(
             <button key={s.k} onClick={bloqueado?undefined:()=>toggle(s.k)}
               disabled={bloqueado} aria-disabled={bloqueado}

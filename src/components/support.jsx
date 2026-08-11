@@ -275,7 +275,7 @@ export function DirectorioButton({size="sec",estilo={},tono=null}){
   const [open,setOpen]=useState(false);
   const etiquetas=useEtiquetasOpciones();
   const etq=etiquetas["buscar_parroquia"];        // hay etiqueta → se muestra el chip
-  const bloqueado=!!(etq&&etq.bloquea);           // …y además bloquea si el admin lo indicó
+  const bloqueado=!!etq&&etq.bloquea!==false;      // …y además bloquea salvo que el admin ponga bloquea=false
   const full=estilo.width==="100%";
   const tonos={
     green:{background:"rgba(45,122,90,0.18)",color:C.ivory,border:"1px solid rgba(45,122,90,0.55)"},

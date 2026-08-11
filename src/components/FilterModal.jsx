@@ -179,7 +179,7 @@ export default function FilterModal({onSelect,onBack}){
           const OptBtn=(o)=>{
             // etq = hay etiqueta (se muestra el chip). bloqueado = además inhabilita.
             const etq=etiquetas[o.k];
-            const bloqueado=!!(etq&&etq.bloquea);
+            const bloqueado=!!etq&&etq.bloquea!==false;
             return(
             <button key={o.k} onClick={bloqueado?undefined:()=>onSelect(o.k)}
               disabled={bloqueado}
