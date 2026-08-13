@@ -45,6 +45,7 @@ Módulos adicionales (idempotentes, re-ejecutables):
 | **`scripts/admin-afiliados.sql`** | Gestión de afiliados (parroquias/diócesis/centros/otro): crea `organizaciones_otro` (RLS + GRANT INSERT anon), añade `suspendida`, RPCs `admin_afiliados_listar`/`admin_afiliado_estado` |
 | `scripts/directorio-datos-prueba.sql` | (Opcional) 2 parroquias + 2 diócesis de prueba para ver el mapa; borrar al terminar |
 | **`scripts/preinscripcion.sql`** | Modo preinscripción: tabla `ajustes`, columna `usuarios.estado_inscripcion`, RPCs `obtener_ajuste`/`admin_guardar_ajuste`/`admin_preinscritos_listar`. El modo arranca APAGADO; se activa desde el panel (pestaña Preinscripción). |
+| **`scripts/notificaciones-admin.sql`** | Avisos del panel (pestaña 🔔): tabla `notificaciones_admin` + RPCs. Redesplegar `preinscribir` y `activar-pago` (insertan avisos). |
 
 ## 4. Edge Functions (Supabase — terminal, no SQL Editor)
 

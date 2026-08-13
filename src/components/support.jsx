@@ -1,5 +1,6 @@
-import { useState, lazy, Suspense } from "react";
+import { useState, useRef, lazy, Suspense } from "react";
 import { createPortal } from "react-dom";
+import { supabase } from "../supabaseClient.js";
 import useEtiquetasOpciones from "../hooks/useEtiquetasOpciones.js";
 import { C, BTN, CARD, MODAL, OVERLAY } from "../ui.js";
 import { T, LANG } from "../i18n.js";
@@ -76,14 +77,24 @@ function abrirCorreo(contexto){
 export function SoporteModal({contexto,onClose}){
   const [copied,setCopied]=useState("");
   const [sinApp,setSinApp]=useState(false);
+  const avisado=useRef(false);
+  // Registra un aviso de soporte en el panel de admin (una vez por apertura del modal).
+  const avisarSoporte=()=>{
+    if(avisado.current)return; avisado.current=true;
+    const {subject}=soporteTexto(contexto);
+    try{ supabase.from("notificaciones_admin").insert({
+      tipo:"soporte", titulo:"Nueva solicitud de soporte",
+      detalle:{contexto:contexto||null, asunto:subject}}); }catch(_){}
+  };
   // Heurística: si 1.6s después del clic la página nunca perdió el foco,
   // ninguna app de correo se abrió (típico en Windows sin app predeterminada).
   const intentarApp=()=>{
-    setSinApp(false);
+    setSinApp(false); avisarSoporte();
     abrirCorreo(contexto);
     setTimeout(()=>{if(document.hasFocus())setSinApp(true);},1600);
   };
   const abrirGmail=()=>{
+    avisarSoporte();
     const {subject,body}=soporteTexto(contexto);
     window.open(
       `https://mail.google.com/mail/?view=cm&fs=1&to=${SOPORTE_EMAIL}`+

@@ -156,6 +156,7 @@
     <p id="idle-aviso" style="display:none;background:rgba(214,69,69,0.15);border:1px solid #D64545;color:#F0EAD6;border-radius:8px;padding:8px 12px;font-size:13px;margin-bottom:12px"></p>
 
     <div class="tabs">
+      <button class="tab" data-tab="avisos">🔔 Avisos <span id="avisos-badge" class="pill bad" style="display:none"></span></button>
       <button class="tab active" data-tab="estadisticas">📊 Estadísticas</button>
       <button class="tab" data-tab="videos">🎬 Videos</button>
       <button class="tab" data-tab="evaluaciones">📝 Evaluaciones</button>
@@ -490,6 +491,18 @@
       </div>
     </div>
 
+    <!-- TAB AVISOS -->
+    <div id="tab-avisos" class="tabpane hidden">
+      <h2>🔔 Avisos</h2>
+      <p style="color:var(--ivory-m);font-size:13px;margin:0 0 12px">Nuevos registros y preinscripciones, solicitudes de soporte y consultas al catequista.</p>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
+        <label><input type="checkbox" id="av-solo" onchange="cargarAvisos()"> Solo no leídos</label>
+        <button class="btn ghost" onclick="cargarAvisos()">↻ Recargar</button>
+        <button class="btn" onclick="window.avisosLeerTodas()">✓ Marcar todos como leídos</button>
+      </div>
+      <div id="avisos-lista" class="scroll"></div>
+    </div>
+
     <!-- TAB AUDITORÍA -->
     <div id="tab-auditoria" class="tabpane hidden">
       <h2>📜 Registro de acciones</h2>
@@ -666,6 +679,7 @@
     $("gate").classList.add("hidden"); $("app").classList.remove("hidden");
     iniciarVigilanciaInactividad();
     cargarEstadisticas(); cargarVideos(); cargarUsuarios(); refrescarBadgeMensajes(); cargarGrupos(); cargarAtencion();
+    refrescarBadgeAvisos(); setInterval(refrescarBadgeAvisos, 60000); // avisos: badge cada 60s
   }
   async function salir(){ await sb.auth.signOut(); location.reload(); }
 
@@ -976,6 +990,7 @@
     if(t.dataset.tab==="constancias") cargarConstancias();
     if(t.dataset.tab==="afiliados") cargarAfiliados();
     if(t.dataset.tab==="preinscripcion") cargarPreinscripcion();
+    if(t.dataset.tab==="avisos") cargarAvisos();
     if(t.dataset.tab==="sesiones") cargarSesiones();
     if(t.dataset.tab==="atencion") cargarAtencion();
     if(t.dataset.tab==="precios") cargarCuotas();
@@ -1818,6 +1833,48 @@
       $("cuotas-msg").className="msg ok"; $("cuotas-msg").textContent=`Importados ${data??limpias.length} país(es) correctamente.`;
     }catch(e){ $("cuotas-msg").className="msg err"; $("cuotas-msg").textContent="Error al importar: "+(e.message||e); console.error(e); }
   }
+
+  // ---------- AVISOS (notificaciones al admin) ----------
+  const AV_ICONO={registro:"🎓",preinscripcion:"📝",soporte:"🆘",consulta:"✝️"};
+  async function refrescarBadgeAvisos(){
+    try{
+      const {data,error}=await sb.rpc("admin_notificaciones_no_leidas");
+      if(error)return;
+      const b=$("avisos-badge");
+      if(data&&data>0){ b.textContent=data; b.style.display="inline-block"; }
+      else b.style.display="none";
+    }catch(e){}
+  }
+  async function cargarAvisos(){
+    const cont=$("avisos-lista");
+    const {data,error}=await sb.rpc("admin_notificaciones_listar",{p_solo_no_leidas:$("av-solo").checked});
+    if(error){ cont.innerHTML="<p style='color:#F87171'>Error: "+esc(error.message)+"</p>"; return; }
+    const rows=data||[];
+    if(!rows.length){ cont.innerHTML="<p style='color:var(--ivory-m)'>Sin avisos.</p>"; refrescarBadgeAvisos(); return; }
+    cont.innerHTML=rows.map(r=>{
+      const d=r.detalle||{};
+      const linea=[d.nombre,d.email,d.pais,d.perfil,d.asunto,d.contexto,d.mensaje,(d.monto!=null?(d.monto+" "+(d.moneda||"")):null)].filter(Boolean).map(esc).join(" · ");
+      return `<div style="display:flex;gap:10px;align-items:flex-start;justify-content:space-between;padding:10px 12px;border:1px solid rgba(200,169,81,.2);border-radius:8px;margin-bottom:6px;${r.leida?'opacity:.6':''}">
+        <div style="min-width:0">
+          <div>${AV_ICONO[r.tipo]||"🔔"} <b style="color:var(--gold)">${esc(r.titulo)}</b> ${r.leida?'':'<span class="pill bad">nuevo</span>'}</div>
+          ${linea?`<div style="color:var(--ivory-m);font-size:12px;margin-top:2px">${linea}</div>`:''}
+          <div style="color:var(--ivory-m);font-size:11px">${r.creado?new Date(r.creado).toLocaleString():''}</div>
+        </div>
+        ${r.leida?'':`<button class="btn ghost" onclick="window.avisoLeido('${r.id}')">Marcar leído</button>`}
+      </div>`;
+    }).join("");
+    refrescarBadgeAvisos();
+  }
+  window.avisoLeido=async(id)=>{
+    const {error}=await sb.rpc("admin_notificacion_leida",{p_id:id});
+    if(error){ alert("Error: "+error.message); return; }
+    await cargarAvisos();
+  };
+  window.avisosLeerTodas=async()=>{
+    const {error}=await sb.rpc("admin_notificaciones_leer_todas");
+    if(error){ alert("Error: "+error.message); return; }
+    await cargarAvisos();
+  };
 
   // ---------- MENSAJES ----------
   let CONVS=[], FACETAS=null, convActiva=null;

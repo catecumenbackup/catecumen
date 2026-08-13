@@ -119,6 +119,16 @@ serve(async (req: Request) => {
       throw new Error(insErr.message);
     }
 
+    // Aviso para el panel de administración (no bloquea si falla).
+    try {
+      await supabase.from("notificaciones_admin").insert({
+        tipo: "preinscripcion", titulo: "Nueva preinscripción",
+        detalle: { nombre: `${formData.nombre||""} ${formData.apellido||""}`.trim(),
+                   email: formData.email, pais: formData.country||"", perfil: userType },
+        ref_id: uid,
+      });
+    } catch (e) { console.error("[preinscribir] notif:", e); }
+
     console.log(`[preinscribir] Preinscrito creado: usuario=${uid} registro_id=${registroId}`);
     return new Response(JSON.stringify({ ok: true, uid, registroId }),
       { headers: { ...CORS, "Content-Type": "application/json" } });

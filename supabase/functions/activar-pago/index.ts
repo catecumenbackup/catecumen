@@ -132,6 +132,13 @@ async function activarRegistro(session: Stripe.Checkout.Session, pendienteId: st
     await supabase.from("registros_pendientes").delete().eq("id", pendienteId);
     await enviarCorreo(formData?.email || "", "✅ Tu pago fue confirmado — Catecumen",
       emailConfirmado(formData?.nombre || "", null));
+    try {
+      await supabase.from("notificaciones_admin").insert({
+        tipo: "registro", titulo: "Preinscrito completó su inscripción (pago)",
+        detalle: { email: formData?.email || "", monto: importePagado, moneda: currency },
+        ref_id: `conv-${payload.usuario_id}`,
+      });
+    } catch (e) { console.error("[activar-pago] notif:", e); }
     console.log(`[activar-pago] Preinscrito activado: usuario=${payload.usuario_id} monto=${importePagado} ${currency}`);
     return { ok: true, uid: payload.usuario_id, note: "preinscrito activado" };
   }
@@ -227,6 +234,16 @@ async function activarRegistro(session: Stripe.Checkout.Session, pendienteId: st
   await supabase.from("registros_pendientes").delete().eq("id", pendienteId);
   await enviarCorreo(formData.email, "✅ Tu pago fue confirmado — Catecumen",
     emailConfirmado(formData.nombre, registroId));
+  // Aviso para el panel (dedup por ref_id = uid; el webhook no vuelve a insertarlo).
+  try {
+    await supabase.from("notificaciones_admin").insert({
+      tipo: "registro", titulo: "Nuevo registro (pago confirmado)",
+      detalle: { nombre: `${formData.nombre||""} ${formData.apellido||""}`.trim(),
+                 email: formData.email, pais: formData.country||"", perfil: userType,
+                 monto: importePagado, moneda: currency },
+      ref_id: uid,
+    });
+  } catch (e) { console.error("[activar-pago] notif:", e); }
 
   console.log(`[activar-pago] Cuenta creada: usuario=${uid} registro_id=${registroId} monto=${importePagado} ${currency}`);
   return { ok: true, uid, registroId };
