@@ -185,22 +185,25 @@ export default function RegisterForm({userType,sacraments,onNext,onBack}){
           </FRow>
         </div>
         
-        <FRow label={T("Correo electrónico","Email address","Adresse e-mail","E-Mail-Adresse","E-mail","Indirizzo email")}>
-          <Input type="email" value={d.email} onChange={v=>set("email",v)} placeholder="nombre@ejemplo.com"/>
-        </FRow>
+        {/* Correo y su confirmación en la misma línea. */}
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+          <FRow label={T("Correo electrónico","Email address","Adresse e-mail","E-Mail-Adresse","E-mail","Indirizzo email")}>
+            <Input type="email" value={d.email} onChange={v=>set("email",v)} placeholder="nombre@ejemplo.com"/>
+          </FRow>
 
-        <FRow label={T("Confirmar correo electrónico","Confirm email address","Confirmer l'adresse e-mail","E-Mail-Adresse bestätigen","Confirmar e-mail","Conferma indirizzo email")}>
-          {/* Reescribir (no pegar) para atrapar erratas; se compara sin distinguir mayúsculas. */}
-          <input type="email" value={d.emailConfirm||""} onChange={e=>set("emailConfirm",e.target.value)}
-            onPaste={e=>e.preventDefault()} onDrop={e=>e.preventDefault()}
-            autoComplete="off" spellCheck={false} placeholder="nombre@ejemplo.com"
-            style={{...INP, ...(d.emailConfirm&&!emailsMatch?{borderColor:"#F87171"}:{})}}/>
-          {d.emailConfirm&&!emailsMatch&&(
-            <p style={{color:"#F87171",fontSize:12.5,margin:"6px 0 0",fontFamily:"'Crimson Text',serif"}}>
-              ⚠️ {T("Los correos no coinciden","The emails do not match","Les e-mails ne correspondent pas","Die E-Mail-Adressen stimmen nicht überein","Os e-mails não coincidem","Le email non corrispondono")}
-            </p>
-          )}
-        </FRow>
+          <FRow label={T("Confirmar correo electrónico","Confirm email address","Confirmer l'adresse e-mail","E-Mail-Adresse bestätigen","Confirmar e-mail","Conferma indirizzo email")}>
+            {/* Reescribir (no pegar) para atrapar erratas; se compara sin distinguir mayúsculas. */}
+            <input type="email" value={d.emailConfirm||""} onChange={e=>set("emailConfirm",e.target.value)}
+              onPaste={e=>e.preventDefault()} onDrop={e=>e.preventDefault()}
+              autoComplete="off" spellCheck={false} placeholder="nombre@ejemplo.com"
+              style={{...INP, ...(d.emailConfirm&&!emailsMatch?{borderColor:"#F87171"}:{})}}/>
+            {d.emailConfirm&&!emailsMatch&&(
+              <p style={{color:"#F87171",fontSize:12.5,margin:"6px 0 0",fontFamily:"'Crimson Text',serif"}}>
+                ⚠️ {T("Los correos no coinciden","The emails do not match","Les e-mails ne correspondent pas","Die E-Mail-Adressen stimmen nicht überein","Os e-mails não coincidem","Le email non corrispondono")}
+              </p>
+            )}
+          </FRow>
+        </div>
 
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
           <FRow label={T("Fecha de nacimiento","Date of birth","Date de naissance","Geburtsdatum","Data de nascimento","Data di nascita")}>
@@ -657,12 +660,12 @@ export default function RegisterForm({userType,sacraments,onNext,onBack}){
                 {(userType==="catecumeno"
                   ? [
                       {k:"Soltero/a",                es:"Soltero/a",                   en:"Single",fr:"Célibataire",de:"Ledig",pt:"Solteiro/a",it:"Celibe/Nubile"},
-                      {k:"Casado/a sólo por el civil",es:"Casado/a sólo por el civil", en:"Married (civil only)",fr:"Marié(e) civilement seulement",de:"Nur standesamtlich verheiratet",pt:"Casado/a só no civil",it:"Sposato/a solo civilmente"},
+                      {k:"Casado/a sólo por el civil",es:"Casado/a sólo por el civil (unión libre)", en:"Married (civil only / common-law)",fr:"Marié(e) civilement seulement (union libre)",de:"Nur standesamtlich verheiratet (freie Partnerschaft)",pt:"Casado/a só no civil (união estável)",it:"Sposato/a solo civilmente (unione di fatto)"},
                       {k:"Divorciado/a",              es:"Divorciado/a",                en:"Divorced",fr:"Divorcé(e)",de:"Geschieden",pt:"Divorciado/a",it:"Divorziato/a"},
                     ]
                   : [
                       {k:"Soltero/a",                es:"Soltero/a",                   en:"Single",fr:"Célibataire",de:"Ledig",pt:"Solteiro/a",it:"Celibe/Nubile"},
-                      {k:"Casado/a sólo por el civil",es:"Casado/a sólo por el civil", en:"Married (civil only)",fr:"Marié(e) civilement seulement",de:"Nur standesamtlich verheiratet",pt:"Casado/a só no civil",it:"Sposato/a solo civilmente"},
+                      {k:"Casado/a sólo por el civil",es:"Casado/a sólo por el civil (unión libre)", en:"Married (civil only / common-law)",fr:"Marié(e) civilement seulement (union libre)",de:"Nur standesamtlich verheiratet (freie Partnerschaft)",pt:"Casado/a só no civil (união estável)",it:"Sposato/a solo civilmente (unione di fatto)"},
                       {k:"Casado/a por la Iglesia",   es:"Casado/a por la Iglesia",    en:"Married in the Church",fr:"Marié(e) à l'Église",de:"Kirchlich verheiratet",pt:"Casado/a pela Igreja",it:"Sposato/a in Chiesa"},
                       {k:"Divorciado/a",              es:"Divorciado/a",                en:"Divorced",fr:"Divorcé(e)",de:"Geschieden",pt:"Divorciado/a",it:"Divorziato/a"},
                     ]
