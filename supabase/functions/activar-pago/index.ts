@@ -51,6 +51,7 @@ const supabase = createClient(
 
 const resendApiKey = Deno.env.get("RESEND_API_KEY");
 const resendFrom   = Deno.env.get("RESEND_FROM") || "Catecumen <noreply@catecumen.com>";
+const adminEmail   = Deno.env.get("ADMIN_NOTIF_EMAIL") || "admin@catecumen.com";
 
 const CERO_DECIMALES = new Set([
   "BIF","CLP","DJF","GNF","JPY","KMF","KRW","MGA","PYG",
@@ -138,6 +139,10 @@ async function activarRegistro(session: Stripe.Checkout.Session, pendienteId: st
         detalle: { email: formData?.email || "", monto: importePagado, moneda: currency },
         ref_id: `conv-${payload.usuario_id}`,
       });
+      await enviarCorreo(adminEmail, "Catecumen · Preinscrito completó su inscripción",
+        `<div style="font-family:Arial,sans-serif"><h2 style="color:#9C7A28">🔔 Preinscrito completó su inscripción (pago)</h2>
+         <p>${formData?.email || ""} — ${importePagado} ${currency}</p>
+         <p><a href="https://www.catecumen.com/admin/">Abrir el panel →</a></p></div>`);
     } catch (e) { console.error("[activar-pago] notif:", e); }
     console.log(`[activar-pago] Preinscrito activado: usuario=${payload.usuario_id} monto=${importePagado} ${currency}`);
     return { ok: true, uid: payload.usuario_id, note: "preinscrito activado" };
@@ -243,6 +248,10 @@ async function activarRegistro(session: Stripe.Checkout.Session, pendienteId: st
                  monto: importePagado, moneda: currency },
       ref_id: uid,
     });
+    await enviarCorreo(adminEmail, "Catecumen · Nuevo registro (pago confirmado)",
+      `<div style="font-family:Arial,sans-serif"><h2 style="color:#9C7A28">🔔 Nuevo registro (pago confirmado)</h2>
+       <p><b>${(formData.nombre||"")} ${(formData.apellido||"")}</b> — ${formData.email}<br>${formData.country||""} · ${userType} · ${importePagado} ${currency}</p>
+       <p><a href="https://www.catecumen.com/admin/">Abrir el panel →</a></p></div>`);
   } catch (e) { console.error("[activar-pago] notif:", e); }
 
   console.log(`[activar-pago] Cuenta creada: usuario=${uid} registro_id=${registroId} monto=${importePagado} ${currency}`);

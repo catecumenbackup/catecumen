@@ -26,6 +26,20 @@ const supabase = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
 );
 
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+const RESEND_FROM     = Deno.env.get("RESEND_FROM") || "Catecumen <noreply@catecumen.com>";
+const ADMIN_EMAIL     = Deno.env.get("ADMIN_NOTIF_EMAIL") || "admin@catecumen.com";
+async function emailAdmin(subject: string, html: string) {
+  if (!RESEND_API_KEY) return;
+  try {
+    await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from: RESEND_FROM, to: [ADMIN_EMAIL], subject, html }),
+    });
+  } catch (e) { console.error("[preinscribir] emailAdmin:", e); }
+}
+
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   try {
@@ -127,6 +141,10 @@ serve(async (req: Request) => {
                    email: formData.email, pais: formData.country||"", perfil: userType },
         ref_id: uid,
       });
+      await emailAdmin("Catecumen · Nueva preinscripción",
+        `<div style="font-family:Arial,sans-serif"><h2 style="color:#9C7A28">🔔 Nueva preinscripción</h2>
+         <p><b>${(formData.nombre||"")} ${(formData.apellido||"")}</b> — ${formData.email}<br>${formData.country||""} · ${userType}</p>
+         <p><a href="https://www.catecumen.com/admin/">Abrir el panel →</a></p></div>`);
     } catch (e) { console.error("[preinscribir] notif:", e); }
 
     console.log(`[preinscribir] Preinscrito creado: usuario=${uid} registro_id=${registroId}`);

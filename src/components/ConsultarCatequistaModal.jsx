@@ -20,10 +20,10 @@ export default function ConsultarCatequistaModal({ contexto = "", onClose }) {
       const prefijo = contexto ? `[${contexto}] ` : "";
       const { error } = await supabase.rpc("responder_usuario", { p_cuerpo: prefijo + cuerpo });
       if (error) throw error;
-      // Aviso para el panel de administración (además del mensaje interno).
-      try { await supabase.from("notificaciones_admin").insert({
+      // Aviso al admin (panel + correo), además del mensaje interno.
+      try { await supabase.functions.invoke("avisar-admin", { body: {
         tipo: "consulta", titulo: "Nueva consulta al catequista",
-        detalle: { contexto: contexto || null, mensaje: cuerpo.slice(0, 300) } }); } catch (_) {}
+        detalle: { contexto: contexto || null, mensaje: cuerpo.slice(0, 300) } } }); } catch (_) {}
       setEstado("ok");
     } catch (e) {
       console.error("consulta catequista:", e);

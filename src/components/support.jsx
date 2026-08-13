@@ -82,9 +82,9 @@ export function SoporteModal({contexto,onClose}){
   const avisarSoporte=()=>{
     if(avisado.current)return; avisado.current=true;
     const {subject}=soporteTexto(contexto);
-    try{ supabase.from("notificaciones_admin").insert({
+    try{ supabase.functions.invoke("avisar-admin",{body:{
       tipo:"soporte", titulo:"Nueva solicitud de soporte",
-      detalle:{contexto:contexto||null, asunto:subject}}); }catch(_){}
+      detalle:{contexto:contexto||null, asunto:subject}}}); }catch(_){}
   };
   // Heurística: si 1.6s después del clic la página nunca perdió el foco,
   // ninguna app de correo se abrió (típico en Windows sin app predeterminada).

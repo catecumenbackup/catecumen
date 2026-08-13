@@ -58,7 +58,13 @@ supabase functions deploy <nombre> --use-api
 Funciones: `crear-sesion-pago`, `activar-pago`, `stripe-webhook`, `reanudar-pago`,
 `admin-eliminar-usuario`, `firmar-video`, `consultar-magisterium`,
 `geocodificar-afiliados`, `geocodificar-uno`, **`preinscribir`** (crea la cuenta del
-preinscrito con service-role — desplegar para que la preinscripción funcione).
+preinscrito con service-role — desplegar para que la preinscripción funcione),
+**`avisar-admin`** (avisos al panel + correo a admin@catecumen.com vía Resend).
+
+**Avisos por correo (Resend):** requiere secret `RESEND_API_KEY` (crear cuenta en Resend,
+verificar el dominio `catecumen.com`) y, opcional, `RESEND_FROM` / `ADMIN_NOTIF_EMAIL`.
+Redesplegar `avisar-admin`, `preinscribir` y `activar-pago`. Sin la key, el aviso en el
+panel funciona igual y solo se omite el correo.
 
 Solo redesplegar las que cambiaron. Secrets manuales requeridos (una vez):
 `BUNNY_TOKEN_KEY`, `BUNNY_CDN_HOST` (firmar-video); `MAGISTERIUM_API_KEY`

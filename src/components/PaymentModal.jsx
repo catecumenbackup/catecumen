@@ -129,11 +129,10 @@ export default function PaymentModal({formData,userType,selectedSacs,onSuccess,o
     setLoading(true);setErr("");
     try{
       const res=await crearCuentaUsuario(formData,userType,selectedSacs);
-      try{ await supabase.from("notificaciones_admin").insert({
+      try{ await supabase.functions.invoke("avisar-admin",{body:{
         tipo:"registro", titulo:"Nuevo registro (beca/afiliación, sin pago)",
         detalle:{nombre:`${formData.nombre||""} ${formData.apellido||""}`.trim(),
-                 email:formData.email, pais:formData.country||"", perfil:userType},
-        ref_id:res?.uid||null}); }catch(_){}
+                 email:formData.email, pais:formData.country||"", perfil:userType}}}); }catch(_){}
       onSuccess(res);
     }catch(e){setErr(e.message);}
     finally{setLoading(false);}
