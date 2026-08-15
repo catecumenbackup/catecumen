@@ -223,7 +223,8 @@
      ilegible. Ahora contrasta igual que las demás tarjetas. */
   .tarjeta.beca{border-color:rgba(200,169,81,.5);background:linear-gradient(145deg,rgba(52,43,19,0.94) 0%,rgba(14,27,46,0.96) 100%)}
   .tarjeta.beca h3{color:#F0D68A}
-  .tarjeta .libre{color:var(--green);font-family:'Cinzel',serif;font-size:11px;letter-spacing:.08em;display:block;margin-top:8px}
+  /* Verde claro FIJO: la tarjeta tiene fondo navy fijo; var(--green) en tema claro es oscuro → ilegible. */
+  .tarjeta .libre{color:#6FD79A;font-family:'Cinzel',serif;font-size:12.5px;font-weight:700;letter-spacing:.06em;display:block;margin-top:8px}
 
   /* Estilos específicos para las listas en la reseña de fundadores */
   .tarjeta ul { padding-left: 20px; margin-top: 12px; }
