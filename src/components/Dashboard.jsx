@@ -17,6 +17,9 @@ export default function Dashboard({formData,sequence,progress,onUpdate,onClose,i
   const [tab,setTab]=useState(initialTab||"progress");
   const [edit,setEdit]=useState({});
   const [saved,setSaved]=useState(false);
+  const [saveErr,setSaveErr]=useState("");
+  const [saveNote,setSaveNote]=useState("");
+  const [saving,setSaving]=useState(false);
   const [agendaPend,setAgendaPend]=useState(0); // sesiones próximas sin responder
   const [schola,setSchola]=useState(null); // 'catecumen' | 'fidei' | null
   // Acceso a las Scholas: catequistas → Catecumen; quien completó un sacramento → Fidei.
@@ -36,10 +39,21 @@ export default function Dashboard({formData,sequence,progress,onUpdate,onClose,i
     return ()=>{ vivo=false; };
   },[]);
   const setE=(k,v)=>setEdit(p=>({...p,[k]:v}));
-  const handleSave=()=>{
-    onUpdate(edit);
-    setSaved(true);
-    setTimeout(()=>setSaved(false),2000);
+  const handleSave=async()=>{
+    if(saving) return;
+    setSaveErr(""); setSaveNote(""); setSaving(true);
+    try{
+      const r=await onUpdate(edit);
+      setEdit(p=>({...p,newPassword:""})); // limpia el campo de contraseña
+      if(r&&r.emailPendiente)
+        setSaveNote(T("Revisa tu correo para confirmar el cambio de dirección de correo.","Check your email to confirm the email change.","Vérifiez votre e-mail pour confirmer le changement d'adresse.","Überprüfen Sie Ihre E-Mail, um die Änderung der E-Mail-Adresse zu bestätigen.","Verifique seu e-mail para confirmar a alteração de endereço.","Controlla la tua email per confermare il cambio di indirizzo."));
+      setSaved(true);
+      setTimeout(()=>setSaved(false),3000);
+    }catch(e){
+      setSaveErr(e?.message||T("No se pudieron guardar los cambios. Intenta de nuevo.","Changes could not be saved. Please try again.","Les modifications n'ont pas pu être enregistrées. Réessayez.","Änderungen konnten nicht gespeichert werden. Bitte erneut versuchen.","Não foi possível salvar as alterações. Tente novamente.","Impossibile salvare le modifiche. Riprova."));
+    }finally{
+      setSaving(false);
+    }
   };
   const totalItems=sequence.reduce((a,s)=>(SEC_META[s]?.videos?.length||0)+a,0);
   const doneItems=sequence.reduce((a,s)=>{
@@ -163,6 +177,12 @@ export default function Dashboard({formData,sequence,progress,onUpdate,onClose,i
             {saved&&(
               <div style={{...CARD,background:"rgba(45,122,90,0.2)",marginBottom:16,textAlign:"center"}}>
                 <p style={{color:C.green}}>✓ {T("Cambios guardados","Changes saved","Modifications enregistrées","Änderungen gespeichert","Alterações salvas","Modifiche salvate")}</p>
+                {saveNote&&<p style={{color:C.ivory,fontSize:13,marginTop:6}}>{saveNote}</p>}
+              </div>
+            )}
+            {saveErr&&(
+              <div style={{...CARD,background:"rgba(150,40,40,0.22)",marginBottom:16,textAlign:"center"}}>
+                <p style={{color:"#F3B0B0"}}>{saveErr}</p>
               </div>
             )}
             <div style={{...CARD,marginBottom:20}}>
@@ -206,9 +226,11 @@ export default function Dashboard({formData,sequence,progress,onUpdate,onClose,i
                   onChange={v=>setE("newPassword",v)} placeholder={T("Dejar vacío para no cambiar","Leave blank to keep current","Laisser vide pour ne pas changer","Leer lassen, um nichts zu ändern","Deixe em branco para não alterar","Lascia vuoto per non modificare")}/>
               </FRow>
             </div>
-            <button onClick={handleSave}
-              style={{...BTN("pri"),width:"100%",justifyContent:"center",marginTop:16}}>
-              💾 {T("Guardar cambios","Save changes","Enregistrer les modifications","Änderungen speichern","Salvar alterações","Salva modifiche")}
+            <button onClick={handleSave} disabled={saving}
+              style={{...BTN("pri"),width:"100%",justifyContent:"center",marginTop:16,opacity:saving?0.6:1,cursor:saving?"wait":"pointer"}}>
+              💾 {saving
+                ?T("Guardando…","Saving…","Enregistrement…","Wird gespeichert…","Salvando…","Salvataggio…")
+                :T("Guardar cambios","Save changes","Enregistrer les modifications","Änderungen speichern","Salvar alterações","Salva modifiche")}
             </button>
           </div>
         )}

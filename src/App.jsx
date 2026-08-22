@@ -2011,7 +2011,32 @@ export default function App(){
           <Dashboard formData={formData} sequence={sequence} progress={progress}
             userType={userType}
             initialTab={dashTab}
-            onUpdate={updates=>setFormData(p=>({...p,...updates}))}
+            onUpdate={async(updates)=>{
+              // Persiste los cambios de "Mi Cuenta" en la BD.
+              // - Columnas de perfil (email/teléfono/parroquia) → RPC actualizar_mi_perfil.
+              // - Contraseña y correo de LOGIN → supabase.auth.updateUser (auth).
+              const cambios={};
+              if(updates.email!==undefined)     cambios.email=updates.email;
+              if(updates.phone!==undefined)     cambios.telefono=updates.phone;
+              if(updates.phoneCode!==undefined) cambios.codigo_pais_tel=updates.phoneCode;
+              if(updates.parroquia!==undefined) cambios.parroquia_nombre=updates.parroquia;
+              if(Object.keys(cambios).length){
+                const {error}=await supabase.rpc("actualizar_mi_perfil",{p_cambios:cambios});
+                if(error) throw new Error(error.message);
+              }
+              if(updates.newPassword){
+                const {error}=await supabase.auth.updateUser({password:updates.newPassword});
+                if(error) throw new Error(error.message);
+              }
+              let emailPendiente=false;
+              if(updates.email && updates.email!==formData.email){
+                const {error}=await supabase.auth.updateUser({email:updates.email});
+                if(error) throw new Error(error.message);
+                emailPendiente=true; // requiere confirmar por correo
+              }
+              setFormData(p=>({...p,...updates,newPassword:undefined}));
+              return {emailPendiente};
+            }}
             onClose={()=>{setShowDash(false);setDashTab(null);
               supabase.rpc("mis_mensajes_no_leidos").then(({data})=>setMsgNoLeidos(typeof data==="number"?data:0)).catch(()=>{});
             }}/>

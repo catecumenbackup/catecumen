@@ -56,4 +56,30 @@ describe("Dashboard", () => {
     render(<Dashboard {...base} initialTab="account" />);
     expect(screen.getByText(/Información registrada/i)).toBeInTheDocument();
   });
+
+  it("Guardar cambios llama onUpdate y muestra confirmación al éxito", async () => {
+    const user = userEvent.setup();
+    const onUpdate = vi.fn().mockResolvedValue({});
+    render(<Dashboard {...base} onUpdate={onUpdate} initialTab="account" />);
+    await user.click(screen.getByRole("button", { name: /Guardar cambios/i }));
+    expect(onUpdate).toHaveBeenCalled();
+    expect(await screen.findByText(/Cambios guardados/i)).toBeInTheDocument();
+  });
+
+  it("muestra el aviso de confirmación cuando cambia el correo de login", async () => {
+    const user = userEvent.setup();
+    const onUpdate = vi.fn().mockResolvedValue({ emailPendiente: true });
+    render(<Dashboard {...base} onUpdate={onUpdate} initialTab="account" />);
+    await user.click(screen.getByRole("button", { name: /Guardar cambios/i }));
+    expect(await screen.findByText(/Revisa tu correo para confirmar/i)).toBeInTheDocument();
+  });
+
+  it("muestra el error si onUpdate falla (no muestra ✓)", async () => {
+    const user = userEvent.setup();
+    const onUpdate = vi.fn().mockRejectedValue(new Error("fallo de red"));
+    render(<Dashboard {...base} onUpdate={onUpdate} initialTab="account" />);
+    await user.click(screen.getByRole("button", { name: /Guardar cambios/i }));
+    expect(await screen.findByText(/fallo de red/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Cambios guardados/i)).not.toBeInTheDocument();
+  });
 });
