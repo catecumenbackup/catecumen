@@ -38,12 +38,17 @@ async function resolverFuente(url){
   return url;
 }
 
-export default function VideoModal({secId,vid,bridge,onWatched,onClose}){
+export default function VideoModal({secId,vid,bridge,startAt=0,onProgress,onWatched,onClose}){
   const [watching,setWatching]=useState(false);
   const [done,setDone]=useState(false);
   const [secs,setSecs]=useState(0);
   const [videoError,setVideoError]=useState(false); // el archivo de video no cargó (404)
   const videoRef=useRef(null);
+  const lastReport=useRef(0); // último segundo reportado (throttle del guardado)
+  // Coloca el video en la posición guardada al cargar los metadatos, y reporta el
+  // avance (cada ~5 s) para que el usuario retome donde lo dejó.
+  const seekInicial=()=>{ const v=videoRef.current; if(v && startAt>0 && startAt<(v.duration||1e9)-2){ try{ v.currentTime=startAt; }catch{} } };
+  const reportar=()=>{ const v=videoRef.current; if(!v||!onProgress) return; const t=Math.floor(v.currentTime||0); if(t>0 && Math.abs(t-lastReport.current)>=5){ lastReport.current=t; onProgress(t); } };
   // Prioridad: URL real del video en la BD (idioma del usuario) → video de prueba local.
   const urlReal=bridge?.frontToUrl?.[secId]?.[vid?.id]||null;
   const videoPrueba=urlReal||PICK(SEC_META[secId]?.videoPrueba)||null; // real o prueba, en el idioma activo
@@ -120,8 +125,11 @@ export default function VideoModal({secId,vid,bridge,onWatched,onClose}){
               controls
               playsInline
               style={{width:"100%",maxHeight:320,display:"block",borderRadius:12}}
+              onLoadedMetadata={seekInicial}
               onPlay={()=>setWatching(true)}
-              onEnded={()=>setDone(true)}
+              onTimeUpdate={reportar}
+              onPause={reportar}
+              onEnded={()=>{ setDone(true); if(onProgress) onProgress(0); }}
               onError={()=>setVideoError(true)}
             />
           ):(<>
