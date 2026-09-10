@@ -30,3 +30,33 @@ _archivo
 *.njsproj
 *.sln
 *.sw?
+
+# ── Secretos sueltos fuera de .env (10 sep 2026) ────────────────────────────
+# Aparecieron dos archivos de texto con claves en la raíz del repo. Estaban
+# sin rastrear, así que no llegaron a subirse, pero un `git add -A` los habría
+# empujado a GitHub. Estos patrones cierran esa puerta.
+*TOKEN*.txt
+*Clave de API*
+*API KEY*
+*apikey*
+*secret*
+*.pem
+*.key
+
+# ── Volcados de trabajo en la raíz (no forman parte del build) ──────────────
+# Salidas crudas de DENUE, OSM/Overpass y de la geocodificación. Pesan mucho,
+# se regeneran, y algunas traen datos de contacto en bruto. Si quieres versionar
+# alguna, muévela a scripts/ o a docs/ y quítala de aquí.
+/denue_*.json
+/denue_*.sql
+/denue*.mjs
+/osm_*.json
+/overpass_*.json
+/parroquias_geo*.json
+/parroquias_geo*.sql
+/parroquias_geocodificadas.json
+/pendientes_geocodificar.json
+/directorio_parroquias_*.json
+/anclas_municipios.json
+/emparejar-osm.mjs
+/geocodificar-*.mjs

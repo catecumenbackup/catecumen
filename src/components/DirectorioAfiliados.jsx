@@ -28,6 +28,11 @@ function cargarLeaflet() {
   return leafletPromise;
 }
 
+// Verde = con convenio firmado. Rojo = está en el directorio diocesano pero
+// todavía no se afilia. Se usan en el marcador y en la leyenda, de un solo
+// lugar, para que nunca se despinten entre sí.
+const VERDE_ROJO = { verde: "#3FAE6A", rojo: "#E0574F" };
+
 export default function DirectorioAfiliados({ onClose }) {
   const [q, setQ] = useState("");
   const [tipo, setTipo] = useState(null);      // null | 'parroquia' | 'diocesis'
@@ -77,13 +82,16 @@ export default function DirectorioAfiliados({ onClose }) {
       const pts = [];
       resultados.forEach((r) => {
         if (r.lat == null || r.lng == null) return;
-        // Parroquia: monograma de Catecumen en círculo dorado. Diócesis: insignia
-        // dorada destacada con 🏛️ (jerarquía superior → marcador más grande).
+        // El COLOR del aro dice la situación, no el tipo de organización:
+        //   verde = ya afiliada          rojo = en trámite de afiliación
+        // La FORMA sigue distinguiendo la jerarquía: la diócesis lleva insignia
+        // grande con 🏛️; la parroquia, el monograma de Catecumen.
+        const aro = r.afiliada === false ? VERDE_ROJO.rojo : VERDE_ROJO.verde;
         const icon = r.tipo === "diocesis"
           ? L.divIcon({ className: "", iconSize: [40, 40], iconAnchor: [20, 20], popupAnchor: [0, -18],
-              html: '<div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#F0D68A,#9C7A28);display:flex;align-items:center;justify-content:center;font-size:21px;border:2.5px solid #F5E6B8;box-shadow:0 3px 9px rgba(0,0,0,.55)">🏛️</div>' })
+              html: `<div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#F0D68A,#9C7A28);display:flex;align-items:center;justify-content:center;font-size:21px;border:3px solid ${aro};box-shadow:0 3px 9px rgba(0,0,0,.55)">🏛️</div>` })
           : L.divIcon({ className: "", iconSize: [32, 32], iconAnchor: [16, 16], popupAnchor: [0, -15],
-              html: '<div style="width:32px;height:32px;border-radius:50%;overflow:hidden;border:2px solid #C8A951;box-shadow:0 2px 6px rgba(0,0,0,.5);background:#0B1526"><img src="/icon-192.png" alt="" style="width:100%;height:100%;object-fit:cover"></div>' });
+              html: `<div style="width:32px;height:32px;border-radius:50%;overflow:hidden;border:3px solid ${aro};box-shadow:0 2px 6px rgba(0,0,0,.5);background:#0B1526"><img src="/icon-192.png" alt="" style="width:100%;height:100%;object-fit:cover"></div>` });
         const mk = L.marker([r.lat, r.lng], { icon });
         // Muestra los datos en el panel propio (React) y hace zoom sobre el marcador.
         mk.on("click", () => { setSel(r); if (mapRef.current) mapRef.current.setView([r.lat, r.lng], 14, { animate: true }); });
@@ -162,6 +170,27 @@ export default function DirectorioAfiliados({ onClose }) {
     }, () => { if (vivo) setLocalizando(false); /* denegada / sin ubicación: se queda con "todas", sin error */ }, GEO_OPTS);
     return () => { vivo = false; };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Leyenda de los marcadores. Va pegada al mapa en los dos layouts.
+  const leyenda = (
+    <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 14,
+      padding: "7px 16px", borderTop: `1px solid ${C.gold}18`, background: C.card,
+      fontSize: 11.5, color: C.ivory, flexShrink: 0 }}>
+      <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+        <span style={{ width: 12, height: 12, borderRadius: "50%", background: "#0B1526",
+          border: `3px solid ${VERDE_ROJO.verde}`, flexShrink: 0 }} />
+        {T("Parroquia afiliada", "Affiliated parish", "Paroisse affiliée",
+           "Angeschlossene Pfarrei", "Paróquia afiliada", "Parrocchia affiliata")}
+      </span>
+      <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+        <span style={{ width: 12, height: 12, borderRadius: "50%", background: "#0B1526",
+          border: `3px solid ${VERDE_ROJO.rojo}`, flexShrink: 0 }} />
+        {T("Parroquia en trámite de afiliación", "Parish pending affiliation",
+           "Paroisse en cours d'affiliation", "Pfarrei im Beitrittsverfahren",
+           "Paróquia em processo de afiliação", "Parrocchia in via di affiliazione")}
+      </span>
+    </div>
+  );
 
   const filtros = [
     { k: null, lbl: T("Todas", "All", "Toutes", "Alle", "Todas", "Tutte") },
@@ -299,7 +328,10 @@ export default function DirectorioAfiliados({ onClose }) {
         {desktop ? (
           <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
             {/* Mapa (mitad izquierda) */}
-            <div ref={mapDiv} style={{ flex: "1 1 0", minWidth: 0, background: C.card }} />
+            <div style={{ flex: "1 1 0", minWidth: 0, display: "flex", flexDirection: "column" }}>
+              <div ref={mapDiv} style={{ flex: "1 1 0", minHeight: 0, background: C.card }} />
+              {leyenda}
+            </div>
             {/* Columna derecha (mitad): controles + info + resultados */}
             <div style={{ flex: "1 1 0", minWidth: 320, display: "flex", flexDirection: "column", minHeight: 0, borderLeft: `1px solid ${C.gold}22` }}>
               {controles}
@@ -311,6 +343,7 @@ export default function DirectorioAfiliados({ onClose }) {
           <>
             {controles}
             <div ref={mapDiv} style={{ height: 240, background: C.card, flexShrink: 0 }} />
+            {leyenda}
             {panelInfo}
             <div style={{ flex: 1, overflowY: "auto", padding: "12px 20px", minHeight: 120 }}>{listaResultados}</div>
           </>
