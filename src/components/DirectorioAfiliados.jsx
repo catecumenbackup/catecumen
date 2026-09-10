@@ -92,7 +92,13 @@ export default function DirectorioAfiliados({ onClose }) {
               html: `<div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#F0D68A,#9C7A28);display:flex;align-items:center;justify-content:center;font-size:21px;border:3px solid ${aro};box-shadow:0 3px 9px rgba(0,0,0,.55)">🏛️</div>` })
           : L.divIcon({ className: "", iconSize: [32, 32], iconAnchor: [16, 16], popupAnchor: [0, -15],
               html: `<div style="width:32px;height:32px;border-radius:50%;overflow:hidden;border:3px solid ${aro};box-shadow:0 2px 6px rgba(0,0,0,.5);background:#0B1526"><img src="/icon-192.png" alt="" style="width:100%;height:100%;object-fit:cover"></div>` });
-        const mk = L.marker([r.lat, r.lng], { icon });
+        // Los afiliados (aro verde) se dibujan POR ENCIMA de los que están en
+        // trámite: son la respuesta a la búsqueda, y con 136 fichas apiladas en
+        // la zona metropolitana quedaban sepultados bajo los aros rojos.
+        const mk = L.marker([r.lat, r.lng], {
+          icon,
+          zIndexOffset: r.afiliada === false ? 0 : 1000,
+        });
         // Muestra los datos en el panel propio (React) y hace zoom sobre el marcador.
         mk.on("click", () => { setSel(r); if (mapRef.current) mapRef.current.setView([r.lat, r.lng], 14, { animate: true }); });
         lay.addLayer(mk);
