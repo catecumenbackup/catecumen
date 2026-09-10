@@ -19,12 +19,37 @@
     <script src="/cookies.js" defer></script>
 
     <!-- Fondo de pantalla completa = elemento LCP de la app.
-         Va ESTÁTICO (no creado por JS) para que el escáner de precarga del
-         navegador lo encuentre antes de ejecutar ningún script, y con
-         fetchpriority alto, tal como recomienda la auditoría de Lighthouse.
-         Se precarga el tema claro, que es el predeterminado; si el usuario
-         tiene el oscuro, el script de más abajo añade el suyo. -->
-    <link rel="preload" as="image" href="/fondocatecumen-claro.webp" fetchpriority="high" />
+         Antes se precargaba SIEMPRE el tema claro con una etiqueta estática y
+         el script de más abajo añadía el oscuro cuando hacía falta. Resultado
+         en tema oscuro: el navegador bajaba las DOS imágenes con prioridad
+         alta y tiraba la clara. De ahí el aviso «preloaded but not used» de la
+         consola — y, peor que el aviso, una descarga inútil compitiendo en la
+         ruta crítica con la imagen que sí se iba a pintar.
+         Ahora se elige UNA sola, aquí mismo. El script es inline y va en el
+         mismo sitio que ocupaba la etiqueta, así que corre durante el parseo
+         del <head>, antes de cualquier recurso: la imagen se descubre un par
+         de milisegundos más tarde que con la etiqueta estática, a cambio de no
+         bajar nunca un fondo de más. -->
+    <script>
+      (function () {
+        var oscuro = false;
+        try { oscuro = localStorage.getItem("catecumen_theme") === "dark"; } catch (e) {}
+        var fondo = oscuro ? "/fondocatecumen.webp" : "/fondocatecumen-claro.webp";
+        var l = document.createElement("link");
+        l.rel = "preload";
+        l.as = "image";
+        l.href = fondo;
+        l.setAttribute("fetchpriority", "high");
+        document.head.appendChild(l);
+        if (oscuro) {
+          // Sobreescribe el fondo del splash ANTES de que el body pinte, para
+          // que no haya un destello de fondo claro.
+          var st = document.createElement("style");
+          st.textContent = "#cat-splash{background-image:url(/fondocatecumen.webp)!important}";
+          document.head.appendChild(st);
+        }
+      })();
+    </script>
 
     <!-- Fuentes (Cinzel + Crimson Text). Iban dentro del bundle vía @import,
          así que el navegador no las pedía hasta descargar 235 KB de JS
@@ -148,22 +173,8 @@
           document.title = titles[lang] || titles.es;
         } catch (e) {}
 
-        // El tema claro ya va precargado estáticamente arriba (y es el fondo del
-        // splash = elemento LCP). Solo si el usuario tiene el tema oscuro guardado,
-        // precargamos su fondo Y sobreescribimos el del splash con un <style>
-        // inyectado ANTES de que el body pinte (evita un flash de fondo claro).
-        try {
-          if (localStorage.getItem("catecumen_theme") === "dark") {
-            var l = document.createElement("link");
-            l.rel = "preload"; l.as = "image";
-            l.href = "/fondocatecumen.webp";
-            l.setAttribute("fetchpriority", "high");
-            document.head.appendChild(l);
-            var st = document.createElement("style");
-            st.textContent = "#cat-splash{background-image:url(/fondocatecumen.webp)!important}";
-            document.head.appendChild(st);
-          }
-        } catch (e) {}
+        // El fondo (precarga + ajuste del splash para tema oscuro) ya se resolvió
+        // arriba, en el primer script del <head>. Aquí no se toca.
       })();
     </script>
   </head>
@@ -173,7 +184,7 @@
            inmediato (mejora el First Contentful Paint) y React la reemplaza
            automáticamente al montar. -->
       <!-- El fondo de pantalla completa (fondocatecumen-claro.webp, precargado
-           arriba con fetchpriority=high) va AQUÍ, en HTML estático, para que sea
+           arriba con fetchpriority=high salvo en tema oscuro) va AQUÍ, en HTML estático, para que sea
            el elemento LCP y pinte a la velocidad del FCP en vez de esperar a que
            React monte. React reemplaza este splash al terminar de cargar. El
            tema oscuro lo ajusta el script inline del <head> (inyecta un <style>).
