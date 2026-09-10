@@ -1,3 +1,16 @@
+-- ╔═════════════════════════════════════════════════════════════════════════╗
+-- ║  DESACTIVADO — 10 sep 2026.                                             ║
+-- ║  El directorio ya está limpio y en producción: estos datos de prueba se ║
+-- ║  borraron con scripts/afiliados-queretaro.sql. Volver a correr este     ║
+-- ║  archivo re-sembraría dos parroquias y dos diócesis inventadas en el    ║
+-- ║  mapa público. El bloque de abajo aborta la ejecución a propósito.      ║
+-- ║  Si de verdad lo necesitas (base de desarrollo vacía), borra ese bloque.║
+-- ╚═════════════════════════════════════════════════════════════════════════╝
+do $$
+begin
+  raise exception 'directorio-datos-prueba.sql está desactivado: sembraría datos falsos en el directorio público. Lee la nota del encabezado.';
+end $$;
+
 -- scripts/directorio-datos-prueba.sql
 -- Datos de PRUEBA para ver el mapa del directorio (2 parroquias + 2 diócesis),
 -- ya aprobadas y con lat/lng. Re-ejecutable. Requiere directorio-afiliados.sql
