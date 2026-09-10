@@ -145,6 +145,19 @@ Los huecos se avisan (`raise notice`), nunca se convierten en `raise exception`.
 
 **Trampa asociada:** una ficha **sin coordenada pasa todos los filtros de distancia** del buscador por cercanía (la condición solo se aplica cuando `lat`/`lng` no son nulos), así que aparece en resultados de "cerca de mí" a cualquier radio. No es motivo para ocultarla, pero sí para completar la coordenada en cuanto se pueda.
 
+### `geo_precision` y `geo_fuente` en `directorio_parroquias`
+
+Dos columnas, dos preguntas distintas. Antes iban revueltas en una sola y hubo que arqueologizar los scripts para leer el dato (`scripts/normalizar-geo-precision.sql` lo separó, sep-2026):
+
+- **`geo_precision` = qué representa el pin.** Solo dos valores, y hay un `check constraint` (`geo_precision_valida`) que lo impide ampliar por accidente:
+  - `templo` — el edificio o establecimiento.
+  - `localidad` — el centro del pueblo o de la colonia, a cientos de metros. Van con `geo_revisar = true`.
+- **`geo_fuente` = de dónde salió.** `denue_nombre` · `denue_direccion` · `osm` · `curacion_manual`.
+
+**No inventar `geo_precision`.** Es una afirmación sobre la procedencia: si no se sabe de dónde salió una coordenada, se deja nula, no se etiqueta a ojo.
+
+**Estado al 10-sep-2026:** 136 fichas, 136 con coordenada (118 `templo`, 18 `localidad`). Auditadas con `scripts/auditar-pines-osm.sql` (0 coordenadas duplicadas, 0 parroquias encimadas, 0 pines fuera de sitio). Los 27 pines de origen OSM se verificaron contra la dirección publicada por la diócesis: correctos. **Cuidado con `parroquias_geo_osm.sql`, que sigue en la raíz del repo: contiene `update` con coordenadas DUPLICADAS (dos parroquias distintas con el mismo nodo) y nunca debe ejecutarse.**
+
 ## Flujo de despliegue
 
 ```powershell
