@@ -132,6 +132,19 @@ La migración i18n **eliminó** las columnas heredadas `pregunta` y `opcion_a..d
 - Tras compilar, **verificar que el hash del bundle cambió** (`dist/assets/main-XXXX.js`); si no cambió, se está sirviendo código viejo.
 - Probar siempre en **ventana de incógnito** (caché).
 
+### Criterio de publicación en el directorio (fijado por Enyoria, 10 sep 2026)
+
+Lo único que hace inútil una ficha del directorio —afiliada o en trámite— es que el catecúmeno **no pueda saber a dónde ir**. Todo lo demás son huecos, no impedimentos, y **no deben bloquear ni ocultar la ficha**:
+
+- **Sin correo de contacto:** se publica igual. El catecúmeno puede presentarse en la parroquia a pedir informes; que no se la pueda contactar por escrito no la borra del mapa.
+- **Sin párroco nombrado:** se publica igual. Una parroquia puede estar en sede vacante o con un traslado en curso por razones legítimas.
+- **Sin teléfono:** se publica igual.
+- **Sin dirección Y sin coordenada:** eso sí es un bloqueo real — no queda forma de decirle a nadie dónde está.
+
+Los huecos se avisan (`raise notice`), nunca se convierten en `raise exception`. Ver `scripts/afiliar-esperanza-corregidora.sql`, que es la plantilla para dar de alta una parroquia afiliada.
+
+**Trampa asociada:** una ficha **sin coordenada pasa todos los filtros de distancia** del buscador por cercanía (la condición solo se aplica cuando `lat`/`lng` no son nulos), así que aparece en resultados de "cerca de mí" a cualquier radio. No es motivo para ocultarla, pero sí para completar la coordenada en cuanto se pueda.
+
 ## Flujo de despliegue
 
 ```powershell

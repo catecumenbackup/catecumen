@@ -21,7 +21,22 @@
 
 begin;
 
--- ── 0 · Seguro: la ficha de origen tiene que existir y estar completa ───────
+-- ── 0 · Comprobaciones ─────────────────────────────────────────────────────
+--
+-- CRITERIO (corregido el 2026-09-10, a instancia de Enyoria):
+-- Lo único que hace inútil una ficha afiliada es que el catecúmeno no pueda
+-- saber A DÓNDE IR. Todo lo demás son huecos, no impedimentos:
+--
+--   · Sin correo NO se bloquea. El catecúmeno puede presentarse en la
+--     parroquia a pedir informes; que no se la pueda contactar por escrito no
+--     la borra del mapa.
+--   · Sin párroco NO se bloquea. Una parroquia puede estar sin párroco
+--     nombrado por razones legítimas —sede vacante, traslado en curso— y eso
+--     no debe impedir que se vea ni que alguien acuda.
+--   · Sin dirección Y sin coordenada SÍ se bloquea: ahí no queda ninguna forma
+--     de decirle a nadie dónde está.
+--
+-- Los huecos se avisan con NOTICE y el alta continúa.
 do $$
 declare r record;
 begin
@@ -33,15 +48,25 @@ begin
   if not found then
     raise exception 'No existe la ficha de origen en directorio_parroquias. ¿Corriste directorio-diocesano.sql?';
   end if;
+
+  -- Único bloqueo: ni dirección ni coordenada.
+  if coalesce(r.direccion, '') = '' and (r.lat is null or r.lng is null) then
+    raise exception
+      'La ficha no tiene dirección ni coordenada: no hay forma de decirle al catecúmeno dónde acudir. Completa una de las dos antes de afiliarla.';
+  end if;
+
+  -- Avisos: no detienen nada.
   if r.lat is null or r.lng is null then
-    raise exception 'La ficha de origen no tiene coordenada: la parroquia afiliada no aparecería en el mapa.';
+    raise notice 'AVISO: sin coordenada. La parroquia se encontrará por nombre y por su dirección, pero no aparecerá como marcador en el mapa. Conviene añadirla después.';
   end if;
   if coalesce(r.email, '') = '' then
-    raise exception
-      'La ficha de origen no tiene correo. Una parroquia afiliada sin correo de contacto no sirve de nada en el directorio. Escríbelo primero con:  update public.directorio_parroquias set email = ''<correo>'' where id = ''parroquia-de-nuestra-senora-de-la-esperanza'';';
+    raise notice 'AVISO: sin correo de contacto. La ficha se publica igual; el catecúmeno puede acudir en persona por informes.';
+  end if;
+  if coalesce(r.telefono, '') = '' then
+    raise notice 'AVISO: sin teléfono.';
   end if;
   if coalesce(r.parroco, '') = '' then
-    raise exception 'La ficha de origen no tiene párroco. ¿Corriste correccion-parrocos.sql?';
+    raise notice 'AVISO: sin párroco nombrado. La ficha se publica igual.';
   end if;
 end $$;
 
