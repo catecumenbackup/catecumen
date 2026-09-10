@@ -1,0 +1,28 @@
+-- scripts/progreso-aprobado-grant.sql
+-- ─────────────────────────────────────────────────────────────────────────────
+-- FIX CRÍTICO (sep 2026): el aprobado de la evaluación nunca se guardaba.
+--
+-- Causa: `etapa4_rls.sql` revocó al cliente el UPDATE de la columna `aprobado`
+-- (para que solo `calificar_evaluacion` pudiera aprobar). PERO el frontend nunca
+-- se migró a esa RPC: `markEvalResult` (App.jsx) sigue haciendo un upsert directo
+-- con {aprobado:true,...}. Sin el privilegio de columna, ese upsert falla ENTERO
+-- con "permission denied for column aprobado" → `aprobado` NUNCA se persistía
+-- (aprobados=0 en toda la BD) → ninguna lección se completaba → al recargar,
+-- la app pedía rehacer la evaluación, y no se podían emitir constancias.
+--
+-- Arreglo inmediato (sin recompilar): devolver al cliente el UPDATE de
+-- `aprobado`/`fecha_aprobado`, que es lo que el frontend desplegado ya intenta.
+-- El upsert de `calificar_evaluacion` (SECURITY DEFINER) sigue funcionando igual.
+--
+-- NOTA DE SEGURIDAD: esto revierte parte del endurecimiento de la Etapa 4 (un
+-- usuario podría marcarse `aprobado` desde la consola). En la práctica el impacto
+-- es menor porque el banco de preguntas con respuestas correctas YA viaja en el
+-- bundle del cliente (se califica en el navegador), así que cualquiera podría
+-- aprobar de todos modos. El arreglo DEFINITIVO es migrar la evaluación a la RPC
+-- `calificar_evaluacion` (calificación en servidor) + sembrar la tabla `preguntas`
+-- + quitar el banco de preguntas del cliente. Ver produccion.md (pendiente).
+--
+-- Idempotente. Correr en Supabase → SQL Editor.
+-- ─────────────────────────────────────────────────────────────────────────────
+
+grant update (aprobado, fecha_aprobado) on public.progreso_videos to authenticated;
