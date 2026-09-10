@@ -21,6 +21,7 @@ La plataforma ya está en producción; **Stripe sigue en modo test**.
 - [ ] **Prueba integral en incógnito** — registro + pago (Stripe test primero), preinscripción → conversión, avisos (panel + correo), buscador de parroquias, constancias (PDF + QR), todas las pestañas del panel; en los 6 idiomas y en tema claro/oscuro.
 - [ ] **Definir la operación de lanzamiento** — ¿abrir con preinscripción activa (sin cobro) y luego convertir, o directo con pago? Si usas preinscripción, probar la conversión en Stripe test.
 - [ ] **Limpiar RLS público de `usuarios`** — dejar solo `usuarios_sel_own` (las escrituras las hacen las edge functions con service-role).
+- [ ] **Calificación de evaluaciones en el servidor (seguridad) — ANTES DE ABRIR AL PÚBLICO.** Hoy la evaluación se califica en el cliente: el banco de respuestas viaja en el bundle y, con el parche actual (`scripts/progreso-aprobado-grant.sql`), el cliente puede escribir `aprobado` (un usuario podría auto-aprobarse). Migrar a las RPCs `obtener_preguntas`/`calificar_evaluacion` (ya existen): `EvalModal` pide/env­ía respuestas al servidor, `App.markEvalResult` deja de escribir `aprobado`, y se **re-revoca** el grant de `aprobado`. Requiere anclar la evaluación al video "canónico" (ES) por lección (las preguntas están en los 54 videos ES). **Pospuesto** a propósito: videos y preguntas son de PRUEBA; hacerlo cuando el contenido sea definitivo.
 
 ### 🟢 Recomendado / deuda menor
 
