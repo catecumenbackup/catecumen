@@ -79,6 +79,8 @@ Módulos adicionales (idempotentes, re-ejecutables):
 | **`scripts/preinscripcion-fase2.sql`** | Conversión al abrir: `usuarios.importe_previsto`, RPCs `activar_mi_preinscripcion`/`admin_activar_preinscrito`. Redesplegar `crear-sesion-pago`/`activar-pago`/`stripe-webhook`. |
 | **`scripts/rls-usuarios.sql`** | Deuda de seguridad: quita las políticas abiertas al rol `public` de `usuarios` y deja acceso solo a la propia fila (SELECT/INSERT con `id = auth.uid()`). Ver sección 5.1. |
 | **`scripts/actualizar-perfil.sql`** | RPC `actualizar_mi_perfil` (SECURITY DEFINER, acotada a `auth.uid()` + lista blanca): persiste los cambios de "Mi Cuenta". Sin ella el botón "Guardar cambios" no guarda en la BD. Requiere subir `dist/`. |
+| **`scripts/uid-por-email.sql`** | RPC `uid_por_email` (service_role): resuelve el uid por correo sin `listUsers()` (que estaba paginado a 50 y dejaba sin cuenta a quien pagaba con >50 usuarios). **Redesplegar `activar-pago`, `stripe-webhook`, `preinscribir`.** |
+| **`scripts/precio-esperado.sql`** | RPC `precio_esperado` (service_role): precio autoritativo server-side para que `crear-sesion-pago` no confíe en el `importe` del cliente (evita cobros de menos). **Redesplegar `crear-sesion-pago`.** Recomendado sembrar `cuotasporpais` para todos los países (si falta la fila, se conserva el importe del cliente). |
 
 ## 4. Edge Functions (Supabase — terminal, no SQL Editor)
 

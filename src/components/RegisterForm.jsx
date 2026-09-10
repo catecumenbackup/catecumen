@@ -70,7 +70,7 @@ export default function RegisterForm({userType,sacraments,onNext,onBack}){
       const names={bautismo:T("Bautismo","Baptism","Baptême","Taufe","Batismo","Battesimo"),confirmacion:T("Confirmación","Confirmation","Confirmation","Firmung","Crisma","Cresima"),primera_comunion:T("Primera Comunión","First Communion","Première Communion","Erstkommunion","Primeira Comunhão","Prima Comunione")};
       return sacraments.map(s=>names[s]).join(" + ");
     }
-    if(userType==="presacramental") return T("Formación Pre-Sacramentall","Pre-Sacramental Formation","Formation Pré-Sacramentelle","Vorsakramentale Bildung","Formação Pré-Sacramental","Formazione Pre-Sacramentale");
+    if(userType==="prebautismal") return T("Formación Pre-Sacramental","Pre-Sacramental Formation","Formation Pré-Sacramentelle","Vorsakramentale Bildung","Formação Pré-Sacramental","Formazione Pre-Sacramentale");
     if(userType==="padrino") return T("Formación para Padrinos","Godparent Formation","Formation pour Parrains et Marraines","Bildung für Paten","Formação para Padrinhos","Formazione per Padrini e Madrine");
     if(userType==="catequista") return T("Neuropedagogía Catequética","Catechetical Neuropedagogy","Neuropédagogie Catéchétique","Katechetische Neuropädagogik","Neuropedagogia Catequética","Neuropedagogia Catechetica");
     return "";

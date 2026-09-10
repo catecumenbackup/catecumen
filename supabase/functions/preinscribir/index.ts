@@ -66,8 +66,10 @@ serve(async (req: Request) => {
     if (authErr || !uid) {
       const yaExiste = /already|registered|exists/i.test(authErr?.message || "");
       if (!yaExiste) throw new Error(authErr?.message || "No se pudo crear la cuenta");
-      const { data: lista } = await supabase.auth.admin.listUsers();
-      uid = lista?.users?.find(u => u.email?.toLowerCase() === formData.email.toLowerCase())?.id;
+      // Búsqueda directa por email (no listUsers(): está paginado a 50 y fallaba
+      // en producción con >50 usuarios).
+      const { data: uidEnc } = await supabase.rpc("uid_por_email", { p_email: formData.email });
+      uid = (uidEnc as string | null) || undefined;
       if (!uid) throw new Error("No se pudo resolver la cuenta del usuario");
       await supabase.auth.admin.updateUserById(uid, {
         password: formData.password, email_confirm: true,

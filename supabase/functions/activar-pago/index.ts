@@ -158,8 +158,10 @@ async function activarRegistro(session: Stripe.Checkout.Session, pendienteId: st
       console.error("[activar-pago] Error creando usuario Auth:", authErr);
       return { ok: false, error: authErr?.message || "No se pudo crear la cuenta" };
     }
-    const { data: lista } = await supabase.auth.admin.listUsers();
-    uid = lista?.users?.find(u => u.email?.toLowerCase() === formData.email.toLowerCase())?.id;
+    // Búsqueda directa por email (no listUsers(): está paginado a 50 y fallaba
+    // en producción con >50 usuarios, dejando sin cuenta a quien pagó).
+    const { data: uidEnc } = await supabase.rpc("uid_por_email", { p_email: formData.email });
+    uid = (uidEnc as string | null) || undefined;
     if (!uid) return { ok: false, error: "No se pudo resolver la cuenta del usuario" };
     // El auth user ya existía (registro/intento previo). Su contraseña podría
     // ser de un intento anterior y no coincidir con la que el usuario acaba de

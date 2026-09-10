@@ -357,7 +357,7 @@ const SEC_META={
   bautismo:  {es:"Bautismo",                      en:"Baptism",                    icon:"__bautismo_img__",cert:true,videos:COURSES.bautismo, videoPrueba:videoPruebaUrls("bautismo")},
   confirmacion:{es:"Confirmación",                en:"Confirmation",               icon:"__confirmacion_img__",cert:true,videos:COURSES.confirmacion, videoPrueba:videoPruebaUrls("confirmacion")},
   primera_comunion:{es:"Primera Comunión",        en:"First Communion",            icon:"__caliz__",cert:true,videos:COURSES.primera_comunion, videoPrueba:videoPruebaUrls("primera_comunion")},
-  presacramental:{es:"Formación Pre-Sacramental",     en:"Pre-Sacramental Formation",    icon:"👨‍👩‍👧",cert:true,  videos:COURSES.presacramental, videoPrueba:videoPruebaUrls("presacramental")},
+  prebautismal:{es:"Formación Pre-Sacramental",     en:"Pre-Sacramental Formation",    icon:"👨‍👩‍👧",cert:true,  videos:COURSES.prebautismal, videoPrueba:videoPruebaUrls("prebautismal")},
   catequista:{es:"Neuropedagogía Catequética — Módulo I: Fundamentos y Conceptos", en:"Catechetical Neuropedagogy — Module I: Foundations and Concepts", icon:"🧠", cert:true, videos:COURSES.catequista, videoPrueba:videoPruebaUrls("catequista")},
   tc2_confesion:{es:"La Confesión (TC2)",         en:"Confession (TC2)",           icon:"🙏",  cert:true,  videos:TC2_CONFESION, videoPrueba:videoPruebaUrls("tc2_confesion")},
   tc2_uncion:{es:"Unción de los Enfermos (TC2)", en:"Anointing of the Sick (TC2)",icon:"✨",  cert:true,  videos:TC2_UNCION, videoPrueba:videoPruebaUrls("tc2_uncion")},

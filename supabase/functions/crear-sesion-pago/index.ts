@@ -131,6 +131,54 @@ serve(async (req: Request) => {
       }
     }
 
+    // ── Importe AUTORITATIVO (server-side) ─────────────────────────────────
+    // Nunca confiar en el `importe` del cliente para el cobro: podía enviar
+    // importe:1. Se recalcula/valida en el servidor.
+    let montoFinal  = monto;
+    let monedaFinal = moneda;
+    if (conversion) {
+      // Conversión de preinscrito: la autoridad es el importe previsto que se
+      // guardó en el servidor al preinscribirse (no el que manda el cliente).
+      const { data: uPrev, error: prevErr } = await supabase
+        .from("usuarios").select("importe_previsto").eq("id", usuario_id).single();
+      if (prevErr) console.error("[crear-sesion-pago] importe_previsto:", prevErr);
+      const prev = uPrev?.importe_previsto as { total?: unknown; cur?: unknown } | null;
+      const prevMonto = Number(prev?.total);
+      if (Number.isFinite(prevMonto) && prevMonto > 0) {
+        montoFinal  = prevMonto;
+        monedaFinal = (prev?.cur as string) || moneda;
+      } else {
+        return new Response(JSON.stringify({ error:
+          "No se encontró el importe de tu preinscripción. Contacta soporte." }),
+          { status: 409, headers: { ...CORS, "Content-Type": "application/json" } });
+      }
+    } else {
+      // Registro normal: recalcular contra `cuotasporpais` (misma tabla y
+      // matemática que el frontend). Si la RPC devuelve un valor y NO coincide
+      // con lo enviado, es manipulación o un bug → rechazar. Si no hay fila para
+      // el país (el frontend usó el respaldo PPP local), se conserva el importe
+      // del cliente (fail-open acotado; sembrar `cuotasporpais` cierra el hueco).
+      const { data: calc, error: calcErr } = await supabase.rpc("precio_esperado", {
+        p_pais: formData.country || "",
+        p_user_type: userType,
+        p_sacs: Array.isArray(selectedSacs) ? selectedSacs : [],
+        p_beca_esperanza: !!formData.esPacienteRehabilitacion,
+      });
+      if (calcErr) console.error("[crear-sesion-pago] precio_esperado:", calcErr);
+      const fila = Array.isArray(calc) ? calc[0] : calc;
+      const esperado = Number(fila?.total);
+      if (Number.isFinite(esperado) && esperado > 0) {
+        if (Math.abs(esperado - monto) > 0.5) {
+          console.error(`[crear-sesion-pago] importe divergente: cliente=${monto} servidor=${esperado} pais=${formData.country} tipo=${userType}`);
+          return new Response(JSON.stringify({ error:
+            "El importe no coincide con la tarifa vigente. Recarga la página e inténtalo de nuevo." }),
+            { status: 409, headers: { ...CORS, "Content-Type": "application/json" } });
+        }
+        montoFinal  = esperado;
+        monedaFinal = (fila?.moneda as string) || moneda;
+      }
+    }
+
     // ── Guardar el registro como PENDIENTE (aún no es una cuenta real) ────
     // Si ya existe un registro pendiente con este correo (intento anterior sin
     // completar el pago), lo eliminamos antes de insertar el nuevo — así solo
@@ -143,7 +191,7 @@ serve(async (req: Request) => {
         email: formData.email,
         payload: {
           formData, userType, selectedSacs: selectedSacs || [],
-          importe: monto, moneda: moneda, descuento_pct: descuento_pct || 0,
+          importe: montoFinal, moneda: monedaFinal, descuento_pct: descuento_pct || 0,
           // Fase 2: marca de conversión de preinscrito (activar cuenta existente).
           conversion: !!conversion, usuario_id: usuario_id || null,
         },
@@ -156,10 +204,10 @@ serve(async (req: Request) => {
     }
 
     // ── Crear la sesión de Stripe Checkout ─────────────────────────────────
-    const cur = String(moneda).toLowerCase();
+    const cur = String(monedaFinal).toLowerCase();
     const unitAmount = CERO_DECIMALES.has(cur.toUpperCase())
-      ? Math.round(monto)
-      : Math.round(monto * 100);
+      ? Math.round(montoFinal)
+      : Math.round(montoFinal * 100);
     const listaSacs = Array.isArray(selectedSacs) && selectedSacs.length
       ? selectedSacs.join(", ")
       : "Formación Sacramental";
@@ -173,7 +221,7 @@ serve(async (req: Request) => {
     const VOUCHER_METHOD: Record<string, string> = { MXN: "oxxo", BRL: "boleto", EUR: "multibanco" };
     let payment_method_types: string[];
     if (metodo === "voucher") {
-      const vm = VOUCHER_METHOD[String(moneda).toUpperCase()];
+      const vm = VOUCHER_METHOD[String(monedaFinal).toUpperCase()];
       if (!vm) throw new Error("El pago en efectivo/banco no está disponible para esta moneda.");
       payment_method_types = [vm];
     } else {
