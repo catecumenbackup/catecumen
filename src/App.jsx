@@ -1305,10 +1305,11 @@ export default function App(){
     try{
       const [sacRes,vidRes]=await Promise.all([
         supabase.from("sacramentos").select("id,slug"),
-        // Solo los videos del idioma activo del usuario (columna `idioma`).
-        // Traemos también url_video para reproducir el video REAL cuando exista
-        // (si no, el frontend usa el video de prueba local del idioma).
-        supabase.from("videos").select("id,sacramento_id,orden,idioma,url_video").eq("idioma",LANG),
+        // TODOS los idiomas: el mapa uuid→lección (uuidToFront) debe cubrir todos
+        // para restaurar el progreso aunque se haya guardado en otro idioma (p.ej.
+        // el usuario avanzó en español y ahora entra con el navegador en inglés).
+        // Para GUARDAR y REPRODUCIR se usa solo el idioma activo (ver abajo).
+        supabase.from("videos").select("id,sacramento_id,orden,idioma,url_video"),
       ]);
       const sacs=sacRes.data, vids=vidRes.data;
       if(!sacs||!vids) return null;
@@ -1324,11 +1325,16 @@ export default function App(){
         const slug=sacIdToSlug[vr.sacramento_id];
         const vidId=frontByOrden[slug]?.[vr.orden];
         if(!slug||!vidId) return;
-        (frontToUuid[slug]??={})[vidId]=vr.id;
+        // uuidToFront: TODOS los idiomas → restaura el progreso guardado en cualquier idioma.
         uuidToFront[vr.id]={secId:slug,vidId};
-        // Guardar la URL real solo si es una URL válida (no 'PENDIENTE' ni vacía).
-        if(vr.url_video && vr.url_video!=="PENDIENTE" && /^https?:\/\//i.test(vr.url_video)){
-          (frontToUrl[slug]??={})[vidId]=vr.url_video;
+        // frontToUuid / frontToUrl: solo el idioma activo → a dónde se GUARDA el
+        // progreso nuevo y qué video se REPRODUCE.
+        if(vr.idioma===LANG){
+          (frontToUuid[slug]??={})[vidId]=vr.id;
+          // Guardar la URL real solo si es válida (no 'PENDIENTE' ni vacía).
+          if(vr.url_video && vr.url_video!=="PENDIENTE" && /^https?:\/\//i.test(vr.url_video)){
+            (frontToUrl[slug]??={})[vidId]=vr.url_video;
+          }
         }
       });
       const b={frontToUuid,uuidToFront,slugToSacId,frontToUrl};
@@ -1446,13 +1452,13 @@ export default function App(){
         const insIds=Object.values(insMap);
         if(insIds.length){
           const {data:pv}=await supabase.from("progreso_videos")
-            .select("inscripcion_id,video_id,visto,aprobado").in("inscripcion_id",insIds);
+            .select("inscripcion_id,video_id,visto,aprobado,posicion_seg").in("inscripcion_id",insIds);
           if(pv?.length){
             const prog={};
             for(const row of pv){
               const map=b.uuidToFront[row.video_id];
               if(!map) continue;
-              (prog[map.secId]??={})[map.vidId]={visto:!!row.visto,passed:!!row.aprobado};
+              (prog[map.secId]??={})[map.vidId]={visto:!!row.visto,passed:!!row.aprobado,pos:row.posicion_seg||0};
             }
             setProgress(prog);
             // Colocar el índice en la primera sección no terminada.
@@ -1516,6 +1522,17 @@ export default function App(){
       }
     }catch(e){ console.error("flushProgress:",e); }
   };
+
+  // Red de seguridad: además del guardado por evento (al ver/aprobar), guarda todo
+  // el progreso al OCULTAR o CERRAR la pestaña. `pagehide` es más fiable que
+  // `beforeunload` (sobre todo en móvil); `visibilitychange` cubre cambiar de
+  // pestaña o minimizar. Así, ni borrar la caché ni cerrar de golpe pierde avance.
+  useEffect(()=>{
+    const onHide=()=>{ if(document.visibilityState==="hidden") flushProgress(); };
+    window.addEventListener("pagehide",flushProgress);
+    document.addEventListener("visibilitychange",onHide);
+    return ()=>{ window.removeEventListener("pagehide",flushProgress); document.removeEventListener("visibilitychange",onHide); };
+  },[progress,insBySec,bridge]);
 
   // Cerrar sesión: primero asegura que el progreso quede guardado, luego signOut.
   const handleLogout=async()=>{
@@ -1996,6 +2013,10 @@ export default function App(){
         <Suspense fallback={<div style={OVERLAY}><div style={{color:C.gold,fontFamily:"'Cinzel',serif"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div></div>}>
           {activeVideo&&(
             <VideoModal secId={activeVideo.secId} vid={activeVideo.vid} bridge={bridge}
+              startAt={progress[activeVideo.secId]?.[activeVideo.vid.id]?.pos||0}
+              onProgress={(s)=>{ const sec=activeVideo.secId, vi=activeVideo.vid.id;
+                persistProgreso(sec,vi,{posicion_seg:s});
+                setProgress(p=>{ const sp=p[sec]||{}; return {...p,[sec]:{...sp,[vi]:{...sp[vi],pos:s}}}; }); }}
               onWatched={handleVideoWatched} onClose={()=>setActiveVideo(null)}/>
           )}
           {activeEncuesta&&(
