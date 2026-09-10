@@ -433,6 +433,18 @@
         </label>
         <span id="pre-estado" style="font-size:12px;color:var(--ivory-m)"></span>
       </div>
+      <div style="margin-bottom:14px;padding:12px 14px;border:1px solid rgba(200,169,81,.3);border-radius:10px;background:rgba(200,169,81,.05)">
+        <p style="margin:0 0 6px;font-size:14px"><b>¿A qué cursos aplica la preinscripción?</b></p>
+        <p style="color:var(--ivory-m);font-size:12px;margin:0 0 10px">Marca los cursos que <b>aún no abren</b>: quienes se inscriban a ellos quedan preinscritos (sin pago). Los cursos <b>no marcados</b> siguen con pago normal. Si no marcas ninguno, la preinscripción aplica a <b>todos</b>.</p>
+        <div id="pre-cursos" style="display:flex;flex-wrap:wrap;gap:10px 18px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:14px"><input type="checkbox" data-curso="bautismo" onchange="window.preGuardar()" style="width:16px;height:16px"> Bautismo</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:14px"><input type="checkbox" data-curso="confirmacion" onchange="window.preGuardar()" style="width:16px;height:16px"> Confirmación</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:14px"><input type="checkbox" data-curso="primera_comunion" onchange="window.preGuardar()" style="width:16px;height:16px"> Primera Comunión</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:14px"><input type="checkbox" data-curso="prebautismal" onchange="window.preGuardar()" style="width:16px;height:16px"> Formación Pre-Sacramental (papás)</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:14px"><input type="checkbox" data-curso="padrino" onchange="window.preGuardar()" style="width:16px;height:16px"> Padrinos</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:14px"><input type="checkbox" data-curso="catequista" onchange="window.preGuardar()" style="width:16px;height:16px"> Catequista (Neuropedagogía)</label>
+        </div>
+      </div>
       <p style="color:var(--ivory-m);font-size:12px;margin:0 0 6px">Mensaje que verá el preinscrito en la pantalla de espera (por idioma; opcional, hay un texto por defecto):</p>
       <div id="pre-mensaje"></div>
       <div class="modal-actions" style="margin-top:8px">
@@ -933,15 +945,19 @@
   }
   function _preGetMsg(){ const o={}; let any=false; $("pre-mensaje").querySelectorAll("[data-lang]").forEach(e=>{ if(e.value.trim()){o[e.dataset.lang]=e.value.trim(); any=true;} }); return any?o:null; }
   function _preSetMsg(obj){ $("pre-mensaje").querySelectorAll("[data-lang]").forEach(e=>e.value=(obj&&obj[e.dataset.lang])||""); }
+  // Cursos a los que aplica la preinscripción (vacío = TODOS).
+  function _preGetCursos(){ const a=[]; document.querySelectorAll("#pre-cursos [data-curso]").forEach(e=>{ if(e.checked) a.push(e.dataset.curso); }); return a; }
+  function _preSetCursos(arr){ const set=new Set(Array.isArray(arr)?arr:[]); document.querySelectorAll("#pre-cursos [data-curso]").forEach(e=>{ e.checked=set.has(e.dataset.curso); }); }
   function _preEstado(activa){ $("pre-estado").textContent=activa?"● Activo — los nuevos alumnos se preinscriben SIN pago":"○ Inactivo — registro con pago normal"; }
   async function cargarPreinscripcion(){
     _preBuild();
     const {data,error}=await sb.rpc("obtener_ajuste",{p_clave:"preinscripcion"});
-    if(!error && data){ $("pre-activa").checked=!!data.activa; _preSetMsg(data.mensaje||{}); _preEstado(!!data.activa); }
+    if(!error && data){ $("pre-activa").checked=!!data.activa; _preSetMsg(data.mensaje||{}); _preSetCursos(data.cursos||[]); _preEstado(!!data.activa); }
     await cargarPreinscritos();
   }
   window.preGuardar=async()=>{
     const valor={activa:$("pre-activa").checked}; const msg=_preGetMsg(); if(msg) valor.mensaje=msg;
+    const cursos=_preGetCursos(); if(cursos.length) valor.cursos=cursos; // vacío = todos
     const {error}=await sb.rpc("admin_guardar_ajuste",{p_clave:"preinscripcion",p_valor:valor});
     if(error){ alert("Error: "+error.message); return; }
     _preEstado(valor.activa);

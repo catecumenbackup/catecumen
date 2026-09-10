@@ -1021,13 +1021,29 @@ export default function App(){
   const [bridge,setBridge]=useState(null);   // puente frontend↔BD (Parte B)
   // Modo preinscripción (ajuste global editable desde el panel). Si `activa`,
   // el flujo de alumno termina en "reserva sin costo" en vez de pago.
-  const [preinsc,setPreinsc]=useState({activa:false,mensaje:null});
+  const [preinsc,setPreinsc]=useState({activa:false,mensaje:null,cursos:null});
   const [conversion,setConversion]=useState(null); // {usuarioId} al convertir un preinscrito
   useEffect(()=>{(async()=>{
     try{ const {data}=await supabase.rpc("obtener_ajuste",{p_clave:"preinscripcion"});
-      if(data) setPreinsc({activa:!!data.activa, mensaje:data.mensaje||null});
+      if(data) setPreinsc({activa:!!data.activa, mensaje:data.mensaje||null, cursos:Array.isArray(data.cursos)?data.cursos:null});
     }catch(e){ console.error("obtener_ajuste:",e); }
   })();},[]);
+  // ¿La preinscripción aplica a ESTE registro? El admin puede limitarla a ciertos
+  // cursos (preinsc.cursos). Sin lista → aplica a todos (compatibilidad).
+  const cursosDeRegistro=(uType,sacs)=>{
+    if(uType==="catecumeno") return Array.isArray(sacs)?sacs:[];
+    if(uType==="prebautismal") return ["prebautismal"];
+    if(uType==="padrino") return ["padrino"];
+    if(uType==="catequista") return ["catequista"];
+    return [];
+  };
+  const preinscAplica=(uType,sacs)=>{
+    const cur=preinsc.cursos;
+    if(!Array.isArray(cur)||cur.length===0) return true; // sin lista → todos
+    const mios=cursosDeRegistro(uType,sacs);
+    if(mios.length===0) return true; // perfil desconocido → no cobrar (seguro)
+    return mios.some(k=>cur.includes(k));
+  };
   const [insBySec,setInsBySec]=useState({}); // {secId: inscripcion_id} (Parte B)
   const [activeVideo,setActiveVideo]=useState(null); // {secId,vid}
   const [activeEval,setActiveEval]=useState(null);
@@ -1354,11 +1370,17 @@ export default function App(){
       // espera. Si ya se abrió la plataforma → conversión: gratuita (beca 100%)
       // se activa sola; de pago va a PaymentModal en modo conversión.
       if((u.estado_inscripcion||"activo")==="preinscrito"){
-        let activaModo=preinsc.activa;
-        try{ const {data:aj}=await supabase.rpc("obtener_ajuste",{p_clave:"preinscripcion"}); if(aj) activaModo=!!aj.activa; }catch(e){ console.error("obtener_ajuste(login):",e); }
+        let activaModo=preinsc.activa, cursosModo=preinsc.cursos;
+        try{ const {data:aj}=await supabase.rpc("obtener_ajuste",{p_clave:"preinscripcion"}); if(aj){ activaModo=!!aj.activa; cursosModo=Array.isArray(aj.cursos)?aj.cursos:null; } }catch(e){ console.error("obtener_ajuste(login):",e); }
         setUserType(u.tipo_usuario||"catecumeno");
         setSelectedSacs(Array.isArray(u.sacramentos_elegidos)?u.sacramentos_elegidos:[]);
-        if(activaModo){
+        // ¿La preinscripción sigue aplicando al curso de ESTE usuario? Si el admin
+        // ya abrió su curso (lo quitó de la lista), debe convertir aunque el modo
+        // siga activo para otros cursos.
+        const aplicaAlUsuario=(!Array.isArray(cursosModo)||cursosModo.length===0)
+          ? true
+          : (()=>{ const mios=cursosDeRegistro(u.tipo_usuario||"catecumeno", u.sacramentos_elegidos); return mios.length===0 || mios.some(k=>cursosModo.includes(k)); })();
+        if(activaModo && aplicaAlUsuario){
           setFormData(p=>({...p, nombre:u.nombre||"", email:u.email||authUser?.email||""}));
           setPhase("preinscritoEspera");
           return;
@@ -1930,7 +1952,7 @@ export default function App(){
       {phase==="payment"&&!isOrgFlow&&(
         <Suspense fallback={<div style={OVERLAY}><div style={{color:C.gold,fontFamily:"'Cinzel',serif"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div></div>}>
           <PaymentModal formData={formData} userType={userType} selectedSacs={selectedSacs}
-            preinscripcion={preinsc.activa&&!conversion}
+            preinscripcion={preinsc.activa&&!conversion&&preinscAplica(userType,selectedSacs)}
             conversion={!!conversion} usuarioId={conversion?.usuarioId}
             onSuccess={handlePaymentSuccess}
             onBack={conversion?(async()=>{ try{await supabase.auth.signOut();}catch(e){console.error(e);} setConversion(null); setPhase("welcome"); }):()=>setPhase("password")}/>
