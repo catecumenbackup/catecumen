@@ -85,6 +85,41 @@ serve(async (req: Request) => {
     const monto = Number(importe);
     if (!Number.isFinite(monto) || monto <= 0) throw new Error("importe inválido");
 
+    // ── Modo PREINSCRIPCIÓN (blindaje server-side) ──────────────────────────
+    // Si el ajuste `preinscripcion` está activo y aplica al curso de este
+    // registro, NO se cobra: el alumno debe reservar sin costo (edge `preinscribir`).
+    // Esto cierra el paso al pago incluso si alguien llama la API directamente,
+    // no solo desde la interfaz. Las CONVERSIONES (preinscrito que paga al abrir)
+    // se permiten: son el mecanismo deliberado de cobro cuando el modo se apaga.
+    if (!conversion) {
+      const { data: aj, error: ajErr } = await supabase
+        .from("ajustes").select("valor").eq("clave", "preinscripcion").maybeSingle();
+      if (ajErr) {
+        console.error("[crear-sesion-pago] check preinscripcion:", ajErr);
+      } else {
+        const pv = (aj?.valor || {}) as { activa?: boolean; cursos?: unknown };
+        if (pv.activa) {
+          const cursos = Array.isArray(pv.cursos) ? (pv.cursos as string[]) : null;
+          // Cursos que cubre este registro (misma lógica que el frontend).
+          const mios: string[] =
+            userType === "catecumeno"   ? (Array.isArray(selectedSacs) ? selectedSacs : []) :
+            userType === "prebautismal" ? ["prebautismal"] :
+            userType === "padrino"      ? ["padrino"] :
+            userType === "catequista"   ? ["catequista"] : [];
+          // Sin lista de cursos → aplica a todos. Perfil desconocido → aplica (seguro).
+          const aplica = !cursos || cursos.length === 0 || mios.length === 0
+            ? true : mios.some((k) => cursos.includes(k));
+          if (aplica) {
+            return new Response(
+              JSON.stringify({ error:
+                "El registro está en modo preinscripción (sin pago). Reserva tu lugar sin costo." }),
+              { status: 403, headers: { ...CORS, "Content-Type": "application/json" } },
+            );
+          }
+        }
+      }
+    }
+
     // ── Disponibilidad de la opción (refuerzo server-side de las etiquetas) ──
     // Si el tipo de usuario o alguno de los sacramentos elegidos tiene una
     // etiqueta ACTIVA en `opciones_etiquetas` (p.ej. "Próximamente"), la opción
