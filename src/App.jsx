@@ -538,7 +538,20 @@ function WelcomeModal({onContinue,onLogin}){
   // Video promocional (clic para reproducir, con audio) en la diapositiva final.
   // Alojado en Bunny Stream; el iframe player trae controles + streaming adaptativo.
   const [showPromo,setShowPromo]=useState(false);
-  const PROMO_EMBED="https://iframe.mediadelivery.net/embed/756611/19985d09-9762-46ee-b016-f6a639171a3b?autoplay=true&preload=true&responsive=true";
+  // URL del promo editable desde el panel (ajuste `promo_video`). Si no está
+  // configurada, se usa el video por defecto de abajo.
+  const [promoRaw,setPromoRaw]=useState(null);
+  useEffect(()=>{(async()=>{
+    try{ const {data}=await supabase.rpc("obtener_ajuste",{p_clave:"promo_video"}); if(data&&data.url) setPromoRaw(data.url); }catch(e){}
+  })();},[]);
+  const PROMO_DEFAULT="https://iframe.mediadelivery.net/embed/756611/19985d09-9762-46ee-b016-f6a639171a3b";
+  // Normaliza a URL de embed de Bunny (acepta la URL del player o la de embed).
+  const PROMO_EMBED=(()=>{
+    let u=(promoRaw||"").trim();
+    if(!/^https?:\/\//i.test(u)) u=PROMO_DEFAULT;
+    else u=u.replace("player.mediadelivery.net/play/","iframe.mediadelivery.net/embed/");
+    return u.includes("?")?u:u+"?autoplay=true&preload=true&responsive=true";
+  })();
   useEffect(()=>{
     let vivo=true;
     (async()=>{

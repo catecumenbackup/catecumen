@@ -318,6 +318,15 @@
           Tarjetas de bienvenida. Si dejas un texto vacío se usa el que trae la app por defecto.
         </span>
       </div>
+      <div style="margin:0 0 16px;padding:12px 14px;border:1px solid rgba(200,169,81,.3);border-radius:10px;background:rgba(200,169,81,.05)">
+        <p style="margin:0 0 6px;font-size:14px"><b>🎬 Video promocional</b> — botón "Ver presentación" de la última diapositiva</p>
+        <p style="color:var(--ivory-m);font-size:12px;margin:0 0 10px">Pega la URL del reproductor de Bunny (la que copias del video, tipo <code>https://player.mediadelivery.net/play/756611/&lt;id&gt;</code>). Para cambiar el video solo súbelo a Bunny y pega aquí la nueva URL. Déjalo vacío para usar el video por defecto del código.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <input id="promo-url" type="url" placeholder="https://player.mediadelivery.net/play/756611/…" style="flex:1 1 420px"/>
+          <button id="promo-guardar" class="btn">Guardar</button>
+        </div>
+        <span id="promo-msg" class="msg"></span>
+      </div>
       <div class="scroll"><table><thead><tr>
         <th class="num">Orden</th><th>Clave</th><th>Texto (ES)</th><th>Video</th>
         <th class="num">Estado</th><th>Acciones</th>
@@ -2224,6 +2233,8 @@
       TOUR=data||[];
       renderTour();
       $("tour-msg").textContent="";
+      // Cargar la URL del video promocional (ajuste global).
+      try{ const {data:aj}=await sb.rpc("obtener_ajuste",{p_clave:"promo_video"}); if(aj&&aj.url) $("promo-url").value=aj.url; }catch(e){}
     }catch(e){ $("tour-msg").className="msg err"; $("tour-msg").textContent="Error: "+(e.message||e); }
   }
   function renderTour(){
@@ -2494,6 +2505,15 @@
   // Tour
   $("tour-recargar").addEventListener("click",cargarTour);
   $("tour-nueva").addEventListener("click",()=>window.__editarTour(null));
+  // Video promocional (URL editable, guardada en ajustes)
+  $("promo-guardar").addEventListener("click",async()=>{
+    const url=$("promo-url").value.trim();
+    const m=$("promo-msg");
+    const {error}=await sb.rpc("admin_guardar_ajuste",{p_clave:"promo_video",p_valor:{url}});
+    if(error){ m.className="msg err"; m.textContent="Error: "+error.message; return; }
+    m.className="msg ok"; m.textContent=url?"Video promocional actualizado.":"Se usará el video por defecto.";
+    setTimeout(()=>{ m.textContent=""; },3000);
+  });
   // Evaluaciones
   $("ev-video").addEventListener("change",cargarPreguntas);
   $("ev-recargar").addEventListener("click",cargarEvaluaciones);
