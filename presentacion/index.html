@@ -40,11 +40,7 @@
       display:flex; align-items:center; justify-content:center; padding:28px 18px;
     }
     .wrap{ width:100%; max-width:840px; text-align:center; }
-    .brand{
-      font-weight:700; letter-spacing:.14em; font-size:clamp(20px,3.4vw,30px);
-      color:var(--gold); margin:0 0 6px;
-    }
-    .brand .cruz{ color:var(--ivory); font-weight:400; }
+    .logo{ width:clamp(240px,56vw,440px); height:auto; display:block; margin:0 auto 10px; }
     h1{ font-size:clamp(22px,4.2vw,36px); margin:.35em 0 .15em; font-weight:700; line-height:1.15; }
     .sub{ color:#cdd6ea; font-size:clamp(14px,2.4vw,17px); margin:0 auto 20px; max-width:620px; line-height:1.5; }
     .video{
@@ -60,13 +56,14 @@
       border-radius:999px; letter-spacing:.02em; font-size:16px;
       box-shadow:0 8px 22px rgba(200,169,81,.35);
     }
-    .foot{ margin-top:18px; color:#9fb0d6; font-size:13px; }
+    .foot{ margin-top:20px; color:#9fb0d6; font-size:13px; line-height:1.6; }
     .foot a{ color:var(--gold); text-decoration:none; }
+    .foot .foot-url{ color:var(--gold); font-weight:700; letter-spacing:.02em; }
   </style>
 </head>
 <body>
   <main class="wrap">
-    <p class="brand">CATE<span class="cruz">✝</span>CUMEN</p>
+    <img class="logo" src="/logo-catecumen.png" alt="Catecumen" width="1200" height="259" />
     <h1>El Aula Global de la Catequesis</h1>
     <p class="sub">Comunidad virtual de preparación a los sacramentos en la Iglesia Católica, con formación integral a tu propio ritmo. Mira la presentación:</p>
 
@@ -78,7 +75,7 @@
     </div>
 
     <a class="cta" href="https://catecumen.com/">Conoce la plataforma</a>
-    <p class="foot">catecumen.com · en colaboración con CICADI y la Diócesis de Querétaro</p>
+    <p class="foot">Plataforma creada por el Centro Internacional de Catequesis a Distancia (CICADI)<br /><span class="foot-url">www.catecumen.com</span></p>
   </main>
 </body>
 </html>
