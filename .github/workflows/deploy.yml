@@ -28,6 +28,13 @@ jobs:
         run: npm ci
 
       - name: Compilar (genera dist/)
+        # Vite hornea estas variables en el bundle EN TIEMPO DE COMPILACIÓN.
+        # El .env está gitignoreado, así que en CI hay que inyectarlas desde
+        # los Secrets del repo; sin esto el build apunta a "invalid.supabase.co"
+        # y el backend queda muerto en el sitio publicado.
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         run: npm run build
 
       - name: Subir dist/ a Hostinger por FTP
