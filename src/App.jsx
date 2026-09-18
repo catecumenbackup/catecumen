@@ -535,6 +535,10 @@ function WelcomeModal({onContinue,onLogin}){
 
   // Tarjetas efectivas: las de la BD (si las hay) sobre las de respaldo.
   const [cards,setCards]=useState(cardsBase);
+  // Video promocional (clic para reproducir, con audio) en la diapositiva final.
+  // Alojado en Bunny Stream; el iframe player trae controles + streaming adaptativo.
+  const [showPromo,setShowPromo]=useState(false);
+  const PROMO_EMBED="https://iframe.mediadelivery.net/embed/756611/5e50bf95-2f00-4d54-9fb4-217cd6e881cf?autoplay=true&preload=true&responsive=true";
   useEffect(()=>{
     let vivo=true;
     (async()=>{
@@ -640,6 +644,12 @@ function WelcomeModal({onContinue,onLogin}){
           <span style={{color:C.gold,flexShrink:0,marginTop:2,fontSize:16}}>✦</span>
           <span style={{color:C.ivory,fontFamily:FONT_READ,fontSize:16.5,lineHeight:1.7}}>{cur.t}</span>
         </div>
+        {cur.scene==="muestra"&&(
+          <button onClick={()=>setShowPromo(true)}
+            style={{...BTN("pri"),width:"100%",justifyContent:"center",marginTop:14,color:"#FFFFFF"}}>
+            ▶ {T("Ver presentación","Watch the presentation","Voir la présentation","Präsentation ansehen","Ver a apresentação","Guarda la presentazione")}
+          </button>
+        )}
       </div>
       <div style={{display:desktop?"block":"none"}}>{arrowBtn(1,i===n-1)}</div>
     </div>
@@ -707,6 +717,23 @@ function WelcomeModal({onContinue,onLogin}){
           </div>
         )}
       </div>
+      {showPromo&&(
+        <div onClick={()=>setShowPromo(false)}
+          style={{position:"fixed",inset:0,zIndex:9999,background:"rgba(0,0,0,0.88)",
+            display:"flex",alignItems:"center",justifyContent:"center",padding:16}}>
+          <div onClick={(e)=>e.stopPropagation()}
+            style={{position:"relative",width:"min(960px,100%)",aspectRatio:"16 / 9",
+              background:"#000",borderRadius:12,overflow:"hidden",border:`1px solid ${C.gold}44`}}>
+            <iframe src={PROMO_EMBED} title="Catecumen"
+              style={{position:"absolute",inset:0,width:"100%",height:"100%",border:0}}
+              allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;fullscreen"
+              allowFullScreen/>
+          </div>
+          <button onClick={()=>setShowPromo(false)} aria-label={T("Cerrar","Close","Fermer","Schließen","Fechar","Chiudi")}
+            style={{position:"absolute",top:16,right:20,background:"rgba(0,0,0,0.6)",color:"#fff",
+              border:"1px solid rgba(255,255,255,0.4)",borderRadius:99,width:42,height:42,fontSize:20,cursor:"pointer"}}>✕</button>
+        </div>
+      )}
     </div>
   );
 }
