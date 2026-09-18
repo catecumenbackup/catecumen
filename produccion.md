@@ -58,6 +58,24 @@ Sube **todo el contenido de `dist/`**. En particular, no olvidar:
 
 **Service Worker:** sube el número de `CACHE_VERSION` en `public/sw.js` en **cada** release (última: `catecumen-v82`). Tras subir, puede requerir **recargar dos veces** o probar en **incógnito** (el SW sirve el bundle cacheado hasta activarse).
 
+## 2-bis. Auto-despliegue por GitHub Actions (FTP) — y su trampa crítica
+
+Existe `/.github/workflows/deploy.yml`: **cada `git push` a `main`** (o "Run workflow" manual) compila y sube `dist/` a Hostinger por FTP. Ya no hace falta compilar y subir a mano (secciones 1–2), salvo que quieras un despliegue de emergencia.
+
+**⚠️ Trampa crítica (rompió TODO el backend, sep-2026).** Vite hornea `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` en el bundle **en tiempo de compilación**. El `.env` está gitignoreado, así que **en CI no existe**: si esas variables no se inyectan, `supabaseClient.js` cae a su respaldo `https://invalid.supabase.co` / `"anon"` y **el sitio publicado se queda sin backend** (login, registro, tour, ajustes, pagos… todo falla con 401 o va a un host inválido). Compilar en tu máquina lo ocultaba (ahí sí hay `.env`).
+
+**Solución (ya aplicada):** el workflow inyecta ambas variables en el paso de build desde los **Secrets del repo**. Secrets requeridos en GitHub → Settings → Secrets and variables → Actions:
+
+| Secret | Valor |
+|---|---|
+| `VITE_SUPABASE_URL` | `https://jqlfjfamraavsbhdusuq.supabase.co` (no es sensible) |
+| `VITE_SUPABASE_ANON_KEY` | la anon key del `.env` (empieza con `eyJ…`; es pública, viaja en el bundle) |
+| `FTP_HOST` / `FTP_USERNAME` / `FTP_PASSWORD` / `FTP_REMOTE_DIR` | credenciales FTP de Hostinger; `FTP_REMOTE_DIR` = `./` (el home FTP ya es `public_html`, no anidar) |
+
+**Cuidado con el orden:** los Secrets se leen **en el momento del build**. Si agregas/cambias un secret *después* de que corrió un deploy, ese build ya salió con el valor viejo (o vacío) — **relanza** el workflow ("Run workflow" o "Re-run all jobs") para que tome el secret nuevo.
+
+**Verificar tras un deploy:** abrir `catecumen.com` en incógnito y confirmar en la consola/red que las llamadas van a `jqlfjfamraavsbhdusuq.supabase.co` y responden **200** (no 401, ni `invalid.supabase.co`). El `.htaccess` y `sw.js` viajan dentro de `dist/`, así que se suben solos; recuerda subir `CACHE_VERSION` en `public/sw.js` en cada release igual que en el flujo manual.
+
 ## 3. Base de datos (Supabase — SQL Editor)
 
 Ejecuta solo los scripts nuevos/cambiados. Nunca pongas al final una línea que llame una RPC protegida por `es_admin()` (en el editor `auth.uid()` es null → "no autorizado" → **rollback de todo el script**).
