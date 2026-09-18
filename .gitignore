@@ -20,6 +20,10 @@ dist-ssr
 # Backups y duplicados archivados (no forman parte del build ni del deploy)
 _archivo
 
+# Entregables para el usuario (miniaturas, exportaciones, etc.) — fáciles de
+# localizar en C:\catecumen\entregables, pero NO forman parte del build/deploy.
+entregables
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
