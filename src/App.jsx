@@ -544,7 +544,7 @@ function WelcomeModal({onContinue,onLogin}){
   useEffect(()=>{(async()=>{
     try{ const {data}=await supabase.rpc("obtener_ajuste",{p_clave:"promo_video"}); if(data&&data.url) setPromoRaw(data.url); }catch(e){}
   })();},[]);
-  const PROMO_DEFAULT="https://iframe.mediadelivery.net/embed/756611/19985d09-9762-46ee-b016-f6a639171a3b";
+  const PROMO_DEFAULT="https://iframe.mediadelivery.net/embed/756611/244e6d24-37a6-45a7-ba93-2cf10e65f3e9";
   // Normaliza a URL de embed de Bunny (acepta la URL del player o la de embed).
   const PROMO_EMBED=(()=>{
     let u=(promoRaw||"").trim();
