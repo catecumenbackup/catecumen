@@ -1,0 +1,46 @@
+name: Desplegar a Hostinger
+
+# Cada push a main compila el sitio y sube dist/ a Hostinger por FTP.
+# También se puede lanzar a mano desde la pestaña Actions (workflow_dispatch).
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-hostinger
+  cancel-in-progress: true
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Compilar (genera dist/)
+        run: npm run build
+
+      - name: Subir dist/ a Hostinger por FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server:   ${{ secrets.FTP_HOST }}       # host FTP de Hostinger
+          username: ${{ secrets.FTP_USERNAME }}    # usuario FTP
+          password: ${{ secrets.FTP_PASSWORD }}    # contraseña FTP
+          # Carpeta del sitio en el servidor. En Hostinger suele ser /public_html/
+          # (o /domains/catecumen.com/public_html/ si el dominio es secundario).
+          server-dir: ${{ secrets.FTP_REMOTE_DIR }}
+          local-dir: ./dist/
+          # protocol: ftps   # descomenta si tu Hostinger exige FTP seguro (FTPS)
+          # OJO: la acción ESPEJEA dist/ → server-dir (borra en el servidor lo que
+          # no esté en dist/). Como dist/ es el sitio COMPLETO, es lo correcto; pero
+          # no subas manualmente archivos ajenos a esa carpeta o los borrará.
