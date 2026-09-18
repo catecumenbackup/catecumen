@@ -538,7 +538,7 @@ function WelcomeModal({onContinue,onLogin}){
   // Video promocional (clic para reproducir, con audio) en la diapositiva final.
   // Alojado en Bunny Stream; el iframe player trae controles + streaming adaptativo.
   const [showPromo,setShowPromo]=useState(false);
-  const PROMO_EMBED="https://iframe.mediadelivery.net/embed/756611/5e50bf95-2f00-4d54-9fb4-217cd6e881cf?autoplay=true&preload=true&responsive=true";
+  const PROMO_EMBED="https://iframe.mediadelivery.net/embed/756611/19985d09-9762-46ee-b016-f6a639171a3b?autoplay=true&preload=true&responsive=true";
   useEffect(()=>{
     let vivo=true;
     (async()=>{
