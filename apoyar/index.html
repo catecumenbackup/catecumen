@@ -157,6 +157,7 @@
 
     // Presets por moneda
     const PRESETS = { MXN:[100,250,500,1000], USD:[10,25,50,100], EUR:[10,25,50,100] };
+    let MIN = 5;
     let recurrente = 0;
     let montoSel = null;    // preset elegido
     const $ = (id)=>document.getElementById(id);
@@ -188,15 +189,35 @@
         b.classList.add("on");
       };
     });
-    pintarMontos();
+
+    // Importes configurables desde el panel de admin (ajuste `donativos_montos`).
+    // Si no está configurado, se usan los valores por defecto de arriba.
+    async function cargarMontos(){
+      try{
+        const r = await fetch(SUPA_URL + "/rest/v1/rpc/obtener_ajuste", {
+          method:"POST",
+          headers:{ "Content-Type":"application/json", "apikey":ANON, "Authorization":"Bearer "+ANON },
+          body: JSON.stringify({ p_clave:"donativos_montos" }),
+        });
+        const m = await r.json();
+        if (m && typeof m === "object") {
+          if (Array.isArray(m.MXN) && m.MXN.length) PRESETS.MXN = m.MXN;
+          if (Array.isArray(m.USD) && m.USD.length) PRESETS.USD = m.USD;
+          if (Array.isArray(m.EUR) && m.EUR.length) PRESETS.EUR = m.EUR;
+          if (m.min) MIN = Number(m.min) || 5;
+        }
+      } catch(e) {}
+      pintarMontos();
+    }
+    cargarMontos();
 
     $("donar").onclick = async ()=>{
       const cur = $("moneda").value;
       const monto = montoSel != null ? montoSel : Number($("otro").value);
       const email = $("email").value.trim();
       const msg = $("msg"); msg.className="msg"; msg.textContent="";
-      if (!Number.isFinite(monto) || monto < 5){
-        msg.className="msg err"; msg.textContent="Ingresa un monto válido (mínimo 5)."; return;
+      if (!Number.isFinite(monto) || monto < MIN){
+        msg.className="msg err"; msg.textContent="Ingresa un monto válido (mínimo "+MIN+")."; return;
       }
       $("donar").disabled = true; $("donar").textContent = "Redirigiendo a pago seguro…";
       try{

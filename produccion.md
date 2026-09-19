@@ -126,7 +126,12 @@ confirmarse, `stripe-webhook` marca el donativo `completado` y envía un correo 
 agradecimiento (si dejó email). Reusa `STRIPE_SECRET_KEY`/`STRIPE_WEBHOOK_SECRET`.
 Como todo lo de Stripe, **probar en modo TEST** antes de abrir; recibe dinero real
 solo cuando Stripe esté en producción. Pendiente del usuario: confirmar el tratamiento
-**fiscal** (CFDI/donataria) si los donativos serán deducibles.
+**fiscal** (CFDI/donataria) si los donativos serán deducibles. **Importes configurables
+desde el panel** (pestaña 💛 Donativos): los montos sugeridos por moneda (MXN/USD/EUR)
+y el mínimo se guardan en el ajuste `donativos_montos` con `admin_guardar_ajuste`; la
+página `/apoyar` los lee con `obtener_ajuste` (respaldo a valores por defecto). Sin SQL
+nuevo (reusa `ajustes`). La pestaña también muestra los donativos recibidos
+(`admin_donativos_listar`/`admin_donativos_resumen`).
 
 **Avisos por correo (Resend):** requiere secret `RESEND_API_KEY` (crear cuenta en Resend,
 verificar el dominio `catecumen.com`) y, opcional, `RESEND_FROM` / `ADMIN_NOTIF_EMAIL`.

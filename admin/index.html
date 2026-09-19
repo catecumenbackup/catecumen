@@ -170,6 +170,7 @@
       <button class="tab" data-tab="constancias">🏆 Constancias</button>
       <button class="tab" data-tab="afiliados">⛪ Afiliados</button>
       <button class="tab" data-tab="preinscripcion">📝 Preinscripción</button>
+      <button class="tab" data-tab="donativos">💛 Donativos</button>
       <button class="tab" data-tab="scholas">📖 Scholas</button>
       <button class="tab" data-tab="auditoria">📜 Auditoría</button>
     </div>
@@ -469,6 +470,31 @@
         <button class="btn" onclick="window.preDifundir()">📢 Mensaje a todos</button>
       </div>
       <div id="preinscritos-lista" class="scroll"></div>
+    </div>
+
+    <!-- TAB DONATIVOS -->
+    <div id="tab-donativos" class="tabpane hidden">
+      <h2>💛 Donativos — Importes y registros</h2>
+
+      <div class="panelbox" style="margin-bottom:16px">
+        <h3 style="color:var(--gold);font-family:'Cinzel',serif;margin-top:0">Importes sugeridos en la página de apoyo</h3>
+        <p style="font-size:13px;color:var(--ivory-m);margin-top:4px">Escribe los montos separados por coma. Aparecen como botones en <b>catecumen.com/apoyar</b>; el donante también puede escribir "otro monto".</p>
+        <label style="display:block;margin-bottom:10px">MXN (pesos): <input id="don-mxn" type="text" placeholder="100, 250, 500, 1000" style="width:280px;display:inline-block"></label>
+        <label style="display:block;margin-bottom:10px">USD (dólares): <input id="don-usd" type="text" placeholder="10, 25, 50, 100" style="width:280px;display:inline-block"></label>
+        <label style="display:block;margin-bottom:10px">EUR (euros): <input id="don-eur" type="text" placeholder="10, 25, 50, 100" style="width:280px;display:inline-block"></label>
+        <label style="display:block;margin-bottom:12px">Monto mínimo permitido: <input id="don-min" type="number" min="1" placeholder="5" style="width:100px;display:inline-block"></label>
+        <button class="btn" onclick="window.donGuardar()">Guardar importes</button>
+        <span id="don-guardado" style="margin-left:10px;font-size:13px;color:var(--gold)"></span>
+      </div>
+
+      <div class="panelbox">
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px" id="don-resumen"></div>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+          <h3 style="color:var(--gold);font-family:'Cinzel',serif;margin:0">Donativos recibidos</h3>
+          <button class="btn ghost" onclick="cargarDonativos()">↻ Recargar</button>
+        </div>
+        <div id="don-lista" class="scroll"></div>
+      </div>
     </div>
 
     <!-- TAB SCHOLAS -->
@@ -1003,6 +1029,54 @@
     alert("Enviados: "+ok+(fail?(" · Fallidos: "+fail):""));
   };
 
+  // ---------- DONATIVOS ----------
+  function donCard(t,v){
+    return `<div class="panelbox" style="padding:10px 14px;min-width:118px"><div style="font-size:12px;color:var(--ivory-m)">${t}</div><div style="font-size:20px;color:var(--gold);font-weight:bold">${v}</div></div>`;
+  }
+  function renderDonativos(rows){
+    const cont=$("don-lista");
+    if(!rows||!rows.length){ cont.innerHTML='<p style="color:var(--ivory-m)">Aún no hay donativos.</p>'; return; }
+    const esc=s=>String(s==null?"":s).replace(/[<>&]/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;"}[c]));
+    let h='<table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="text-align:left;color:var(--gold)"><th>Fecha</th><th>Monto</th><th>Tipo</th><th>Estado</th><th>Correo</th></tr>';
+    rows.forEach(d=>{
+      const fecha=(d.creado||"").slice(0,10);
+      const tipo=d.recurrente?"Mensual":"Único";
+      h+=`<tr style="border-top:1px solid rgba(200,169,81,.15)"><td>${fecha}</td><td>${esc(d.monto)} ${esc(d.moneda)}</td><td>${tipo}</td><td>${esc(d.estado)}</td><td>${esc(d.email||"—")}</td></tr>`;
+    });
+    cont.innerHTML=h+'</table>';
+  }
+  async function cargarDonativos(){
+    try{
+      const {data:aj}=await sb.rpc("obtener_ajuste",{p_clave:"donativos_montos"});
+      const m=aj||{};
+      $("don-mxn").value=(m.MXN||[100,250,500,1000]).join(", ");
+      $("don-usd").value=(m.USD||[10,25,50,100]).join(", ");
+      $("don-eur").value=(m.EUR||[10,25,50,100]).join(", ");
+      $("don-min").value=m.min||5;
+    }catch(e){ console.error("donativos ajuste:",e); }
+    try{
+      const {data:res}=await sb.rpc("admin_donativos_resumen");
+      const r=Array.isArray(res)?res[0]:res;
+      if(r) $("don-resumen").innerHTML=
+        donCard("Completados",r.total_completados||0)+
+        donCard("Monto total",r.monto_total||0)+
+        donCard("Recurrentes",r.recurrentes_activos||0)+
+        donCard("Pendientes",r.pendientes||0);
+    }catch(e){ console.error("donativos resumen:",e); }
+    try{
+      const {data:rows}=await sb.rpc("admin_donativos_listar");
+      renderDonativos(rows||[]);
+    }catch(e){ console.error("donativos lista:",e); $("don-lista").innerHTML='<p style="color:var(--ivory-m)">No se pudieron cargar.</p>'; }
+  }
+  window.donGuardar=async()=>{
+    const parse=s=>String(s||"").split(",").map(x=>Number(x.trim())).filter(n=>Number.isFinite(n)&&n>0);
+    const valor={ MXN:parse($("don-mxn").value), USD:parse($("don-usd").value), EUR:parse($("don-eur").value), min:Number($("don-min").value)||5 };
+    if(!valor.MXN.length){ alert("Pon al menos un importe válido en MXN."); return; }
+    const {error}=await sb.rpc("admin_guardar_ajuste",{p_clave:"donativos_montos",p_valor:valor});
+    $("don-guardado").textContent=error?("Error: "+error.message):"✓ Guardado";
+    setTimeout(()=>{$("don-guardado").textContent="";},3000);
+  };
+
   // ---------- TABS ----------
   document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{
     document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
@@ -1015,6 +1089,7 @@
     if(t.dataset.tab==="constancias") cargarConstancias();
     if(t.dataset.tab==="afiliados") cargarAfiliados();
     if(t.dataset.tab==="preinscripcion") cargarPreinscripcion();
+    if(t.dataset.tab==="donativos") cargarDonativos();
     if(t.dataset.tab==="avisos") cargarAvisos();
     if(t.dataset.tab==="sesiones") cargarSesiones();
     if(t.dataset.tab==="atencion") cargarAtencion();
