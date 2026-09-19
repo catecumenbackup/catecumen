@@ -109,6 +109,45 @@ const emailVencido = (nombre: string) => `
     </p>
   </div>`;
 
+const emailDonativo = (monto: number, moneda: string, recurrente: boolean) => `
+  <div style="font-family:Georgia,serif;max-width:520px;margin:0 auto;padding:24px">
+    <h1 style="color:#9C7A28;font-size:20px">🙏 ¡Gracias por tu donativo!</h1>
+    <p>Tu aporte de <strong>${monto} ${moneda}</strong>${recurrente ? " (mensual)" : ""} sostiene la plataforma y hace posible que más personas se preparen para los sacramentos, incluidas las becas para quienes no pueden pagar.</p>
+    <p>Que Dios te lo recompense.</p>
+    <p style="margin-top:24px">
+      <a href="https://www.catecumen.com" style="background:#C8A951;color:#2A1E05;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold">Volver a Catecumen →</a>
+    </p>
+  </div>`;
+
+// ── Marca un donativo como COMPLETADO (idempotente por el filtro estado) ─────
+async function completarDonativo(session: Stripe.Checkout.Session, donativoId: string) {
+  const cur = (session.currency || "").toUpperCase();
+  const amt = session.amount_total ?? 0;
+  const pagado = CERO_DECIMALES.has(cur) ? amt : amt / 100;
+
+  const { data: fila, error } = await supabase
+    .from("donativos")
+    .update({
+      estado: "completado",
+      confirmado: new Date().toISOString(),
+      stripe_payment_intent: (session.payment_intent as string) || null,
+      stripe_subscription_id: (session.subscription as string) || null,
+    })
+    .eq("id", donativoId)
+    .eq("estado", "pendiente")      // idempotente: si Stripe reintenta, no re-notifica
+    .select("email, monto, moneda, recurrente")
+    .maybeSingle();
+
+  if (error) { console.error("[stripe-webhook] completarDonativo:", error); return; }
+  if (!fila) { console.log(`[stripe-webhook] donativo ${donativoId} ya procesado — no-op`); return; }
+
+  if (fila.email) {
+    await enviarCorreo(fila.email, "🙏 Gracias por tu donativo — Catecumen",
+      emailDonativo(Number(fila.monto ?? pagado), String(fila.moneda ?? cur), !!fila.recurrente));
+  }
+  console.log(`[stripe-webhook] Donativo completado: ${donativoId} monto=${pagado} ${cur} recurrente=${!!fila.recurrente}`);
+}
+
 // ── Crea la cuenta + perfil a partir de un registro pendiente ya PAGADO ──────
 async function activarRegistro(session: Stripe.Checkout.Session, pendienteId: string) {
   const { data: pendiente, error: pendErr } = await supabase
@@ -285,6 +324,28 @@ serve(async (req: Request) => {
 
   try {
     const session = event.data.object as Stripe.Checkout.Session;
+
+    // ── DONATIVOS (apoyo a la plataforma) ────────────────────────────────────
+    // Se identifican por metadata.tipo="donativo" (lo pone `crear-donativo`).
+    // No crean cuenta: solo se marca el donativo como completado. Los renovados
+    // mensuales de una suscripción siguen su curso en Stripe; aquí se concilia
+    // el donativo inicial (MVP). Se retorna temprano para no tocar la lógica de
+    // registros de curso.
+    if (session.metadata?.tipo === "donativo") {
+      const donativoId = session.metadata?.donativo_id || session.client_reference_id;
+      const pagado =
+        (event.type === "checkout.session.completed" && session.payment_status === "paid") ||
+        event.type === "checkout.session.async_payment_succeeded";
+      if (donativoId && pagado) {
+        await completarDonativo(session, donativoId);
+      } else if (event.type === "checkout.session.async_payment_failed" && donativoId) {
+        await supabase.from("donativos").update({ estado: "cancelado" })
+          .eq("id", donativoId).eq("estado", "pendiente");
+      }
+      return new Response(JSON.stringify({ received: true }),
+        { headers: { "Content-Type": "application/json" } });
+    }
+
     const pendienteId = session.metadata?.registro_pendiente_id || session.client_reference_id;
 
     if (!pendienteId) {

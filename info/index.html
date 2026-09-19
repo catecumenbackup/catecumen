@@ -202,8 +202,11 @@
   
   /* ── tarjetas ── */
   .grid{display:grid;grid-template-columns:repeat(2, 1fr);gap:14px}
-  /* Grid de 3 (perfiles fundadores + asesor): 3 en escritorio, se ajusta solo */
-  .grid-3{grid-template-columns:repeat(auto-fit, minmax(300px, 1fr))}
+  /* Grid de perfiles (fundadores + asesores): SIEMPRE 2 columnas en escritorio,
+     para que las cuatro reseñas queden 2x2 (Nelly|Jorge / Laureano|P. Jorge).
+     Con `auto-fit` se abrían 4 columnas estrechas y las fichas, que son largas,
+     quedaban ilegibles. Gap mayor que el `.grid` general: son tarjetas densas. */
+  .grid-perfiles{grid-template-columns:repeat(2, 1fr);gap:20px;align-items:stretch}
   
   .tarjeta{
     background:linear-gradient(145deg,rgba(17,32,56,0.85) 0%,rgba(14,27,46,0.95) 100%);
@@ -263,6 +266,9 @@
     border-radius: 8px;
 }
   /* MEDIA QUERY: En celulares de 768px o menos, pasa a 1 sola columna para que no se aprieten */
+  @media (max-width: 900px) {
+    .grid-perfiles { grid-template-columns: 1fr; }
+  }
   @media (max-width: 768px) {
     .grid { grid-template-columns: 1fr; }
   }
@@ -958,7 +964,7 @@
       <span class="pt">Nossa Equipe</span><span class="it">Il Nostro Team</span>
     </h2>
     
-<div class="grid grid-3">
+<div class="grid grid-perfiles">
       <div class="tarjeta">
         <div class="ico">🧠</div>
         <h3>
@@ -1139,6 +1145,77 @@
           </li>
         </ul>
       </div>
+      <div class="tarjeta">
+        <div class="ico" aria-hidden="true"><svg viewBox="0 0 48 48" width="30" height="30" style="vertical-align:middle" role="img" aria-label="Parroquia">
+          <!-- cruz del campanario -->
+          <g fill="#EEC85A">
+            <rect x="22.9" y="4" width="2.2" height="7.5" rx="0.6"/>
+            <rect x="20.8" y="6.2" width="6.4" height="2.2" rx="0.6"/>
+          </g>
+          <!-- torre / nave central -->
+          <path d="M24 11 L30 18 V40 H18 V18 Z" fill="#E0B23A" stroke="#9A7A2A" stroke-width="1" stroke-linejoin="round"/>
+          <!-- naves laterales -->
+          <path d="M18 22 L11 27.5 V40 H18 Z" fill="#C99A2E"/>
+          <path d="M30 22 L37 27.5 V40 H30 Z" fill="#C99A2E"/>
+          <!-- portada -->
+          <path d="M21.8 40 V30.5 a2.2 2.2 0 0 1 4.4 0 V40 Z" fill="#7A5E1E"/>
+        </svg></div>
+        <h3>
+          <span class="es">Pbro. Lic. Jorge Ramírez Casas / Asesor Eclesiástico Diocesano</span><span class="en">Fr. Jorge Ramírez Casas / Diocesan Ecclesiastical Advisor</span>
+          <span class="fr">Abbé Jorge Ramírez Casas / Conseiller Ecclésiastique Diocésain</span><span class="de">Pfr. Jorge Ramírez Casas / Diözesaner Kirchlicher Berater</span>
+          <span class="pt">Pe. Jorge Ramírez Casas / Assessor Eclesiástico Diocesano</span><span class="it">Don Jorge Ramírez Casas / Consulente Ecclesiastico Diocesano</span>
+        </h3>
+        <p style="color:#EAD08A; font-size:14px; font-style:italic; margin-bottom:12px;">
+          <span class="es">Cargo honorario · Evangelización y Catequesis, Pastoral Parroquial y Formación Sacerdotal</span>
+          <span class="en">Honorary position · Evangelization and Catechesis, Parish Ministry and Priestly Formation</span>
+          <span class="fr">Fonction honorifique · Évangélisation et Catéchèse, Pastorale Paroissiale et Formation Sacerdotale</span>
+          <span class="de">Ehrenamt · Evangelisierung und Katechese, Pfarrseelsorge und Priesterausbildung</span>
+          <span class="pt">Cargo honorário · Evangelização e Catequese, Pastoral Paroquial e Formação Sacerdotal</span>
+          <span class="it">Incarico onorario · Evangelizzazione e Catechesi, Pastorale Parrocchiale e Formazione Sacerdotale</span>
+        </p>
+        <p>
+          <span class="es">El P. Jorge es sacerdote de la Diócesis de Querétaro, ordenado en 2012. Buena parte de su ministerio transcurrió en el Seminario Conciliar de Nuestra Señora de Guadalupe, formando a los seminaristas en sus primeros años; desde agosto de 2026 es párroco y coordinador diocesano de la Evangelización y la Catequesis.</span>
+          <span class="en">Fr. Jorge is a priest of the Diocese of Querétaro, ordained in 2012. Much of his ministry took place at the Conciliar Seminary of Our Lady of Guadalupe, forming seminarians during their first years; since August 2026 he has been a parish priest and diocesan coordinator of Evangelization and Catechesis.</span>
+          <span class="fr">L'abbé Jorge est prêtre du Diocèse de Querétaro, ordonné en 2012. Une grande partie de son ministère s'est déroulée au Séminaire Conciliaire Notre-Dame de Guadalupe, où il a formé les séminaristes des premières années ; depuis août 2026, il est curé et coordinateur diocésain de l'Évangélisation et de la Catéchèse.</span>
+          <span class="de">Pfarrer Jorge ist Priester der Diözese Querétaro, geweiht im Jahr 2012. Einen großen Teil seines Dienstes verbrachte er im Konzilsseminar Unserer Lieben Frau von Guadalupe, wo er Seminaristen in ihren ersten Jahren ausbildete; seit August 2026 ist er Pfarrer und Diözesankoordinator für Evangelisierung und Katechese.</span>
+          <span class="pt">O Pe. Jorge é sacerdote da Diocese de Querétaro, ordenado em 2012. Boa parte de seu ministério transcorreu no Seminário Conciliar de Nossa Senhora de Guadalupe, formando os seminaristas em seus primeiros anos; desde agosto de 2026 é pároco e coordenador diocesano da Evangelização e da Catequese.</span>
+          <span class="it">Don Jorge è sacerdote della Diocesi di Querétaro, ordinato nel 2012. Gran parte del suo ministero si è svolta nel Seminario Conciliare di Nostra Signora di Guadalupe, formando i seminaristi nei loro primi anni; da agosto 2026 è parroco e coordinatore diocesano dell'Evangelizzazione e della Catechesi.</span>
+        </p>
+        <ul>
+          <li>
+            <span class="es"><strong>Coordinación Diocesana de la Catequesis:</strong> Por decreto de julio de 2026 es Coordinador de la Tarea Fundamental de la Pastoral Profética y de la dimensión de Evangelización y Catequesis: la instancia diocesana que articula a los catequistas y a los equipos parroquiales de toda la diócesis.</span>
+            <span class="en"><strong>Diocesan Coordination of Catechesis:</strong> By decree of July 2026 he is Coordinator of the Fundamental Task of Prophetic Ministry and of the Evangelization and Catechesis dimension: the diocesan body that brings together catechists and parish teams across the whole diocese.</span>
+            <span class="fr"><strong>Coordination Diocésaine de la Catéchèse :</strong> Par décret de juillet 2026, il est Coordinateur de la Tâche Fondamentale de la Pastorale Prophétique et de la dimension Évangélisation et Catéchèse : l'instance diocésaine qui articule les catéchistes et les équipes paroissiales de tout le diocèse.</span>
+            <span class="de"><strong>Diözesane Koordination der Katechese:</strong> Durch Dekret vom Juli 2026 ist er Koordinator der Grundaufgabe der prophetischen Pastoral und des Bereichs Evangelisierung und Katechese: jener Diözesanstelle, welche die Katecheten und die Pfarrteams der gesamten Diözese verbindet.</span>
+            <span class="pt"><strong>Coordenação Diocesana da Catequese:</strong> Por decreto de julho de 2026 é Coordenador da Tarefa Fundamental da Pastoral Profética e da dimensão de Evangelização e Catequese: a instância diocesana que articula os catequistas e as equipes paroquiais de toda a diocese.</span>
+            <span class="it"><strong>Coordinamento Diocesano della Catechesi:</strong> Con decreto del luglio 2026 è Coordinatore del Compito Fondamentale della Pastorale Profetica e della dimensione di Evangelizzazione e Catechesi: l'organismo diocesano che coordina i catechisti e le équipe parrocchiali dell'intera diocesi.</span>
+          </li>
+          <li>
+            <span class="es"><strong>Párroco de la primera parroquia afiliada:</strong> Desde el 18 de agosto de 2026 es párroco de Nuestra Señora de la Esperanza, en Corregidora, Querétaro — la primera parroquia afiliada a Catecumen. Conoce desde dentro el recorrido del catecúmeno que se inscribe, del catequista que lo acompaña y de la parroquia que lo recibe.</span>
+            <span class="en"><strong>Parish priest of the first affiliated parish:</strong> Since 18 August 2026 he has been parish priest of Our Lady of Hope, in Corregidora, Querétaro — the first parish affiliated with Catecumen. He knows from the inside the journey of the catechumen who enrolls, the catechist who accompanies them and the parish that receives them.</span>
+            <span class="fr"><strong>Curé de la première paroisse affiliée :</strong> Depuis le 18 août 2026, il est curé de Notre-Dame de l'Espérance, à Corregidora, Querétaro — la première paroisse affiliée à Catecumen. Il connaît de l'intérieur le parcours du catéchumène qui s'inscrit, du catéchiste qui l'accompagne et de la paroisse qui l'accueille.</span>
+            <span class="de"><strong>Pfarrer der ersten angeschlossenen Pfarrei:</strong> Seit dem 18. August 2026 ist er Pfarrer von Unserer Lieben Frau von der Hoffnung in Corregidora, Querétaro — der ersten Catecumen angeschlossenen Pfarrei. Er kennt von innen den Weg des Katechumenen, der sich einschreibt, des Katecheten, der ihn begleitet, und der Pfarrei, die ihn aufnimmt.</span>
+            <span class="pt"><strong>Pároco da primeira paróquia afiliada:</strong> Desde 18 de agosto de 2026 é pároco de Nossa Senhora da Esperança, em Corregidora, Querétaro — a primeira paróquia afiliada ao Catecumen. Conhece por dentro o percurso do catecúmeno que se inscreve, do catequista que o acompanha e da paróquia que o recebe.</span>
+            <span class="it"><strong>Parroco della prima parrocchia affiliata:</strong> Dal 18 agosto 2026 è parroco di Nostra Signora della Speranza, a Corregidora, Querétaro — la prima parrocchia affiliata a Catecumen. Conosce dall'interno il cammino del catecumeno che si iscrive, del catechista che lo accompagna e della parrocchia che lo accoglie.</span>
+          </li>
+          <li>
+            <span class="es"><strong>Formador de formadores:</strong> Fue Prefecto de Disciplina de la Etapa Discipular o Filosófica del Seminario Conciliar de Querétaro, acompañando a los seminaristas en sus primeros pasos. Ese mismo perfil —formar a quienes forman— es el que aporta a la red de catequistas de Catecumen.</span>
+            <span class="en"><strong>Formator of formators:</strong> He served as Prefect of Discipline of the Discipleship or Philosophical Stage at the Conciliar Seminary of Querétaro, accompanying seminarians in their first steps. That same profile — forming those who form others — is what he brings to Catecumen's network of catechists.</span>
+            <span class="fr"><strong>Formateur de formateurs :</strong> Il a été Préfet de Discipline de l'Étape Disciple ou Philosophique au Séminaire Conciliaire de Querétaro, accompagnant les séminaristes dans leurs premiers pas. C'est ce même profil — former ceux qui forment — qu'il apporte au réseau de catéchistes de Catecumen.</span>
+            <span class="de"><strong>Ausbilder der Ausbilder:</strong> Er war Disziplinarpräfekt der Jünger- bzw. philosophischen Stufe am Konzilsseminar von Querétaro und begleitete die Seminaristen bei ihren ersten Schritten. Eben dieses Profil — jene auszubilden, die andere ausbilden — bringt er in das Katechetennetz von Catecumen ein.</span>
+            <span class="pt"><strong>Formador de formadores:</strong> Foi Prefeito de Disciplina da Etapa Discipular ou Filosófica do Seminário Conciliar de Querétaro, acompanhando os seminaristas em seus primeiros passos. Esse mesmo perfil —formar quem forma— é o que aporta à rede de catequistas do Catecumen.</span>
+            <span class="it"><strong>Formatore di formatori:</strong> È stato Prefetto di Disciplina della Tappa Discepolare o Filosofica del Seminario Conciliare di Querétaro, accompagnando i seminaristi nei loro primi passi. Proprio questo profilo —formare chi forma— è ciò che porta alla rete di catechisti di Catecumen.</span>
+          </li>
+          <li>
+            <span class="es"><strong>Puente con las parroquias:</strong> Como Asesor Eclesiástico Diocesano desde septiembre de 2026, vela por que los itinerarios y contenidos de Catecumen se mantengan en sintonía con el plan diocesano de pastoral y con los criterios de la iniciación cristiana, y acompaña a las parroquias que se incorporan a la plataforma.</span>
+            <span class="en"><strong>A bridge to the parishes:</strong> As Diocesan Ecclesiastical Advisor since September 2026, he ensures that Catecumen's itineraries and content remain in tune with the diocesan pastoral plan and the criteria of Christian initiation, and accompanies the parishes joining the platform.</span>
+            <span class="fr"><strong>Un pont avec les paroisses :</strong> Comme Conseiller Ecclésiastique Diocésain depuis septembre 2026, il veille à ce que les itinéraires et les contenus de Catecumen restent en accord avec le plan pastoral diocésain et les critères de l'initiation chrétienne, et accompagne les paroisses qui rejoignent la plateforme.</span>
+            <span class="de"><strong>Brücke zu den Pfarreien:</strong> Als Diözesaner Kirchlicher Berater seit September 2026 achtet er darauf, dass die Wege und Inhalte von Catecumen mit dem diözesanen Pastoralplan und den Kriterien der christlichen Initiation im Einklang bleiben, und begleitet die Pfarreien, die sich der Plattform anschließen.</span>
+            <span class="pt"><strong>Ponte com as paróquias:</strong> Como Assessor Eclesiástico Diocesano desde setembro de 2026, zela para que os itinerários e conteúdos do Catecumen permaneçam em sintonia com o plano diocesano de pastoral e com os critérios da iniciação cristã, e acompanha as paróquias que se incorporam à plataforma.</span>
+            <span class="it"><strong>Ponte con le parrocchie:</strong> Come Consulente Ecclesiastico Diocesano da settembre 2026, vigila affinché gli itinerari e i contenuti di Catecumen restino in sintonia con il piano pastorale diocesano e con i criteri dell'iniziazione cristiana, e accompagna le parrocchie che si uniscono alla piattaforma.</span>
+          </li>
+        </ul>
+      </div>
     </div>
 
   </section>
@@ -1159,6 +1236,13 @@
       <span class="fr">M'inscrire maintenant</span><span class="de">Jetzt registrieren</span>
       <span class="pt">Registrar-me agora</span><span class="it">Registrati ora</span>
     </a>
+    <p style="margin-top:8px">
+      <a href="https://www.catecumen.com/apoyar/" style="color:#C8A951;text-decoration:none;font-weight:700">♥
+        <span class="es">Apoya esta obra con un donativo</span><span class="en">Support this work with a donation</span>
+        <span class="fr">Soutenez cette œuvre par un don</span><span class="de">Unterstützen Sie dieses Werk mit einer Spende</span>
+        <span class="pt">Apoie esta obra com uma doação</span><span class="it">Sostieni quest'opera con una donazione</span>
+      </a>
+    </p>
     <p>
       <span class="es">Impulsada por el Centro Internacional de Catequesis a Distancia · Con el soporte de Magisterium AI</span>
       <span class="en">Powered by the International Center for Distance Catechesis · Supported by Magisterium AI</span>

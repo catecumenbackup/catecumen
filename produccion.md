@@ -100,6 +100,7 @@ Módulos adicionales (idempotentes, re-ejecutables):
 | **`scripts/actualizar-perfil.sql`** | RPC `actualizar_mi_perfil` (SECURITY DEFINER, acotada a `auth.uid()` + lista blanca): persiste los cambios de "Mi Cuenta". Sin ella el botón "Guardar cambios" no guarda en la BD. Requiere subir `dist/`. |
 | **`scripts/uid-por-email.sql`** | RPC `uid_por_email` (service_role): resuelve el uid por correo sin `listUsers()` (que estaba paginado a 50 y dejaba sin cuenta a quien pagaba con >50 usuarios). **Redesplegar `activar-pago`, `stripe-webhook`, `preinscribir`.** |
 | **`scripts/precio-esperado.sql`** | RPC `precio_esperado` (service_role): precio autoritativo server-side para que `crear-sesion-pago` no confíe en el `importe` del cliente (evita cobros de menos). **Redesplegar `crear-sesion-pago`.** Recomendado sembrar `cuotasporpais` para todos los países (si falta la fila, se conserva el importe del cliente). |
+| **`scripts/donativos.sql`** | Donativos de apoyo: tabla `donativos` (RLS sin políticas; escriben las edge functions con service-role) + RPCs `admin_donativos_listar`/`admin_donativos_resumen` (es_admin). **Desplegar `crear-donativo` y redesplegar `stripe-webhook`.** |
 
 ## 4. Edge Functions (Supabase — terminal, no SQL Editor)
 
@@ -113,7 +114,19 @@ Funciones: `crear-sesion-pago`, `activar-pago`, `stripe-webhook`, `reanudar-pago
 `admin-eliminar-usuario`, `firmar-video`, `consultar-magisterium`,
 `geocodificar-afiliados`, `geocodificar-uno`, **`preinscribir`** (crea la cuenta del
 preinscrito con service-role — desplegar para que la preinscripción funcione),
-**`avisar-admin`** (avisos al panel + correo a admin@catecumen.com vía Resend).
+**`avisar-admin`** (avisos al panel + correo a admin@catecumen.com vía Resend),
+**`crear-donativo`** (donativos de apoyo: crea la sesión de Stripe en modo `payment`
+o `subscription`; requiere `scripts/donativos.sql` y **redesplegar `stripe-webhook`**,
+que ahora concilia los donativos por `metadata.tipo="donativo"`).
+
+**Donativos (feature nueva):** página pública `catecumen.com/apoyar` (montos únicos o
+mensuales, en MXN/USD/EUR) con botones en la bienvenida, el Dashboard, `/info` y
+`/presentacion`. Flujo: la página llama a `crear-donativo` → Stripe Checkout → al
+confirmarse, `stripe-webhook` marca el donativo `completado` y envía un correo de
+agradecimiento (si dejó email). Reusa `STRIPE_SECRET_KEY`/`STRIPE_WEBHOOK_SECRET`.
+Como todo lo de Stripe, **probar en modo TEST** antes de abrir; recibe dinero real
+solo cuando Stripe esté en producción. Pendiente del usuario: confirmar el tratamiento
+**fiscal** (CFDI/donataria) si los donativos serán deducibles.
 
 **Avisos por correo (Resend):** requiere secret `RESEND_API_KEY` (crear cuenta en Resend,
 verificar el dominio `catecumen.com`) y, opcional, `RESEND_FROM` / `ADMIN_NOTIF_EMAIL`.

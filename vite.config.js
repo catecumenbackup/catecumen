@@ -5,6 +5,7 @@
 //  dist/recuperar/index.html  →  https://www.catecumen.com/recuperar/
 //  dist/info/index.html       →  https://www.catecumen.com/info/
 //  dist/presentacion/index.html → https://www.catecumen.com/presentacion/
+//  dist/apoyar/index.html       → https://www.catecumen.com/apoyar/  (donativos)
 // ════════════════════════════════════════════════════════════════
 /// <reference types="vitest/config" />
 import { defineConfig } from "vite";
@@ -58,6 +59,7 @@ export default defineConfig({
         info: resolve(__dirname, "info/index.html"),
         admin: resolve(__dirname, "admin/index.html"),
         presentacion: resolve(__dirname, "presentacion/index.html"),
+        apoyar: resolve(__dirname, "apoyar/index.html"),
       },
     },
   },

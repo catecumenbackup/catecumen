@@ -81,6 +81,9 @@ export default function Dashboard({formData,sequence,progress,onUpdate,onClose,i
           <h1 style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:20}}>👤 {T("Mi Cuenta","My Account","Mon compte","Mein Konto","Minha Conta","Il mio account")}</h1>
           <div style={{display:"flex",gap:8,alignItems:"center"}}>
             <DirectorioButton/>
+            <a href="/apoyar/" target="_blank" rel="noopener" style={{...BTN("sec"),fontSize:12,textDecoration:"none",display:"inline-flex",alignItems:"center",gap:4}}>
+              ♥ {T("Apoyar","Support","Soutenir","Unterstützen","Apoiar","Sostieni")}
+            </a>
             <button onClick={onClose} style={{...BTN("sec"),fontSize:12}}>✕ {T("Cerrar","Close","Fermer","Schließen","Fechar","Chiudi")}</button>
           </div>
         </div>

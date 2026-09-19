@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Apoya a Catecumen — Donativo</title>
+  <link rel="icon" href="/cat.ico" />
+  <link rel="canonical" href="https://catecumen.com/apoyar/" />
+  <meta name="robots" content="noindex" />
+  <meta name="description" content="Tu donativo sostiene Catecumen y financia becas para quienes no pueden pagar su formación sacramental." />
+  <meta name="theme-color" content="#1e3a8a" />
+
+  <meta property="og:site_name" content="Catecumen" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Apoya a Catecumen" />
+  <meta property="og:description" content="Tu donativo sostiene la plataforma y financia becas para quienes no pueden pagar su formación sacramental." />
+  <meta property="og:url" content="https://catecumen.com/apoyar/" />
+  <meta property="og:image" content="https://catecumen.com/presentacion-og.jpg" />
+
+  <style>
+    :root{ --navy:#1e3a8a; --navy2:#122456; --gold:#C8A951; --gold2:#e2c877; --ivory:#F0EAD6; }
+    *{ box-sizing:border-box; }
+    html,body{ margin:0; padding:0; }
+    body{
+      font-family: Arial, "Segoe UI", system-ui, sans-serif;
+      background: radial-gradient(1200px 620px at 50% -12%, #24459e 0%, var(--navy) 46%, var(--navy2) 100%);
+      color: var(--ivory); min-height:100vh;
+      display:flex; align-items:flex-start; justify-content:center; padding:30px 18px 48px;
+    }
+    .wrap{ width:100%; max-width:640px; }
+    .card{
+      background: rgba(11,22,48,.55); border:1px solid rgba(200,169,81,.28);
+      border-radius:18px; padding:26px 24px 28px; box-shadow:0 24px 60px rgba(0,0,0,.4);
+      backdrop-filter: blur(2px);
+    }
+    .logo{ width:clamp(210px,52vw,340px); height:auto; display:block; margin:0 auto 14px; }
+    h1{ font-size:clamp(21px,4vw,30px); text-align:center; margin:.2em 0 .35em; }
+    .lead{ color:#d7deef; font-size:15px; line-height:1.6; text-align:center; margin:0 auto 8px; max-width:540px; }
+    .why{ background:rgba(200,169,81,.08); border:1px solid rgba(200,169,81,.25); border-radius:12px;
+          padding:14px 16px; margin:16px 0 22px; font-size:14px; color:#e8e2cf; line-height:1.55; }
+    .why strong{ color:var(--gold); }
+    .label{ font-size:13px; color:#b9c4de; margin:0 0 8px; letter-spacing:.02em; text-transform:uppercase; }
+
+    .toggle{ display:flex; gap:8px; background:rgba(255,255,255,.06); padding:5px; border-radius:999px; margin-bottom:18px; }
+    .toggle button{ flex:1; border:0; background:transparent; color:var(--ivory); padding:10px; border-radius:999px;
+                    font-weight:700; cursor:pointer; font-size:14px; }
+    .toggle button.on{ background:var(--gold); color:#1a1205; }
+
+    .row{ display:flex; gap:10px; margin-bottom:12px; }
+    .amounts{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:12px; }
+    .amt{ border:1px solid rgba(200,169,81,.5); background:rgba(255,255,255,.04); color:var(--ivory);
+          padding:14px 6px; border-radius:12px; font-weight:700; cursor:pointer; font-size:15px; }
+    .amt.on{ background:var(--gold); color:#1a1205; border-color:var(--gold); }
+    .field{ flex:1; }
+    input, select{
+      width:100%; padding:13px 14px; border-radius:11px; border:1px solid rgba(200,169,81,.45);
+      background:#0e1b38; color:var(--ivory); font-size:15px;
+    }
+    input::placeholder{ color:#8aa; }
+    .cur{ max-width:110px; }
+
+    .donar{
+      width:100%; margin-top:10px; padding:15px; border:0; border-radius:999px;
+      background: linear-gradient(180deg,#e2c877,#C8A951); color:#1a1205; font-weight:800; font-size:17px;
+      cursor:pointer; box-shadow:0 10px 26px rgba(200,169,81,.35); letter-spacing:.02em;
+    }
+    .donar:disabled{ opacity:.6; cursor:default; }
+    .msg{ margin-top:14px; font-size:13px; text-align:center; min-height:18px; }
+    .msg.err{ color:#ffb4b4; }
+    .secure{ margin-top:14px; text-align:center; color:#9fb0d6; font-size:12px; }
+    .foot{ margin-top:20px; color:#9fb0d6; font-size:12.5px; line-height:1.6; text-align:center; }
+    .foot .u{ color:var(--gold); font-weight:700; }
+
+    .estado{ text-align:center; padding:14px 4px; }
+    .estado h2{ color:var(--gold); font-size:24px; margin:.2em 0 .3em; }
+    .estado p{ color:#d7deef; font-size:15px; line-height:1.6; }
+    .estado a{ display:inline-block; margin-top:16px; padding:12px 26px; background:var(--gold); color:#1a1205;
+               text-decoration:none; font-weight:700; border-radius:999px; }
+    .hidden{ display:none; }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="card">
+      <img class="logo" src="/logo-catecumen.png" alt="Catecumen" />
+
+      <!-- ESTADO: agradecimiento / cancelado (por query param) -->
+      <div id="gracias" class="estado hidden">
+        <h2>🙏 ¡Gracias por tu donativo!</h2>
+        <p>Tu generosidad sostiene esta obra y abre la puerta de la formación a quienes no pueden pagarla. Que Dios te lo recompense.</p>
+        <a href="https://www.catecumen.com">Volver a Catecumen</a>
+      </div>
+      <div id="cancelado" class="estado hidden">
+        <h2>Donativo no completado</h2>
+        <p>No se realizó ningún cargo. Puedes intentarlo de nuevo cuando gustes.</p>
+        <a href="/apoyar/">Volver a intentar</a>
+      </div>
+
+      <!-- FORMULARIO -->
+      <div id="form">
+        <h1>Apoya esta obra</h1>
+        <p class="lead">Catecumen es una plataforma de formación sacramental a distancia. Tu donativo la sostiene y la mantiene al alcance de todos.</p>
+
+        <div class="why">
+          Con tu aporte ayudas a: <strong>financiar becas</strong> para quienes no pueden pagar su formación, cubrir <strong>servidores y videos</strong>, y llevar la catequesis a <strong>más parroquias y diócesis</strong>. Cada donativo, único o mensual, hace la diferencia.
+        </div>
+
+        <p class="label">Tipo de donativo</p>
+        <div class="toggle" id="toggle">
+          <button type="button" data-rec="0" class="on">Una vez</button>
+          <button type="button" data-rec="1">Mensual</button>
+        </div>
+
+        <p class="label">Elige un monto</p>
+        <div class="amounts" id="amounts"></div>
+
+        <div class="row">
+          <div class="field">
+            <input id="otro" type="number" inputmode="numeric" min="5" step="1" placeholder="Otro monto" />
+          </div>
+          <select id="moneda" class="cur" aria-label="Moneda">
+            <option value="MXN" selected>MXN</option>
+            <option value="USD">USD</option>
+            <option value="EUR">EUR</option>
+          </select>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <input id="email" type="email" placeholder="Tu correo (opcional, para el recibo)" />
+          </div>
+        </div>
+
+        <button id="donar" class="donar" type="button">Donar</button>
+        <div id="msg" class="msg"></div>
+        <p class="secure">Pago seguro procesado por Stripe. Catecumen no almacena los datos de tu tarjeta.</p>
+      </div>
+
+      <p class="foot">
+        Plataforma creada por el Centro Internacional de Catequesis a Distancia (CICADI)<br />
+        <span class="u">www.catecumen.com</span>
+      </p>
+    </div>
+  </main>
+
+  <script type="module">
+    const SUPA_URL = "https://jqlfjfamraavsbhdusuq.supabase.co";
+    const ANON = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+    // Estados de retorno desde Stripe
+    const q = new URLSearchParams(location.search);
+    const estado = q.get("donativo");
+    if (estado === "gracias" || estado === "cancelado") {
+      document.getElementById("form").classList.add("hidden");
+      document.getElementById(estado === "gracias" ? "gracias" : "cancelado").classList.remove("hidden");
+    }
+
+    // Presets por moneda
+    const PRESETS = { MXN:[100,250,500,1000], USD:[10,25,50,100], EUR:[10,25,50,100] };
+    let recurrente = 0;
+    let montoSel = null;    // preset elegido
+    const $ = (id)=>document.getElementById(id);
+
+    function pintarMontos(){
+      const cur = $("moneda").value;
+      const vals = PRESETS[cur] || PRESETS.MXN;
+      $("amounts").innerHTML = "";
+      vals.forEach(v=>{
+        const b = document.createElement("button");
+        b.type="button"; b.className="amt"; b.textContent = "$"+v;
+        b.onclick = ()=>{ montoSel=v; $("otro").value=""; marcar(); };
+        b.dataset.val = v;
+        $("amounts").appendChild(b);
+      });
+      marcar();
+    }
+    function marcar(){
+      document.querySelectorAll(".amt").forEach(b=>{
+        b.classList.toggle("on", montoSel!=null && Number(b.dataset.val)===montoSel);
+      });
+    }
+    $("moneda").onchange = ()=>{ montoSel=null; pintarMontos(); };
+    $("otro").oninput = ()=>{ montoSel=null; marcar(); };
+    document.querySelectorAll("#toggle button").forEach(b=>{
+      b.onclick = ()=>{
+        recurrente = Number(b.dataset.rec);
+        document.querySelectorAll("#toggle button").forEach(x=>x.classList.remove("on"));
+        b.classList.add("on");
+      };
+    });
+    pintarMontos();
+
+    $("donar").onclick = async ()=>{
+      const cur = $("moneda").value;
+      const monto = montoSel != null ? montoSel : Number($("otro").value);
+      const email = $("email").value.trim();
+      const msg = $("msg"); msg.className="msg"; msg.textContent="";
+      if (!Number.isFinite(monto) || monto < 5){
+        msg.className="msg err"; msg.textContent="Ingresa un monto válido (mínimo 5)."; return;
+      }
+      $("donar").disabled = true; $("donar").textContent = "Redirigiendo a pago seguro…";
+      try{
+        const r = await fetch(SUPA_URL + "/functions/v1/crear-donativo", {
+          method:"POST",
+          headers:{ "Content-Type":"application/json", "apikey":ANON, "Authorization":"Bearer "+ANON },
+          body: JSON.stringify({
+            monto, moneda:cur, recurrente: !!recurrente,
+            email: email || null,
+            retorno: location.origin + "/apoyar",
+          }),
+        });
+        const data = await r.json();
+        if (!r.ok || !data.url) throw new Error(data.error || "No se pudo iniciar el donativo.");
+        window.location.href = data.url;
+      }catch(e){
+        msg.className="msg err"; msg.textContent = e.message || "Error al procesar. Intenta de nuevo.";
+        $("donar").disabled = false; $("donar").textContent = "Donar";
+      }
+    };
+  </script>
+</body>
+</html>
