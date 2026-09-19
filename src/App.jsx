@@ -686,16 +686,18 @@ function WelcomeModal({onContinue,onLogin}){
           </button>
         ))}
       </div>
-      <p style={{color:C.ivoryM,fontSize:12.5,marginBottom:4,textAlign:"center"}}>
-        {i+1} / {n} · <span style={{opacity:.8}}>{T("desliza o usa las flechas","swipe or use arrows","glissez ou flèches","wischen oder Pfeile","deslize ou use as setas","scorri o usa le frecce")}</span>
-      </p>
-      {i<n-1&&(
-        <button onClick={onContinue}
-          style={{background:"none",border:"none",color:C.ivoryM,fontSize:13,cursor:"pointer",
-            textDecoration:"underline",marginBottom:6,alignSelf:"center"}}>
-          {T("Omitir presentación","Skip intro","Passer l'introduction","Einführung überspringen","Pular apresentação","Salta introduzione")}
-        </button>
-      )}
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,flexWrap:"wrap"}}>
+        <p style={{color:C.ivoryM,fontSize:12.5,margin:0}}>
+          {i+1} / {n} · <span style={{opacity:.8}}>{T("desliza o usa las flechas","swipe or use arrows","glissez ou flèches","wischen oder Pfeile","deslize ou use as setas","scorri o usa le frecce")}</span>
+        </p>
+        {i<n-1?(
+          <button onClick={onContinue}
+            style={{background:"none",border:"none",color:C.ivoryM,fontSize:13,cursor:"pointer",
+              textDecoration:"underline",padding:0,whiteSpace:"nowrap"}}>
+            {T("Omitir presentación","Skip intro","Passer l'introduction","Einführung überspringen","Pular apresentação","Salta introduzione")}
+          </button>
+        ):<span/>}
+      </div>
     </>
   );
 
@@ -712,17 +714,17 @@ function WelcomeModal({onContinue,onLogin}){
         maxHeight:"92vh", display:"flex", flexDirection:"column", overflow:"hidden"}}>
         {desktop?(
           <div style={{display:"flex",flex:1,minHeight:0}}>
-            {/* Izquierda: panel independiente de marca + acciones */}
-            <div style={{flex:"0 0 380px",display:"flex",flexDirection:"column",justifyContent:"center",gap:22,
+            {/* Izquierda: panel de marca + acciones, distribuido a la altura del visor */}
+            <div style={{flex:"0 0 380px",display:"flex",flexDirection:"column",justifyContent:"space-between",gap:18,
               padding:"28px 26px",borderRight:`1px solid ${C.gold}22`,background:"rgba(200,169,81,0.05)"}}>
               {branding}
               {botones}
+              {conoceMas}
             </div>
-            {/* Derecha: presentación (tour) */}
+            {/* Derecha: presentación (tour), alineada arriba a la altura del logo */}
             <div style={{flex:1,minWidth:0,display:"flex",flexDirection:"column",padding:"24px 28px",overflowY:"auto"}}>
               {tour}
               {navegacion}
-              {conoceMas}
             </div>
           </div>
         ):(
