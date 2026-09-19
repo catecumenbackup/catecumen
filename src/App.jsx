@@ -642,8 +642,10 @@ function WelcomeModal({onContinue,onLogin}){
         </div>
       )}
       <DirectorioButton estilo={{width:"100%"}} tono="green"/>
-      <a href="/apoyar/" style={{display:"block",textAlign:"center",marginTop:2,color:C.gold,fontSize:13,
-        textDecoration:"none",fontFamily:FONT_READ,opacity:.95}}>
+      <a href="/apoyar/" style={{width:"100%",boxSizing:"border-box",justifyContent:"center",fontSize:14,cursor:"pointer",
+        display:"inline-flex",alignItems:"center",gap:8,fontFamily:"'Cinzel',serif",fontWeight:700,letterSpacing:"0.04em",
+        background:"#F4B183",color:"#3A2205",border:"1px solid #E89B63",borderRadius:10,padding:"12px 14px",
+        textDecoration:"none",boxShadow:"0 4px 14px rgba(244,177,131,0.35)"}}>
         {T("♥ Apoya esta obra","♥ Support this work","♥ Soutenir cette œuvre","♥ Dieses Werk unterstützen","♥ Apoie esta obra","♥ Sostieni quest'opera")}
       </a>
     </div>
