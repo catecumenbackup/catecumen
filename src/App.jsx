@@ -27,7 +27,7 @@ import { SUPPORTED_LANGS, detectLang, LANG, setAppLanguage, T, PICK, SINO } from
 import EstrellasInput from "./components/EstrellasInput.jsx";
 import { FlameIcon, CalizIcon, iconoBautismo, iconoConfirmacion } from "./components/icons.jsx";
 import SecIcon from "./components/SecIcon.jsx";
-import { SoporteLink, DirectorioButton } from "./components/support.jsx";
+import { SoporteLink, DirectorioButton, SoporteModal } from "./components/support.jsx";
 import { SEC_META, Q, TEST_MODE, isSectionDone, videoState } from "./data/course.js";
 import { appNav } from "./appNav.js";
 import { CUOTAS } from "./data/pricing.js";
@@ -1745,6 +1745,13 @@ export default function App(){
   const isOrgFlow=orgType==="parroquia"||orgType==="diocesis"||orgType==="centroadiccion"||orgType==="otro";
 
   // RENDER
+  // Deep-link de soporte: catecumen.com/?soporte=1 abre solo el modal de
+  // soporte. Lo usa el enlace "URL de soporte" del recibo de Stripe para que el
+  // pagador llegue directo a este modal.
+  const [showSoporte,setShowSoporte]=useState(()=>{
+    try{ return new URLSearchParams(window.location.search).get("soporte")==="1"; }catch(e){ return false; }
+  });
+
   return(
     <div role="main" style={{minHeight:"100vh",backgroundImage:`url(${effectiveTheme==="light"?fondoBgClaro:fondoBg})`,backgroundRepeat:"repeat",backgroundSize:"650px auto",backgroundPosition:"top left",fontFamily:"'Crimson Text',serif"}}>
       <style>{`
@@ -2153,6 +2160,11 @@ export default function App(){
             </span>
           )}
         </button>
+      )}
+      {showSoporte&&(
+        <SoporteModal contexto="Recibo de pago (Stripe) — ayuda con mi cobro"
+          onClose={()=>{ setShowSoporte(false);
+            try{ const u=new URL(window.location.href); u.searchParams.delete("soporte"); window.history.replaceState({},"",u.toString()); }catch(e){} }}/>
       )}
       <InstallBar/>
     </div>
