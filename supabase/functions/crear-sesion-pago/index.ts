@@ -268,10 +268,13 @@ serve(async (req: Request) => {
       payment_method_types: payment_method_types as any,
       customer_email: formData.email,
       customer_creation: "always",
-      // Captura de datos de facturación del cliente (para poder facturar):
-      // dirección completa + identificación fiscal (RFC en México). Quedan
-      // guardados en el cliente/pago de Stripe y se pueden exportar.
-      billing_address_collection: "required",
+      // Datos de facturación OPCIONALES (sin fricción para el cliente):
+      // - "auto" NO fuerza la dirección (solo se pide si el método de pago o el
+      //   RFC lo requieren).
+      // - tax_id_collection muestra un "Agregar identificación fiscal (RFC)"
+      //   OPCIONAL; solo quien quiere factura lo agrega (y ahí sí Stripe le pide
+      //   la dirección). Todo queda guardado en el cliente/pago para facturar.
+      billing_address_collection: "auto",
       tax_id_collection: { enabled: true },
       client_reference_id: pendiente.id,
       line_items: [{

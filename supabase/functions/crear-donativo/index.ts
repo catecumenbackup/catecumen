@@ -106,6 +106,10 @@ serve(async (req: Request) => {
     const params: Record<string, unknown> = {
       mode: esRecurrente ? "subscription" : "payment",
       payment_method_types: ["card"],
+      // Datos de facturación OPCIONALES: el donante puede agregar su RFC y
+      // dirección si quiere recibo/factura; si no, solo paga (sin fricción).
+      billing_address_collection: "auto",
+      tax_id_collection: { enabled: true },
       client_reference_id: don.id,
       line_items: [{ price_data, quantity: 1 }],
       metadata: { tipo: "donativo", donativo_id: don.id },
