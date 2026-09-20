@@ -269,13 +269,31 @@ serve(async (req: Request) => {
       customer_email: formData.email,
       customer_creation: "always",
       // Datos de facturación OPCIONALES (sin fricción para el cliente):
-      // - "auto" NO fuerza la dirección (solo se pide si el método de pago o el
-      //   RFC lo requieren).
-      // - tax_id_collection muestra un "Agregar identificación fiscal (RFC)"
-      //   OPCIONAL; solo quien quiere factura lo agrega (y ahí sí Stripe le pide
-      //   la dirección). Todo queda guardado en el cliente/pago para facturar.
+      // - "auto" NO fuerza la dirección (solo se pide si el método de pago la
+      //   requiere).
+      // - En vez del campo nativo de Stripe ("Compro como empresa", que es SOLO
+      //   para identificaciones fiscales de empresa y confunde a personas
+      //   físicas), usamos campos PROPIOS con etiqueta clara. Son OPCIONALES:
+      //   quien quiere factura escribe su RFC; quien no, paga sin dar nada.
+      //   Los valores llegan en el webhook (session.custom_fields) y se ven en
+      //   el panel de Stripe bajo cada pago, para emitir el CFDI con tu facturador.
+      //   El RFC mexicano tiene 12 (moral) o 13 (física) caracteres.
       billing_address_collection: "auto",
-      tax_id_collection: { enabled: true },
+      custom_fields: [
+        {
+          key: "rfc",
+          label: { type: "custom", custom: "RFC para factura (opcional)" },
+          type: "text",
+          optional: true,
+          text: { minimum_length: 12, maximum_length: 13 },
+        },
+        {
+          key: "razonsocial",
+          label: { type: "custom", custom: "Nombre o razón social para factura (opcional)" },
+          type: "text",
+          optional: true,
+        },
+      ],
       client_reference_id: pendiente.id,
       line_items: [{
         price_data: {

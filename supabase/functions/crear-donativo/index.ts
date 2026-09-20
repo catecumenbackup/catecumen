@@ -106,10 +106,28 @@ serve(async (req: Request) => {
     const params: Record<string, unknown> = {
       mode: esRecurrente ? "subscription" : "payment",
       payment_method_types: ["card"],
-      // Datos de facturación OPCIONALES: el donante puede agregar su RFC y
-      // dirección si quiere recibo/factura; si no, solo paga (sin fricción).
+      // Datos de facturación OPCIONALES: en vez del campo nativo de Stripe
+      // ("Compro como empresa", solo para identificaciones fiscales de empresa),
+      // usamos campos PROPIOS con etiqueta clara para que también las personas
+      // físicas los entiendan. Son opcionales: quien quiere factura escribe su
+      // RFC; quien no, solo dona. Los valores llegan en session.custom_fields
+      // (webhook) y se ven en el panel de Stripe bajo el pago.
       billing_address_collection: "auto",
-      tax_id_collection: { enabled: true },
+      custom_fields: [
+        {
+          key: "rfc",
+          label: { type: "custom", custom: "RFC para factura (opcional)" },
+          type: "text",
+          optional: true,
+          text: { minimum_length: 12, maximum_length: 13 },
+        },
+        {
+          key: "razonsocial",
+          label: { type: "custom", custom: "Nombre o razón social para factura (opcional)" },
+          type: "text",
+          optional: true,
+        },
+      ],
       client_reference_id: don.id,
       line_items: [{ price_data, quantity: 1 }],
       metadata: { tipo: "donativo", donativo_id: don.id },
