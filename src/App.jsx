@@ -611,7 +611,7 @@ function WelcomeModal({onContinue,onLogin}){
         style={{maxWidth:230,width:"100%",height:"auto",margin:"0 auto 2px",
           filter:"drop-shadow(0 2px 10px rgba(200,169,81,0.55)) drop-shadow(0 0 2px rgba(120,90,20,0.35))"}}/>
       <p style={{fontStyle:"italic",color:C.ivoryM,fontSize:16,marginTop:-2,marginBottom:0,letterSpacing:"0.04em"}}>
-        {T("El Aula Global de la Catequesis","The Global Classroom of Catechesis","La Salle de Classe Mondiale de la Catéchèse","Das globale Klassenzimmer der Katechese","A Sala de Aula Global da Catequese","L'Aula Globale della Catechesi")}
+        {T("La catequesis al alcance de todos","Catechesis within everyone's reach","La catéchèse à la portée de tous","Katechese in Reichweite aller","A catequese ao alcance de todos","La catechesi alla portata di tutti")}
       </p>
     </div>
   );
