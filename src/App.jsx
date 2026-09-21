@@ -702,10 +702,11 @@ function WelcomeModal({onContinue,onLogin}){
   );
 
   const conoceMas=(
-    <p style={{marginTop:6,color:C.goldL,textAlign:"center",fontSize:14}}>
-      {T("Conoce más en: ","Learn more at: ","En savoir plus sur : ","Mehr erfahren unter: ","Saiba mais em: ","Scopri di più su: ")}
-      <a href="https://www.catecumen.com/info" target="_blank" rel="noreferrer" style={{color:C.gold}}>www.catecumen.com/info</a>
-    </p>
+    <a href="/info/" style={{marginTop:6,width:"100%",boxSizing:"border-box",justifyContent:"center",fontSize:14,cursor:"pointer",
+      display:"inline-flex",alignItems:"center",gap:8,fontFamily:"'Cinzel',serif",fontWeight:700,letterSpacing:"0.04em",
+      background:`${C.gold}14`,color:C.gold,border:`1px solid ${C.gold}`,borderRadius:10,padding:"12px 14px",textDecoration:"none"}}>
+      📖 {T("Conoce más sobre Catecumen","Learn more about Catecumen","En savoir plus sur Catecumen","Mehr über Catecumen erfahren","Saiba mais sobre a Catecumen","Scopri di più su Catecumen")} →
+    </a>
   );
 
   return(
