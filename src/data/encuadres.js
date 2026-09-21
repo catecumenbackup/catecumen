@@ -8,7 +8,7 @@ A continuación te explicamos las características de esta formación:
 
 1. Esta formación tiene por propósito comprender la importancia del Bautismo en tu vida. Piensa en el Bautismo como la puerta de entrada real a Cristo y a su Iglesia y en el catecumenado como el inicio del camino de preparación: no solo para "saber qué creer", sino para aprender a vivir como nuevo cristiano, en comunión con la Iglesia y en un ambiente de oración y liturgia, hasta que llegas a recibir el primero de los sacramentos.
 
-2. Esta formación Bautismal se imparte mediante videos con duración promedio de 30 minutos cada uno y se integra por 4 módulos con el siguiente temario:
+2. Esta formación Bautismal se imparte mediante videos con duración promedio de 15 minutos cada uno y se integra por 4 módulos con el siguiente temario:
 Módulo Kerigma (Es el cimiento espiritual sobre el cual se construirá todo el resto de tu camino de fe)
 Módulo 1 (Tronco Común 1: Fundamentos de la Fe Católica)
 Módulo 2 (Sacramento del Bautismo)
@@ -31,7 +31,7 @@ The following explains the characteristics of this formation:
 
 1. The purpose of this formation is to help you understand the importance of Baptism in your life. Think of Baptism as the real gateway to Christ and His Church, and of the catechumenate as the beginning of the journey of preparation — not simply to "know what to believe," but to learn to live as a new Christian in communion with the Church and in an environment of prayer and liturgy, until you receive the first of the sacraments.
 
-2. This Baptismal formation is delivered through videos with an average duration of 30 minutes each, organized into 4 modules covering the following topics:
+2. This Baptismal formation is delivered through videos with an average duration of 15 minutes each, organized into 4 modules covering the following topics:
 Kerygma Module (The spiritual foundation upon which the whole rest of your journey of faith will be built)
 Module 1 (Common Core 1: Foundations of the Catholic Faith)
 Module 2 (Sacrament of Baptism)
@@ -54,7 +54,7 @@ Voici les caractéristiques de cette formation :
 
 1. Cette formation a pour but de vous faire comprendre l'importance du Baptême dans votre vie. Pensez au Baptême comme la porte d'entrée réelle vers le Christ et son Église, et au catéchuménat comme le début du chemin de préparation : non seulement pour « savoir ce qu'il faut croire », mais pour apprendre à vivre comme un nouveau chrétien, en communion avec l'Église et dans un climat de prière et de liturgie, jusqu'à recevoir le premier des sacrements.
 
-2. Cette formation baptismale est dispensée au moyen de vidéos d'une durée moyenne de 30 minutes chacune, réparties en 4 modules selon le programme suivant :
+2. Cette formation baptismale est dispensée au moyen de vidéos d'une durée moyenne de 15 minutes chacune, réparties en 4 modules selon le programme suivant :
 Module Kérygme (C'est le fondement spirituel sur lequel se construira tout le reste de ton chemin de foi)
 Module 1 (Tronc Commun 1 : Fondements de la Foi Catholique)
 Module 2 (Sacrement du Baptême)
@@ -77,7 +77,7 @@ Im Folgenden erläutern wir Ihnen die Merkmale dieser Ausbildung:
 
 1. Diese Ausbildung soll Ihnen helfen, die Bedeutung der Taufe für Ihr Leben zu verstehen. Betrachten Sie die Taufe als das eigentliche Tor zu Christus und seiner Kirche und das Katechumenat als den Beginn des Vorbereitungsweges — nicht nur, um zu „wissen, was zu glauben ist", sondern um zu lernen, als neuer Christ in Gemeinschaft mit der Kirche und in einer Atmosphäre von Gebet und Liturgie zu leben, bis Sie das erste der Sakramente empfangen.
 
-2. Diese Taufbildung wird durch Videos mit einer durchschnittlichen Dauer von 30 Minuten vermittelt und gliedert sich in 4 Module mit folgenden Themen:
+2. Diese Taufbildung wird durch Videos mit einer durchschnittlichen Dauer von 15 Minuten vermittelt und gliedert sich in 4 Module mit folgenden Themen:
 Kerygma-Modul (Es ist das geistliche Fundament, auf dem der gesamte übrige Weg deines Glaubens aufgebaut wird)
 Modul 1 (Gemeinsamer Grundlagenkurs 1: Grundlagen des katholischen Glaubens)
 Modul 2 (Sakrament der Taufe)
@@ -100,7 +100,7 @@ A seguir explicamos as características desta formação:
 
 1. Esta formação tem como propósito compreender a importância do Batismo em sua vida. Pense no Batismo como a porta de entrada real para Cristo e sua Igreja, e no catecumenato como o início do caminho de preparação: não apenas para "saber o que crer", mas para aprender a viver como novo cristão, em comunhão com a Igreja e em um ambiente de oração e liturgia, até chegar a receber o primeiro dos sacramentos.
 
-2. Esta formação Batismal é ministrada por meio de vídeos com duração média de 30 minutos cada, organizados em 4 módulos com o seguinte conteúdo:
+2. Esta formação Batismal é ministrada por meio de vídeos com duração média de 15 minutos cada, organizados em 4 módulos com o seguinte conteúdo:
 Módulo Querigma (É o alicerce espiritual sobre o qual se construirá todo o restante do teu caminho de fé)
 Módulo 1 (Tronco Comum 1: Fundamentos da Fé Católica)
 Módulo 2 (Sacramento do Batismo)
@@ -123,7 +123,7 @@ Di seguito ti spieghiamo le caratteristiche di questa formazione:
 
 1. Questa formazione ha lo scopo di farti comprendere l'importanza del Battesimo nella tua vita. Pensa al Battesimo come alla porta d'ingresso reale a Cristo e alla sua Chiesa, e al catecumenato come all'inizio del cammino di preparazione: non solo per "sapere cosa credere", ma per imparare a vivere da nuovo cristiano, in comunione con la Chiesa e in un clima di preghiera e liturgia, fino a ricevere il primo dei sacramenti.
 
-2. Questa formazione battesimale viene impartita attraverso video della durata media di 30 minuti ciascuno ed è composta da 4 moduli con il seguente programma:
+2. Questa formazione battesimale viene impartita attraverso video della durata media di 15 minuti ciascuno ed è composta da 4 moduli con il seguente programma:
 Modulo Kerygma (È il fondamento spirituale sul quale si costruirà tutto il resto del tuo cammino di fede)
 Modulo 1 (Tronco Comune 1: Fondamenti della Fede Cattolica)
 Modulo 2 (Sacramento del Battesimo)
@@ -148,7 +148,7 @@ A continuación te explicamos las características de esta formación:
 
 1. En la Confirmación, Dios te da de manera más plena el Espíritu Santo para que la fe que recibiste en el Bautismo se vuelva más fuerte, más consciente y más valiente. No es un diploma, sino un envío; no es una despedida, sino una misión. El Espíritu te sella para que pertenezcas más profundamente a Cristo y a su Iglesia, y para que puedas vivir y defender la fe con tu palabra, tu conducta y tu servicio.
 
-2. Esta formación al Sacramento de la Confirmación se imparte mediante videos con duración promedio de 30 minutos cada uno y se integra por 4 módulos con el siguiente temario:
+2. Esta formación al Sacramento de la Confirmación se imparte mediante videos con duración promedio de 15 minutos cada uno y se integra por 4 módulos con el siguiente temario:
 Módulo Kerigma (Es el cimiento espiritual sobre el cual se construirá todo el resto de tu camino de fe)
 Módulo 1 (Tronco Común 1: Fundamentos de la Fe Católica)
 Módulo 2 (Sacramento de la Confirmación)
@@ -171,7 +171,7 @@ The following explains the characteristics of this formation:
 
 1. In Confirmation, God gives you the Holy Spirit more fully so that the faith you received at Baptism becomes stronger, more conscious, and more courageous. It is not a diploma but a sending forth; not a farewell but a mission. The Holy Spirit seals you so that you belong more deeply to Christ and His Church, and so that you can live and defend the faith through your words, your conduct, and your service.
 
-2. This formation for the Sacrament of Confirmation is delivered through videos with an average duration of 30 minutes each, organized into 4 modules covering the following topics:
+2. This formation for the Sacrament of Confirmation is delivered through videos with an average duration of 15 minutes each, organized into 4 modules covering the following topics:
 Kerygma Module (The spiritual foundation upon which the whole rest of your journey of faith will be built)
 Module 1 (Common Core 1: Foundations of the Catholic Faith)
 Module 2 (Sacrament of Confirmation)
@@ -194,7 +194,7 @@ Voici les caractéristiques de cette formation :
 
 1. Dans la Confirmation, Dieu vous donne l'Esprit Saint de manière plus pleine afin que la foi reçue au Baptême devienne plus forte, plus consciente et plus courageuse. Ce n'est pas un diplôme, mais un envoi ; ce n'est pas un adieu, mais une mission. L'Esprit vous scelle afin que vous apparteniez plus profondément au Christ et à son Église, et que vous puissiez vivre et défendre la foi par votre parole, votre conduite et votre service.
 
-2. Cette formation au Sacrement de la Confirmation est dispensée au moyen de vidéos d'une durée moyenne de 30 minutes chacune, réparties en 4 modules selon le programme suivant :
+2. Cette formation au Sacrement de la Confirmation est dispensée au moyen de vidéos d'une durée moyenne de 15 minutes chacune, réparties en 4 modules selon le programme suivant :
 Module Kérygme (C'est le fondement spirituel sur lequel se construira tout le reste de ton chemin de foi)
 Module 1 (Tronc Commun 1 : Fondements de la Foi Catholique)
 Module 2 (Sacrement de la Confirmation)
@@ -217,7 +217,7 @@ Im Folgenden erläutern wir Ihnen die Merkmale dieser Ausbildung:
 
 1. In der Firmung schenkt Ihnen Gott den Heiligen Geist in noch reicherem Maße, damit der in der Taufe empfangene Glaube stärker, bewusster und mutiger wird. Sie ist kein Diplom, sondern eine Aussendung; kein Abschied, sondern eine Sendung. Der Geist besiegelt Sie, damit Sie tiefer zu Christus und seiner Kirche gehören und den Glauben mit Ihrem Wort, Ihrem Verhalten und Ihrem Dienst leben und verteidigen können.
 
-2. Diese Ausbildung zum Sakrament der Firmung wird durch Videos mit einer durchschnittlichen Dauer von 30 Minuten vermittelt und gliedert sich in 4 Module mit folgenden Themen:
+2. Diese Ausbildung zum Sakrament der Firmung wird durch Videos mit einer durchschnittlichen Dauer von 15 Minuten vermittelt und gliedert sich in 4 Module mit folgenden Themen:
 Kerygma-Modul (Es ist das geistliche Fundament, auf dem der gesamte übrige Weg deines Glaubens aufgebaut wird)
 Modul 1 (Gemeinsamer Grundlagenkurs 1: Grundlagen des katholischen Glaubens)
 Modul 2 (Sakrament der Firmung)
@@ -240,7 +240,7 @@ A seguir explicamos as características desta formação:
 
 1. Na Crisma, Deus lhe dá de maneira mais plena o Espírito Santo para que a fé recebida no Batismo se torne mais forte, mais consciente e mais corajosa. Não é um diploma, mas um envio; não é uma despedida, mas uma missão. O Espírito o(a) sela para que pertença mais profundamente a Cristo e à sua Igreja, e para que possa viver e defender a fé com sua palavra, sua conduta e seu serviço.
 
-2. Esta formação para o Sacramento da Crisma é ministrada por meio de vídeos com duração média de 30 minutos cada, organizados em 4 módulos com o seguinte conteúdo:
+2. Esta formação para o Sacramento da Crisma é ministrada por meio de vídeos com duração média de 15 minutos cada, organizados em 4 módulos com o seguinte conteúdo:
 Módulo Querigma (É o alicerce espiritual sobre o qual se construirá todo o restante do teu caminho de fé)
 Módulo 1 (Tronco Comum 1: Fundamentos da Fé Católica)
 Módulo 2 (Sacramento da Crisma)
@@ -263,7 +263,7 @@ Di seguito ti spieghiamo le caratteristiche di questa formazione:
 
 1. Nella Cresima, Dio ti dona in modo più pieno lo Spirito Santo affinché la fede ricevuta nel Battesimo diventi più forte, più consapevole e più coraggiosa. Non è un diploma, ma un invio; non è un addio, ma una missione. Lo Spirito ti sigilla affinché tu appartenga più profondamente a Cristo e alla sua Chiesa, e affinché tu possa vivere e difendere la fede con la tua parola, la tua condotta e il tuo servizio.
 
-2. Questa formazione al Sacramento della Cresima viene impartita attraverso video della durata media di 30 minuti ciascuno ed è composta da 4 moduli con il seguente programma:
+2. Questa formazione al Sacramento della Cresima viene impartita attraverso video della durata media di 15 minuti ciascuno ed è composta da 4 moduli con il seguente programma:
 Modulo Kerygma (È il fondamento spirituale sul quale si costruirà tutto il resto del tuo cammino di fede)
 Modulo 1 (Tronco Comune 1: Fondamenti della Fede Cattolica)
 Modulo 2 (Sacramento della Cresima)
@@ -288,7 +288,7 @@ A continuación te explicamos las características de esta formación:
 
 1. El Sacramento de la Eucaristía (Primera Comunión) es importante porque completa la iniciación cristiana, une íntimamente con Cristo, alimenta la vida de gracia y fortalece la comunión con la Iglesia. La catequesis que la prepara debe ser clara en la fe eucarística, incluir la Reconciliación, respetar la edad y la capacidad del catecúmeno. Es un verdadero encuentro con Jesús y el comienzo de una vida espiritual cristiana más profunda.
 
-2. Esta formación para la Primera Comunión se imparte mediante videos con duración promedio de 30 minutos cada uno y se integra por 4 módulos con el siguiente temario:
+2. Esta formación para la Primera Comunión se imparte mediante videos con duración promedio de 15 minutos cada uno y se integra por 4 módulos con el siguiente temario:
 Módulo Kerigma (Es el cimiento espiritual sobre el cual se construirá todo el resto de tu camino de fe)
 Módulo 1 (Tronco Común 1: Fundamentos de la Fe Católica)
 Módulo 2 (Sacramento de la Eucaristía)
@@ -311,7 +311,7 @@ The following explains the characteristics of this formation:
 
 1. The Sacrament of the Eucharist (First Communion) is important because it completes Christian initiation, creates an intimate union with Christ, nourishes the life of grace, and strengthens communion with the Church. The catechesis that prepares for it must be clear in Eucharistic faith, include Reconciliation, and respect the age and capacity of the catechumen. It is a true encounter with Jesus and the beginning of a deeper Christian spiritual life.
 
-2. This formation for First Communion is delivered through videos with an average duration of 30 minutes each, organized into 4 modules covering the following topics:
+2. This formation for First Communion is delivered through videos with an average duration of 15 minutes each, organized into 4 modules covering the following topics:
 Kerygma Module (The spiritual foundation upon which the whole rest of your journey of faith will be built)
 Module 1 (Common Core 1: Foundations of the Catholic Faith)
 Module 2 (Sacrament of the Eucharist)
@@ -334,7 +334,7 @@ Voici les caractéristiques de cette formation :
 
 1. Le Sacrement de l'Eucharistie (Première Communion) est important car il achève l'initiation chrétienne, unit intimement au Christ, nourrit la vie de grâce et fortifie la communion avec l'Église. La catéchèse qui la prépare doit être claire sur la foi eucharistique, inclure la Réconciliation, et respecter l'âge et les capacités du catéchumène. C'est une véritable rencontre avec Jésus et le début d'une vie spirituelle chrétienne plus profonde.
 
-2. Cette formation à la Première Communion est dispensée au moyen de vidéos d'une durée moyenne de 30 minutes chacune, réparties en 4 modules selon le programme suivant :
+2. Cette formation à la Première Communion est dispensée au moyen de vidéos d'une durée moyenne de 15 minutes chacune, réparties en 4 modules selon le programme suivant :
 Module Kérygme (C'est le fondement spirituel sur lequel se construira tout le reste de ton chemin de foi)
 Module 1 (Tronc Commun 1 : Fondements de la Foi Catholique)
 Module 2 (Sacrement de l'Eucharistie)
@@ -357,7 +357,7 @@ Im Folgenden erläutern wir Ihnen die Merkmale dieser Ausbildung:
 
 1. Das Sakrament der Eucharistie (Erstkommunion) ist wichtig, weil es die christliche Initiation vollendet, innig mit Christus vereint, das Gnadenleben nährt und die Gemeinschaft mit der Kirche stärkt. Die Katechese, die darauf vorbereitet, muss im eucharistischen Glauben klar sein, die Versöhnung einschließen und das Alter und die Fähigkeiten des Katechumenen berücksichtigen. Es ist eine wahre Begegnung mit Jesus und der Beginn eines tieferen christlichen geistlichen Lebens.
 
-2. Diese Ausbildung zur Erstkommunion wird durch Videos mit einer durchschnittlichen Dauer von 30 Minuten vermittelt und gliedert sich in 4 Module mit folgenden Themen:
+2. Diese Ausbildung zur Erstkommunion wird durch Videos mit einer durchschnittlichen Dauer von 15 Minuten vermittelt und gliedert sich in 4 Module mit folgenden Themen:
 Kerygma-Modul (Es ist das geistliche Fundament, auf dem der gesamte übrige Weg deines Glaubens aufgebaut wird)
 Modul 1 (Gemeinsamer Grundlagenkurs 1: Grundlagen des katholischen Glaubens)
 Modul 2 (Sakrament der Eucharistie)
@@ -380,7 +380,7 @@ A seguir explicamos as características desta formação:
 
 1. O Sacramento da Eucaristia (Primeira Comunhão) é importante porque completa a iniciação cristã, une intimamente a Cristo, alimenta a vida de graça e fortalece a comunhão com a Igreja. A catequese que a prepara deve ser clara na fé eucarística, incluir a Reconciliação e respeitar a idade e a capacidade do catecúmeno. É um verdadeiro encontro com Jesus e o início de uma vida espiritual cristã mais profunda.
 
-2. Esta formação para a Primeira Comunhão é ministrada por meio de vídeos com duração média de 30 minutos cada, organizados em 4 módulos com o seguinte conteúdo:
+2. Esta formação para a Primeira Comunhão é ministrada por meio de vídeos com duração média de 15 minutos cada, organizados em 4 módulos com o seguinte conteúdo:
 Módulo Querigma (É o alicerce espiritual sobre o qual se construirá todo o restante do teu caminho de fé)
 Módulo 1 (Tronco Comum 1: Fundamentos da Fé Católica)
 Módulo 2 (Sacramento da Eucaristia)
@@ -403,7 +403,7 @@ Di seguito ti spieghiamo le caratteristiche di questa formazione:
 
 1. Il Sacramento dell'Eucaristia (Prima Comunione) è importante perché completa l'iniziazione cristiana, unisce intimamente a Cristo, nutre la vita di grazia e rafforza la comunione con la Chiesa. La catechesi che la prepara deve essere chiara nella fede eucaristica, includere la Riconciliazione, rispettare l'età e la capacità del catecumeno. È un vero incontro con Gesù e l'inizio di una vita spirituale cristiana più profonda.
 
-2. Questa formazione per la Prima Comunione viene impartita attraverso video della durata media di 30 minuti ciascuno ed è composta da 4 moduli con il seguente programma:
+2. Questa formazione per la Prima Comunione viene impartita attraverso video della durata media di 15 minuti ciascuno ed è composta da 4 moduli con il seguente programma:
 Modulo Kerygma (È il fondamento spirituale sul quale si costruirà tutto il resto del tuo cammino di fede)
 Modulo 1 (Tronco Comune 1: Fondamenti della Fede Cattolica)
 Modulo 2 (Sacramento dell'Eucaristia)
@@ -428,7 +428,7 @@ A continuación te explicamos las características de esta formación:
 
 1. Los sacramentos de la iniciación cristiana (Bautismo, Confirmación y Eucaristía) son el camino completo por el cual Dios te hace entrar de verdad en la vida de Cristo y de la Iglesia: por el Bautismo se "entra" en la Iglesia como por una puerta y se te da una vida nueva; por la Confirmación recibes una unión más perfecta con la Iglesia y una fuerza especial del Espíritu Santo para ser testigo de Cristo con palabra y obra; y por la Eucaristía la iniciación queda completa, porque allí recibes el alimento de la vida nueva y participas del sacrificio de Cristo. Por eso, la catequesis del catecumenado no es solo información: es un proceso de formación para que tu conversión llegue a madurar y puedas recibir el don de Dios en estos sacramentos, viviendo ya como miembro de su Cuerpo y aprendiendo a relacionarte con Dios mediante la fe, la oración y la liturgia.
 
-2. Esta formación se imparte en 4 módulos mediante videos con duración promedio de 30 minutos cada uno con el siguiente temario:
+2. Esta formación se imparte en 4 módulos mediante videos con duración promedio de 15 minutos cada uno con el siguiente temario:
 Módulo Kerigma (Es el cimiento espiritual sobre el cual se construirá todo el resto de tu camino de fe)
 Módulo 1 (Tronco Común 1: Fundamentos de la Fe Católica)
 Módulo 2 (Sacramento que recibirás. Si piensas recibir más de 1 sacramento, sólo cursarás los módulos 1 y 2 una única vez y 1 módulo correspondiente a cada sacramento que recibirás)
@@ -451,7 +451,7 @@ The following explains the characteristics of this formation:
 
 1. The sacraments of Christian initiation — Baptism, Confirmation, and Eucharist — form the complete path through which God truly brings you into the life of Christ and the Church: through Baptism you "enter" the Church as through a door and receive new life; through Confirmation you receive a more perfect union with the Church and a special strength of the Holy Spirit to be a witness to Christ in word and deed; and through the Eucharist initiation is brought to completion, because there you receive the nourishment of new life and participate in the sacrifice of Christ. For this reason, catechesis during the catechumenate is not merely information: it is a process of formation so that your conversion may mature and you can receive God's gift in these sacraments, already living as a member of His Body and learning to relate to God through faith, prayer, and the liturgy.
 
-2. This formation is delivered in 4 modules through videos with an average duration of 30 minutes each, covering the following topics:
+2. This formation is delivered in 4 modules through videos with an average duration of 15 minutes each, covering the following topics:
 Kerygma Module (The spiritual foundation upon which the whole rest of your journey of faith will be built)
 Module 1 (Common Core 1: Foundations of the Catholic Faith)
 Module 2 (The Sacrament you will receive. If you plan to receive more than one sacrament, you will complete Modules 1 and 2 only once, plus one module corresponding to each sacrament you will receive.)
@@ -474,7 +474,7 @@ Voici les caractéristiques de cette formation :
 
 1. Les sacrements de l'initiation chrétienne — Baptême, Confirmation et Eucharistie — forment le chemin complet par lequel Dieu vous fait véritablement entrer dans la vie du Christ et de l'Église : par le Baptême, vous « entrez » dans l'Église comme par une porte et recevez une vie nouvelle ; par la Confirmation, vous recevez une union plus parfaite avec l'Église et une force particulière de l'Esprit Saint pour être témoin du Christ en parole et en acte ; et par l'Eucharistie, l'initiation s'achève, car vous y recevez l'aliment de la vie nouvelle et participez au sacrifice du Christ. C'est pourquoi la catéchèse du catéchuménat n'est pas seulement une information : c'est un processus de formation pour que votre conversion parvienne à maturité et que vous puissiez recevoir le don de Dieu dans ces sacrements, en vivant déjà comme membre de son Corps et en apprenant à vous relier à Dieu par la foi, la prière et la liturgie.
 
-2. Cette formation est dispensée en 4 modules au moyen de vidéos d'une durée moyenne de 30 minutes chacune, selon le programme suivant :
+2. Cette formation est dispensée en 4 modules au moyen de vidéos d'une durée moyenne de 15 minutes chacune, selon le programme suivant :
 Module Kérygme (C'est le fondement spirituel sur lequel se construira tout le reste de ton chemin de foi)
 Module 1 (Tronc Commun 1 : Fondements de la Foi Catholique)
 Module 2 (Le sacrement que vous recevrez. Si vous prévoyez de recevoir plus d'un sacrement, vous ne suivrez les modules 1 et 2 qu'une seule fois, plus un module correspondant à chaque sacrement que vous recevrez.)
@@ -497,7 +497,7 @@ Im Folgenden erläutern wir Ihnen die Merkmale dieser Ausbildung:
 
 1. Die Sakramente der christlichen Initiation — Taufe, Firmung und Eucharistie — bilden den vollständigen Weg, auf dem Gott Sie wirklich in das Leben Christi und der Kirche hineinführt: durch die Taufe „treten Sie ein" in die Kirche wie durch eine Tür und empfangen neues Leben; durch die Firmung empfangen Sie eine vollkommenere Vereinigung mit der Kirche und eine besondere Kraft des Heiligen Geistes, um Zeuge Christi in Wort und Tat zu sein; und durch die Eucharistie wird die Initiation vollendet, denn dort empfangen Sie die Nahrung des neuen Lebens und nehmen am Opfer Christi teil. Deshalb ist die Katechese des Katechumenats nicht nur Information: Sie ist ein Bildungsprozess, damit Ihre Bekehrung reifen kann und Sie das Geschenk Gottes in diesen Sakramenten empfangen können, bereits als Glied seines Leibes lebend und lernend, sich durch Glauben, Gebet und Liturgie auf Gott zu beziehen.
 
-2. Diese Ausbildung wird in 4 Modulen durch Videos mit einer durchschnittlichen Dauer von 30 Minuten vermittelt, mit folgenden Themen:
+2. Diese Ausbildung wird in 4 Modulen durch Videos mit einer durchschnittlichen Dauer von 15 Minuten vermittelt, mit folgenden Themen:
 Kerygma-Modul (Es ist das geistliche Fundament, auf dem der gesamte übrige Weg deines Glaubens aufgebaut wird)
 Modul 1 (Gemeinsamer Grundlagenkurs 1: Grundlagen des katholischen Glaubens)
 Modul 2 (Das Sakrament, das Sie empfangen werden. Wenn Sie mehr als ein Sakrament empfangen möchten, absolvieren Sie die Module 1 und 2 nur einmal, zusätzlich zu einem Modul für jedes Sakrament, das Sie empfangen werden.)
@@ -520,7 +520,7 @@ A seguir explicamos as características desta formação:
 
 1. Os sacramentos da iniciação cristã (Batismo, Crisma e Eucaristia) são o caminho completo pelo qual Deus faz você entrar de verdade na vida de Cristo e da Igreja: pelo Batismo você "entra" na Igreja como por uma porta e recebe uma vida nova; pela Crisma você recebe uma união mais perfeita com a Igreja e uma força especial do Espírito Santo para ser testemunha de Cristo em palavra e obra; e pela Eucaristia a iniciação fica completa, porque ali você recebe o alimento da vida nova e participa do sacrifício de Cristo. Por isso, a catequese do catecumenato não é apenas informação: é um processo de formação para que sua conversão amadureça e você possa receber o dom de Deus nesses sacramentos, já vivendo como membro do seu Corpo e aprendendo a se relacionar com Deus por meio da fé, da oração e da liturgia.
 
-2. Esta formação é ministrada em 4 módulos por meio de vídeos com duração média de 30 minutos cada, com o seguinte conteúdo:
+2. Esta formação é ministrada em 4 módulos por meio de vídeos com duração média de 15 minutos cada, com o seguinte conteúdo:
 Módulo Querigma (É o alicerce espiritual sobre o qual se construirá todo o restante do teu caminho de fé)
 Módulo 1 (Tronco Comum 1: Fundamentos da Fé Católica)
 Módulo 2 (O Sacramento que você receberá. Se você pretende receber mais de 1 sacramento, cursará os módulos 1 e 2 apenas uma vez, mais 1 módulo correspondente a cada sacramento que receberá)
@@ -543,7 +543,7 @@ Di seguito ti spieghiamo le caratteristiche di questa formazione:
 
 1. I sacramenti dell'iniziazione cristiana (Battesimo, Cresima ed Eucaristia) sono il cammino completo attraverso il quale Dio ti fa entrare veramente nella vita di Cristo e della Chiesa: attraverso il Battesimo "entri" nella Chiesa come attraverso una porta e ricevi una vita nuova; attraverso la Cresima ricevi un'unione più perfetta con la Chiesa e una forza speciale dello Spirito Santo per essere testimone di Cristo con la parola e con l'opera; e attraverso l'Eucaristia l'iniziazione si completa, perché lì ricevi il nutrimento della vita nuova e partecipi al sacrificio di Cristo. Per questo, la catechesi del catecumenato non è solo informazione: è un processo di formazione affinché la tua conversione giunga a maturazione e tu possa ricevere il dono di Dio in questi sacramenti, vivendo già come membro del suo Corpo e imparando a relazionarti con Dio mediante la fede, la preghiera e la liturgia.
 
-2. Questa formazione viene impartita in 4 moduli attraverso video della durata media di 30 minuti ciascuno con il seguente programma:
+2. Questa formazione viene impartita in 4 moduli attraverso video della durata media di 15 minuti ciascuno con il seguente programma:
 Modulo Kerygma (È il fondamento spirituale sul quale si costruirà tutto il resto del tuo cammino di fede)
 Modulo 1 (Tronco Comune 1: Fondamenti della Fede Cattolica)
 Modulo 2 (Il Sacramento che riceverai. Se pensi di ricevere più di 1 sacramento, frequenterai i moduli 1 e 2 una sola volta, più 1 modulo corrispondente a ciascun sacramento che riceverai)
@@ -678,7 +678,7 @@ A continuación te explicamos las características de esta formación:
 
 1. Como padrino o madrina asumes un compromiso espiritual real y permanente con tu ahijado. Esta formación te ayudará a comprender la naturaleza de tu vocación como padrino, la responsabilidad que asumes ante Dios y la Iglesia, y la manera concreta de acompañar espiritualmente a quien has comprometido apadrinar.
 
-2. Esta formación se imparte mediante videos con duración promedio de 30 minutos cada uno, integrados en módulos temáticos:
+2. Esta formación se imparte mediante videos con duración promedio de 15 minutos cada uno, integrados en módulos temáticos:
 
 Módulo 1 (Tronco Común 1: Fundamentos de la Fe Católica)
 Módulo 2 (Se imparte un módulo especializdo por cada Sacramento que va a recibir tu ahijado/a)
@@ -701,7 +701,7 @@ The following explains the characteristics of this formation:
 
 1. As a godfather or godmother, you assume a real and permanent spiritual commitment to your godchild. This formation will help you understand the nature of your vocation as a godparent, the responsibility you take on before God and the Church, and the concrete way in which you can accompany spiritually the person you have committed to sponsor.
 
-2. This formation is delivered through videos with an average duration of 30 minutes each, organized into thematic modules:
+2. This formation is delivered through videos with an average duration of 15 minutes each, organized into thematic modules:
 
 Module 1 (Common Core 1: Foundations of the Catholic Faith)
 Module 2 (One specialized module is provided for each Sacrament your godchild will receive.)
@@ -724,7 +724,7 @@ Voici les caractéristiques de cette formation :
 
 1. En tant que parrain ou marraine, vous assumez un engagement spirituel réel et permanent envers votre filleul(e). Cette formation vous aidera à comprendre la nature de votre vocation de parrain ou marraine, la responsabilité que vous assumez devant Dieu et l'Église, et la manière concrète d'accompagner spirituellement celui ou celle que vous vous êtes engagé(e) à parrainer.
 
-2. Cette formation est dispensée au moyen de vidéos d'une durée moyenne de 30 minutes chacune, réparties en modules thématiques :
+2. Cette formation est dispensée au moyen de vidéos d'une durée moyenne de 15 minutes chacune, réparties en modules thématiques :
 
 Module 1 (Tronc Commun 1 : Fondements de la Foi Catholique)
 Module 2 (Un module spécialisé est proposé pour chaque sacrement que votre filleul(e) recevra.)
@@ -747,7 +747,7 @@ Im Folgenden erläutern wir Ihnen die Merkmale dieser Ausbildung:
 
 1. Als Pate oder Patin übernehmen Sie eine echte und dauerhafte geistliche Verpflichtung gegenüber Ihrem Patenkind. Diese Ausbildung hilft Ihnen, das Wesen Ihrer Berufung als Pate/Patin, die Verantwortung, die Sie vor Gott und der Kirche übernehmen, und die konkrete Art und Weise zu verstehen, wie Sie die Person, die Sie zu begleiten übernommen haben, geistlich begleiten können.
 
-2. Diese Ausbildung wird durch Videos mit einer durchschnittlichen Dauer von 30 Minuten vermittelt, gegliedert in thematische Module:
+2. Diese Ausbildung wird durch Videos mit einer durchschnittlichen Dauer von 15 Minuten vermittelt, gegliedert in thematische Module:
 
 Modul 1 (Gemeinsamer Grundlagenkurs 1: Grundlagen des katholischen Glaubens)
 Modul 2 (Für jedes Sakrament, das Ihr Patenkind empfängt, wird ein spezialisiertes Modul angeboten.)
@@ -770,7 +770,7 @@ A seguir explicamos as características desta formação:
 
 1. Como padrinho ou madrinha, você assume um compromisso espiritual real e permanente com seu afilhado(a). Esta formação o(a) ajudará a compreender a natureza da sua vocação como padrinho/madrinha, a responsabilidade que assume perante Deus e a Igreja, e a maneira concreta de acompanhar espiritualmente aquele(a) a quem você se comprometeu a apadrinhar.
 
-2. Esta formação é ministrada por meio de vídeos com duração média de 30 minutos cada, organizados em módulos temáticos:
+2. Esta formação é ministrada por meio de vídeos com duração média de 15 minutos cada, organizados em módulos temáticos:
 
 Módulo 1 (Tronco Comum 1: Fundamentos da Fé Católica)
 Módulo 2 (É ministrado um módulo especializado para cada Sacramento que seu afilhado(a) receberá)
@@ -793,7 +793,7 @@ Di seguito ti spieghiamo le caratteristiche di questa formazione:
 
 1. Come padrino o madrina assumi un impegno spirituale reale e permanente verso il tuo figlioccio/a. Questa formazione ti aiuterà a comprendere la natura della tua vocazione di padrino/madrina, la responsabilità che assumi davanti a Dio e alla Chiesa, e il modo concreto di accompagnare spiritualmente chi ti sei impegnato ad accompagnare.
 
-2. Questa formazione viene impartita attraverso video della durata media di 30 minuti ciascuno, organizzati in moduli tematici:
+2. Questa formazione viene impartita attraverso video della durata media di 15 minuti ciascuno, organizzati in moduli tematici:
 
 Modulo 1 (Tronco Comune 1: Fondamenti della Fede Cattolica)
 Modulo 2 (Viene impartito un modulo specializzato per ciascun Sacramento che il tuo figlioccio/a riceverà)
@@ -1045,7 +1045,6 @@ A continuación le explicamos las características de esta afiliación:
 
 🤝 Beneficio Económico — Una Ofrenda de Agradecimiento: Sabemos que el sostenimiento del templo, las obras de caridad y los gastos operativos de una parroquia requieren recursos constantes. Como muestra de gratitud por confiar en nosotros y servir como puente hacia sus fieles, hemos establecido un modelo de reciprocidad económica directo y transparente:
 • 30% de Ofrenda Directa: La parroquia recibirá el 30% del importe total que cada catecúmeno o fiel pague a la plataforma.
-• Incremento al 40%: La ofrenda económica que Catecumen entrega a la parroquia se incrementa al 40% si la parroquia emite a Catecumen un comprobante fiscal deducible de impuestos por concepto de la ofrenda recibida.
 • Cero costo de inversión: Su parroquia no tiene que pagar ninguna cuota de inscripción o mantenimiento.
 • Ingreso para sus obras: Estos fondos pueden destinarse al mantenimiento del templo, a Cáritas parroquial o a cualquier necesidad que usted determine.
 
@@ -1079,7 +1078,6 @@ The following explains the characteristics of this affiliation:
 
 🤝 Economic Benefit — An Offering of Gratitude: We know that sustaining the church, charitable works, and the operational expenses of a parish require constant resources. As a gesture of gratitude for trusting us and serving as a bridge to your faithful, we have established a direct and transparent model of economic reciprocity:
 • 30% Direct Offering: The parish will receive 30% of the total amount each catechumen or faithful person pays to the platform.
-• Increase to 40%: The economic offering Catecumen delivers to the parish increases to 40% if the parish issues Catecumen a tax-deductible fiscal receipt for the offering received.
 • Zero investment cost: Your parish does not need to pay any registration or maintenance fee.
 • Income for your works: These funds may be directed to church maintenance, the parish Caritas, or any need you determine.
 
@@ -1113,7 +1111,6 @@ Voici les caractéristiques de cette affiliation :
 
 🤝 Bénéfice économique — Une offrande de reconnaissance : Nous savons que l'entretien de l'église, les œuvres de charité et les frais de fonctionnement d'une paroisse nécessitent des ressources constantes. En signe de gratitude pour votre confiance et pour servir de pont vers vos fidèles, nous avons établi un modèle de réciprocité économique direct et transparent :
 • 30 % d'offrande directe : La paroisse recevra 30 % du montant total payé à la plateforme par chaque catéchumène ou fidèle.
-• Augmentation à 40 % : L'offrande économique que Catecumen verse à la paroisse passe à 40 % si la paroisse délivre à Catecumen un reçu fiscal déductible pour l'offrande reçue.
 • Coût d'investissement nul : Votre paroisse n'a à payer aucun frais d'inscription ni de maintenance.
 • Des revenus pour vos œuvres : Ces fonds peuvent être affectés à l'entretien de l'église, à la Caritas paroissiale ou à tout besoin que vous déterminerez.
 
@@ -1147,7 +1144,6 @@ Im Folgenden erläutern wir Ihnen die Merkmale dieses Anschlusses:
 
 🤝 Wirtschaftlicher Nutzen — Eine Dankesgabe: Wir wissen, dass der Unterhalt der Kirche, die Werke der Nächstenliebe und die Betriebskosten einer Pfarrei ständige Mittel erfordern. Als Zeichen der Dankbarkeit dafür, dass Sie uns vertrauen und als Brücke zu Ihren Gläubigen dienen, haben wir ein direktes und transparentes Modell wirtschaftlicher Gegenseitigkeit geschaffen:
 • 30 % direkte Spende: Die Pfarrei erhält 30 % des Gesamtbetrags, den jeder Katechumene oder Gläubige an die Plattform zahlt.
-• Erhöhung auf 40 %: Die wirtschaftliche Spende, die Catecumen an die Pfarrei überweist, erhöht sich auf 40 %, wenn die Pfarrei Catecumen eine steuerlich absetzbare Quittung für die erhaltene Spende ausstellt.
 • Keine Investitionskosten: Ihre Pfarrei muss keine Anmelde- oder Wartungsgebühr zahlen.
 • Einnahmen für Ihre Werke: Diese Mittel können für den Unterhalt der Kirche, die Pfarr-Caritas oder jeden von Ihnen bestimmten Bedarf verwendet werden.
 
@@ -1181,7 +1177,6 @@ A seguir explicamos as características desta afiliação:
 
 🤝 Benefício Econômico — Uma Oferta de Agradecimento: Sabemos que a manutenção do templo, as obras de caridade e as despesas operacionais de uma paróquia exigem recursos constantes. Como demonstração de gratidão por confiar em nós e servir de ponte com seus fiéis, estabelecemos um modelo de reciprocidade econômica direto e transparente:
 • 30% de Oferta Direta: A paróquia receberá 30% do valor total que cada catecúmeno ou fiel paga à plataforma.
-• Aumento para 40%: A oferta econômica que a Catecumen entrega à paróquia aumenta para 40% se a paróquia emitir à Catecumen um comprovante fiscal dedutível de impostos referente à oferta recebida.
 • Custo de investimento zero: Sua paróquia não precisa pagar nenhuma taxa de inscrição ou manutenção.
 • Renda para suas obras: Esses recursos podem ser destinados à manutenção do templo, à Cáritas paroquial ou a qualquer necessidade que o senhor determinar.
 
@@ -1215,7 +1210,6 @@ Di seguito ti spieghiamo le caratteristiche di questa affiliazione:
 
 🤝 Beneficio Economico — Un'Offerta di Ringraziamento: Sappiamo che il sostentamento del tempio, le opere di carità e le spese operative di una parrocchia richiedono risorse costanti. Come segno di gratitudine per averci dato fiducia e per fungere da ponte verso i suoi fedeli, abbiamo stabilito un modello di reciprocità economica diretto e trasparente:
 • 30% di Offerta Diretta: La parrocchia riceverà il 30% dell'importo totale che ogni catecumeno o fedele paga alla piattaforma.
-• Incremento al 40%: L'offerta economica che Catecumen versa alla parrocchia aumenta al 40% se la parrocchia emette a Catecumen una ricevuta fiscale deducibile per l'offerta ricevuta.
 • Costo di investimento zero: La sua parrocchia non deve pagare alcuna quota di iscrizione o manutenzione.
 • Entrate per le sue opere: Questi fondi possono essere destinati alla manutenzione del tempio, alla Caritas parrocchiale o a qualsiasi necessità che lei stabilisca.
 
@@ -1259,7 +1253,7 @@ A continuación le explicamos las características de esta afiliación:
 • Alivio Administrativo: Se optimiza el trabajo de las secretarías parroquiales y de la cancillería diocesana, ya que mantenemos un registro permanente en la nube de todos los egresados.
 
 🤝 Corresponsabilidad Económica y Sustentabilidad Parroquial:
-• Ofrenda del 30% para la Parroquia: Por cada catecúmeno o fiel que se inscriba en la plataforma a través de la difusión parroquial, la respectiva parroquia recibirá el 30% del importe total cubierto (40% si la parroquia emite comprobante fiscal deducible a Catecumen).
+• Ofrenda del 30% para la Parroquia: Por cada catecúmeno o fiel que se inscriba en la plataforma a través de la difusión parroquial, la respectiva parroquia recibirá el 30% del importe total cubierto.
 • Independencia de Aranceles: Esta participación económica es totalmente independiente del estipendio tradicional que el fiel entrega a su parroquia por la tramitación de su sacramento.
 • Transferencia Inmediata: Catecumen realiza el depósito en un plazo máximo de 48 horas posteriores al pago del usuario, directamente a la cuenta bancaria que la parroquia haya registrado. El costo de inversión para la Diócesis y sus parroquias es de cero.
 
@@ -1296,7 +1290,7 @@ The following explains the characteristics of this affiliation:
 • Administrative Relief: The work of parish secretaries and the diocesan chancery is optimized, as we maintain a permanent cloud record of all graduates.
 
 🤝 Economic Co-responsibility and Parish Sustainability:
-• 30% Offering for the Parish: For each catechumen or faithful person who enrolls in the platform through parish outreach, the respective parish will receive 30% of the total amount paid (40% if the parish issues a tax-deductible receipt to Catecumen).
+• 30% Offering for the Parish: For each catechumen or faithful person who enrolls in the platform through parish outreach, the respective parish will receive 30% of the total amount paid.
 • Independence from Parish Fees: This economic participation is completely independent of the traditional stipend the faithful person pays to their parish for the processing of their sacrament.
 • Immediate Transfer: Catecumen makes the deposit within a maximum of 48 hours after the user's payment, directly to the bank account registered by the parish. The investment cost for the Diocese and its parishes is zero.
 
@@ -1333,7 +1327,7 @@ Voici les caractéristiques de cette affiliation :
 • Allègement administratif : Le travail des secrétariats paroissiaux et de la chancellerie diocésaine est optimisé, car nous conservons un registre permanent dans le cloud de tous les diplômés.
 
 🤝 Coresponsabilité économique et pérennité paroissiale :
-• Offrande de 30 % pour la paroisse : Pour chaque catéchumène ou fidèle qui s'inscrit sur la plateforme par le biais de la diffusion paroissiale, la paroisse concernée recevra 30 % du montant total versé (40 % si la paroisse délivre un reçu fiscal déductible à Catecumen).
+• Offrande de 30 % pour la paroisse : Pour chaque catéchumène ou fidèle qui s'inscrit sur la plateforme par le biais de la diffusion paroissiale, la paroisse concernée recevra 30 % du montant total versé.
 • Indépendance des honoraires paroissiaux : Cette participation économique est totalement indépendante des honoraires traditionnels que le fidèle verse à sa paroisse pour le traitement de son sacrement.
 • Virement immédiat : Catecumen effectue le dépôt dans un délai maximal de 48 heures après le paiement de l'utilisateur, directement sur le compte bancaire enregistré par la paroisse. Le coût d'investissement pour le Diocèse et ses paroisses est nul.
 
@@ -1370,7 +1364,7 @@ Im Folgenden erläutern wir Ihnen die Merkmale dieses Anschlusses:
 • Administrative Entlastung: Die Arbeit der Pfarrsekretariate und der diözesanen Kanzlei wird optimiert, da wir ein dauerhaftes Cloud-Verzeichnis aller Absolventen führen.
 
 🤝 Wirtschaftliche Mitverantwortung und pfarreiliche Nachhaltigkeit:
-• 30 % Spende für die Pfarrei: Für jeden Katechumenen oder Gläubigen, der sich über die pfarreiliche Verbreitung auf der Plattform anmeldet, erhält die jeweilige Pfarrei 30 % des gezahlten Gesamtbetrags (40 %, wenn die Pfarrei Catecumen eine steuerlich absetzbare Quittung ausstellt).
+• 30 % Spende für die Pfarrei: Für jeden Katechumenen oder Gläubigen, der sich über die pfarreiliche Verbreitung auf der Plattform anmeldet, erhält die jeweilige Pfarrei 30 % des gezahlten Gesamtbetrags.
 • Unabhängigkeit von Pfarreigebühren: Diese wirtschaftliche Beteiligung ist völlig unabhängig von der traditionellen Stolgebühr, die der Gläubige direkt an seine Pfarrei für die Abwicklung seines Sakraments zahlt.
 • Sofortige Überweisung: Catecumen tätigt die Einzahlung innerhalb von höchstens 48 Stunden nach der Zahlung des Nutzers direkt auf das von der Pfarrei registrierte Bankkonto. Die Investitionskosten für die Diözese und ihre Pfarreien betragen null.
 
@@ -1407,7 +1401,7 @@ A seguir explicamos as características desta afiliação:
 • Alívio Administrativo: Otimiza-se o trabalho das secretarias paroquiais e da cúria diocesana, já que mantemos um registro permanente na nuvem de todos os formados.
 
 🤝 Corresponsabilidade Econômica e Sustentabilidade Paroquial:
-• Oferta de 30% para a Paróquia: Para cada catecúmeno ou fiel que se inscrever na plataforma através da divulgação paroquial, a respectiva paróquia receberá 30% do valor total pago (40% se a paróquia emitir comprovante fiscal dedutível à Catecumen).
+• Oferta de 30% para a Paróquia: Para cada catecúmeno ou fiel que se inscrever na plataforma através da divulgação paroquial, a respectiva paróquia receberá 30% do valor total pago.
 • Independência de Taxas: Esta participação econômica é totalmente independente do estipêndio tradicional que o fiel entrega à sua paróquia pela tramitação de seu sacramento.
 • Transferência Imediata: A Catecumen realiza o depósito em um prazo máximo de 48 horas após o pagamento do usuário, diretamente para a conta bancária que a paróquia tenha registrado. O custo de investimento para a Diocese e suas paróquias é zero.
 
@@ -1444,7 +1438,7 @@ Di seguito le spieghiamo le caratteristiche di questa affiliazione:
 • Sollievo Amministrativo: Si ottimizza il lavoro delle segreterie parrocchiali e della cancelleria diocesana, poiché manteniamo un registro permanente nel cloud di tutti i diplomati.
 
 🤝 Corresponsabilità Economica e Sostenibilità Parrocchiale:
-• Offerta del 30% per la Parrocchia: Per ogni catecumeno o fedele che si iscrive alla piattaforma tramite la diffusione parrocchiale, la rispettiva parrocchia riceverà il 30% dell'importo totale versato (40% se la parrocchia emette a Catecumen una ricevuta fiscale deducibile).
+• Offerta del 30% per la Parrocchia: Per ogni catecumeno o fedele che si iscrive alla piattaforma tramite la diffusione parrocchiale, la rispettiva parrocchia riceverà il 30% dell'importo totale versato.
 • Indipendenza dagli Oneri Parrocchiali: Questa partecipazione economica è totalmente indipendente dallo stipendio tradizionale che il fedele versa alla propria parrocchia per la gestione del suo sacramento.
 • Trasferimento Immediato: Catecumen effettua il deposito entro un termine massimo di 48 ore dal pagamento dell'utente, direttamente sul conto bancario registrato dalla parrocchia. Il costo di investimento per la Diocesi e le sue parrocchie è pari a zero.
 

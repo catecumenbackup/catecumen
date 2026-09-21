@@ -83,12 +83,6 @@ export default function RegisterParroquiaForm({onNext,onBack}){
               {T("Nuestra parroquia emitirá a favor de Catecumen un comprobante fiscal deducible de impuestos por concepto de la ofrenda económica que Catecumen nos depositará.","Our parish will issue Catecumen a tax-deductible fiscal receipt for the economic offering that Catecumen will deposit to us.","Notre paroisse délivrera à Catecumen un reçu fiscal déductible pour l'offrande économique que Catecumen nous versera.","Unsere Pfarrei stellt Catecumen eine steuerlich absetzbare Quittung für die wirtschaftliche Spende aus, die Catecumen uns überweist.","Nossa paróquia emitirá em favor da Catecumen um comprovante fiscal dedutível de impostos referente à oferta econômica que a Catecumen nos depositará.","La nostra parrocchia emetterà a favore di Catecumen una ricevuta fiscale deducibile per l'offerta economica che Catecumen ci depositerà.")}
             </span>
           </label>
-          {d.emiteFactura&&(
-            <p style={{color:"#3DA070",fontFamily:"'Crimson Text',serif",
-              fontSize:13.5,lineHeight:1.6,marginTop:10}}>
-              🎉 {T("¡Excelente! Al emitir el comprobante fiscal, la ofrenda económica que Catecumen deposita a su parroquia se incrementa del 30% al 40% del importe total que cada catecúmeno o fiel pague a la plataforma.","Excellent! By issuing the fiscal receipt, the economic offering Catecumen deposits to your parish increases from 30% to 40% of the total amount paid by each catechumen or faithful person.","Excellent ! En délivrant le reçu fiscal, l'offrande économique que Catecumen verse à votre paroisse passe de 30 % à 40 % du montant total payé par chaque catéchumène ou fidèle à la plateforme.","Ausgezeichnet! Durch die Ausstellung der Steuerquittung erhöht sich die wirtschaftliche Spende, die Catecumen an Ihre Pfarrei überweist, von 30 % auf 40 % des Gesamtbetrags, den jeder Katechumene oder Gläubige an die Plattform zahlt.","Excelente! Ao emitir o comprovante fiscal, a oferta econômica que a Catecumen deposita à sua paróquia aumenta de 30% para 40% do valor total que cada catecúmeno ou fiel paga à plataforma.","Ottimo! Emettendo la ricevuta fiscale, l'offerta economica che Catecumen deposita alla tua parrocchia aumenta dal 30% al 40% dell'importo totale pagato da ogni catecumeno o fedele alla piattaforma.")}
-            </p>
-          )}
         </div>
         <div style={{display:"flex",gap:12}}>
           <button onClick={onBack} style={{...BTN("sec"),flex:1,justifyContent:"center"}}>
