@@ -1075,13 +1075,26 @@ export default function App(){
   const [bridge,setBridge]=useState(null);   // puente frontend↔BD (Parte B)
   // Modo preinscripción (ajuste global editable desde el panel). Si `activa`,
   // el flujo de alumno termina en "reserva sin costo" en vez de pago.
-  const [preinsc,setPreinsc]=useState({activa:false,mensaje:null,cursos:null});
+  const [preinsc,setPreinsc]=useState({activa:false,mensaje:null,cursos:null,ready:false});
   const [conversion,setConversion]=useState(null); // {usuarioId} al convertir un preinscrito
-  useEffect(()=>{(async()=>{
-    try{ const {data}=await supabase.rpc("obtener_ajuste",{p_clave:"preinscripcion"});
-      if(data) setPreinsc({activa:!!data.activa, mensaje:data.mensaje||null, cursos:Array.isArray(data.cursos)?data.cursos:null});
-    }catch(e){ console.error("obtener_ajuste:",e); }
-  })();},[]);
+  useEffect(()=>{ let cancel=false;
+    (async()=>{
+      // Hasta CONFIRMAR el ajuste, el gate trata el registro como preinscripción
+      // (sin métodos de pago a la vista). Reintenta ante fallos de red; solo tras
+      // agotar reintentos habilita el pago (el servidor igual bloquea el cobro si
+      // la preinscripción aplica). Cierra la condición de carrera del arranque.
+      for(let i=0;i<3;i++){
+        try{ const {data,error}=await supabase.rpc("obtener_ajuste",{p_clave:"preinscripcion"});
+          if(error) throw error;
+          if(cancel) return;
+          setPreinsc({activa:!!(data&&data.activa), mensaje:(data&&data.mensaje)||null, cursos:Array.isArray(data&&data.cursos)?data.cursos:null, ready:true});
+          return;
+        }catch(e){ console.error("obtener_ajuste:",e); await new Promise(r=>setTimeout(r,1200)); }
+      }
+      if(!cancel) setPreinsc(p=>({...p,ready:true}));
+    })();
+    return ()=>{cancel=true;};
+  },[]);
   // ¿La preinscripción aplica a ESTE registro? El admin puede limitarla a ciertos
   // cursos (preinsc.cursos). Sin lista → aplica a todos (compatibilidad).
   const cursosDeRegistro=(uType,sacs)=>{
@@ -2030,7 +2043,7 @@ export default function App(){
       {phase==="payment"&&!isOrgFlow&&(
         <Suspense fallback={<div style={OVERLAY}><div style={{color:C.gold,fontFamily:"'Cinzel',serif"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div></div>}>
           <PaymentModal formData={formData} userType={userType} selectedSacs={selectedSacs}
-            preinscripcion={preinsc.activa&&!conversion&&preinscAplica(userType,selectedSacs)}
+            preinscripcion={(preinsc.activa||!preinsc.ready)&&!conversion&&preinscAplica(userType,selectedSacs)}
             conversion={!!conversion} usuarioId={conversion?.usuarioId}
             onSuccess={handlePaymentSuccess}
             onBack={conversion?(async()=>{ try{await supabase.auth.signOut();}catch(e){console.error(e);} setConversion(null); setPhase("welcome"); }):()=>setPhase("password")}/>
