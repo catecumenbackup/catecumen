@@ -599,9 +599,13 @@ function WelcomeModal({onContinue,onLogin}){
   useEffect(()=>{ const h=()=>setDesktop(window.innerWidth>=900); window.addEventListener("resize",h); return()=>window.removeEventListener("resize",h); },[]);
   const arrowBtn=(dir,disabled)=>(
     <button aria-label={dir<0?"Anterior":"Siguiente"} onClick={()=>go(dir)} disabled={disabled}
-      style={{width:38,height:38,borderRadius:"50%",flexShrink:0,cursor:disabled?"default":"pointer",
-        border:`1px solid ${disabled?C.borderD:C.gold}`,background:disabled?"transparent":`${C.gold}18`,
-        color:disabled?C.ivoryM:C.gold,fontSize:18,opacity:disabled?0.35:1,transition:"all .2s"}}>
+      style={{width:desktop?44:38,height:desktop?44:38,borderRadius:"50%",flexShrink:0,cursor:disabled?"default":"pointer",
+        border:`1.5px solid ${disabled?C.borderD:C.gold}`,
+        background:disabled?"transparent":`linear-gradient(145deg, ${C.gold}38, ${C.gold}12)`,
+        color:disabled?C.ivoryM:C.gold,fontSize:desktop?24:20,lineHeight:1,fontWeight:700,
+        display:"inline-flex",alignItems:"center",justifyContent:"center",
+        boxShadow:disabled?"none":`0 2px 10px ${C.gold}30`,
+        opacity:disabled?0.3:1,transition:"all .2s"}}>
       {dir<0?"‹":"›"}
     </button>
   );
@@ -653,11 +657,12 @@ function WelcomeModal({onContinue,onLogin}){
 
   const tour=(
     <div style={{display:"flex",alignItems:"center",gap:8,width:"100%"}}>
-      <div style={{display:desktop?"block":"none"}}>{arrowBtn(-1,i===0)}</div>
-      <div onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}
+      <style>{`@keyframes tourSlideIn{from{opacity:.35;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}`}</style>
+      <div>{arrowBtn(-1,i===0)}</div>
+      <div key={i} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}
         style={{flex:1,minHeight:270,background:`linear-gradient(145deg,${C.card} 0%,rgba(200,169,81,0.06) 100%)`,
           border:`1px solid ${C.borderD}`,borderRadius:16,padding:"16px 18px 18px",
-          display:"flex",flexDirection:"column",justifyContent:"flex-start"}}>
+          display:"flex",flexDirection:"column",justifyContent:"flex-start",animation:"tourSlideIn .38s ease"}}>
         <TourScene key={cur.scene} tipo={cur.scene} video={cur.video} webm={cur.webm} poster={cur.poster}/>
         <div style={{display:"flex",gap:9,alignItems:"flex-start",marginTop:12,textAlign:"left"}}>
           <span style={{color:C.gold,flexShrink:0,marginTop:2,fontSize:16}}>✦</span>
@@ -670,7 +675,7 @@ function WelcomeModal({onContinue,onLogin}){
           </button>
         )}
       </div>
-      <div style={{display:desktop?"block":"none"}}>{arrowBtn(1,i===n-1)}</div>
+      <div>{arrowBtn(1,i===n-1)}</div>
     </div>
   );
 
@@ -681,8 +686,8 @@ function WelcomeModal({onContinue,onLogin}){
           <button key={k} aria-label={`Ir a ${k+1}`} aria-current={k===i?"true":undefined} onClick={()=>setI(k)}
             style={{width:24,height:24,padding:0,border:"none",background:"none",cursor:"pointer",
               display:"flex",alignItems:"center",justifyContent:"center"}}>
-            <span style={{width:k===i?22:8,height:8,borderRadius:99,display:"block",
-              background:k===i?C.gold:`${C.gold}45`,transition:"all .25s"}}/>
+            <span style={{width:k===i?26:10,height:10,borderRadius:99,display:"block",
+              background:k===i?C.gold:`${C.gold}66`,transition:"all .25s"}}/>
           </button>
         ))}
       </div>
