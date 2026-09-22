@@ -36,8 +36,9 @@ end $$;
 
 -- ── 1 · Diócesis de Querétaro: ficha real ───────────────────────────────────
 --
--- Reemplaza 'Mons. Ejemplo' → Mons. Fidencio López Plaza (X Obispo de
--- Querétaro, nombrado el 12 de septiembre de 2020); la dirección genérica →
+-- Reemplaza 'Mons. Ejemplo' → Mons. Víctor Alejandro Aguilar Ledesma
+-- (Obispo de Querétaro desde septiembre de 2026, en sustitución de Mons.
+-- Fidencio López Plaza); la dirección genérica →
 -- el domicilio del Obispado; y el teléfono 442 111 1111 → el de la Curia.
 --
 -- OJO con el correo: la diócesis publica contact@diocesisqueretaro.org en el
@@ -48,7 +49,7 @@ update public.diocesis
    set nombre          = 'Diócesis de Querétaro',
        pais            = 'México',
        codigo_iso      = 'MX',
-       nombre_obispo   = 'S. E. Mons. Fidencio López Plaza',
+       nombre_obispo   = 'S. E. Mons. Víctor Alejandro Aguilar Ledesma',
        nombre_contacto = 'Curia Diocesana',
        email_contacto  = 'contact@diocesisqueretaro.org',
        codigo_pais_tel = '+52',

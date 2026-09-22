@@ -23,7 +23,7 @@ Qro. · Pbro. Mtro. Jorge Ramírez Casas · `registro_id` **`MX-PAR-2026-000001`
 
 **Diócesis de Querétaro:** `registro_id` **`MX-DIO-2026-000001`** (era
 `TEST-DIO-QRO`; se cambió tras comprobar que ningún usuario lo había usado).
-S. E. Mons. Fidencio López Plaza · Reforma 48, Col. Centro, C.P. 76000 ·
+S. E. Mons. Víctor Alejandro Aguilar Ledesma · Reforma 48, Col. Centro, C.P. 76000 ·
 442 224 0738.
 
 ---
