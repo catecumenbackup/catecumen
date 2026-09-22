@@ -1,4 +1,4 @@
-# Catecumen — El Aula Global de la Catequesis
+# Catecumen — La catequesis al alcance de todos
 
 Plataforma web de **formación sacramental católica a distancia** ([catecumen.com](https://www.catecumen.com)),
 en colaboración con el Centro Internacional de Catequesis a Distancia (CICADI/ICDC) y la

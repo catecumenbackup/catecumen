@@ -118,7 +118,7 @@ export default function CertificatesModal({formData,sequence,progress,insBySec,o
         doc.text("CATECUMEN",cx,26,{align:"center"});
       }
       doc.setFont("times","italic"); doc.setFontSize(10); doc.setTextColor(...soft);
-      doc.text(T("El Aula Global de la Catequesis","The Global Classroom of Catechesis","La Salle de Classe Mondiale de la Catéchèse","Das globale Klassenzimmer der Katechese","A Sala de Aula Global da Catequese","L'Aula Globale della Catechesi"),cx,40,{align:"center"});
+      doc.text(T("La catequesis al alcance de todos","Catechesis within everyone's reach","La catéchèse à la portée de tous","Katechese in Reichweite aller","A catequese ao alcance de todos","La catechesi alla portata di tutti"),cx,40,{align:"center"});
 
       doc.setFont("times","bold"); doc.setFontSize(24); doc.setTextColor(...gold);
       doc.text(T("CONSTANCIA DE FORMACIÓN","CERTIFICATE OF FORMATION","ATTESTATION DE FORMATION","AUSBILDUNGSBESCHEINIGUNG","CERTIFICADO DE FORMAÇÃO","ATTESTATO DI FORMAZIONE"),cx,50,{align:"center"});
