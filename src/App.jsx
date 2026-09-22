@@ -601,10 +601,10 @@ function WelcomeModal({onContinue,onLogin}){
     <button aria-label={dir<0?"Anterior":"Siguiente"} onClick={()=>go(dir)} disabled={disabled}
       style={{width:desktop?44:38,height:desktop?44:38,borderRadius:"50%",flexShrink:0,cursor:disabled?"default":"pointer",
         border:`1.5px solid ${disabled?C.borderD:C.gold}`,
-        background:disabled?"transparent":`linear-gradient(145deg, ${C.gold}38, ${C.gold}12)`,
+        background:disabled?"transparent":"linear-gradient(145deg, rgba(200,169,81,0.30), rgba(200,169,81,0.12))",
         color:disabled?C.ivoryM:C.gold,fontSize:desktop?24:20,lineHeight:1,fontWeight:700,
         display:"inline-flex",alignItems:"center",justifyContent:"center",
-        boxShadow:disabled?"none":`0 2px 10px ${C.gold}30`,
+        boxShadow:disabled?"none":"0 2px 10px rgba(200,169,81,0.28)",
         opacity:disabled?0.3:1,transition:"all .2s"}}>
       {dir<0?"‹":"›"}
     </button>
@@ -686,8 +686,8 @@ function WelcomeModal({onContinue,onLogin}){
           <button key={k} aria-label={`Ir a ${k+1}`} aria-current={k===i?"true":undefined} onClick={()=>setI(k)}
             style={{width:24,height:24,padding:0,border:"none",background:"none",cursor:"pointer",
               display:"flex",alignItems:"center",justifyContent:"center"}}>
-            <span style={{width:k===i?26:10,height:10,borderRadius:99,display:"block",
-              background:k===i?C.gold:`${C.gold}66`,transition:"all .25s"}}/>
+            <span style={{width:k===i?28:11,height:11,borderRadius:99,display:"block",
+              background:k===i?C.gold:C.ivoryM,opacity:k===i?1:0.55,transition:"all .25s"}}/>
           </button>
         ))}
       </div>
