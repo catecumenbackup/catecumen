@@ -32,6 +32,16 @@
          bajar nunca un fondo de más. -->
     <script>
       (function () {
+        // Reinicio ÚNICO a tema claro (una sola vez por navegador): fuerza que
+        // TODOS abran en claro la próxima vez, sobrescribiendo una preferencia
+        // previa de oscuro. Tras esto, el usuario puede volver a elegir oscuro y
+        // se respeta (el flag impide volver a forzar).
+        try {
+          if (localStorage.getItem("catecumen_force_light_v1") !== "1") {
+            localStorage.setItem("catecumen_theme", "light");
+            localStorage.setItem("catecumen_force_light_v1", "1");
+          }
+        } catch (e) {}
         var oscuro = false;
         try { oscuro = localStorage.getItem("catecumen_theme") === "dark"; } catch (e) {}
         var fondo = oscuro ? "/fondocatecumen.webp" : "/fondocatecumen-claro.webp";
