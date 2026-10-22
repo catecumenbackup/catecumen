@@ -85,6 +85,25 @@ serve(async (req: Request) => {
     const monto = Number(importe);
     if (!Number.isFinite(monto) || monto <= 0) throw new Error("importe inválido");
 
+    // ── Interruptor MAESTRO de pagos (opt-in) ───────────────────────────────
+    // Mientras `ajustes.pagos_habilitados` no esté explícitamente en
+    // {"habilitados": true}, NO se cobra nada (curso ni conversión). Por defecto
+    // —ajuste ausente o error de lectura— se BLOQUEA. El admin lo enciende desde
+    // el panel cuando autorice la apertura de pagos. Independiente del modo
+    // preinscripción: aunque éste se apague, sin este interruptor no hay cobro.
+    {
+      const { data: ph, error: phErr } = await supabase
+        .from("ajustes").select("valor").eq("clave", "pagos_habilitados").maybeSingle();
+      const habilitados = !phErr && (ph?.valor as any)?.habilitados === true;
+      if (!habilitados) {
+        return new Response(
+          JSON.stringify({ error:
+            "Los pagos aún no están habilitados en la plataforma. Por ahora puedes reservar tu lugar sin costo." }),
+          { status: 403, headers: { ...CORS, "Content-Type": "application/json" } },
+        );
+      }
+    }
+
     // ── Modo PREINSCRIPCIÓN (blindaje server-side) ──────────────────────────
     // Si el ajuste `preinscripcion` está activo y aplica al curso de este
     // registro, NO se cobra: el alumno debe reservar sin costo (edge `preinscribir`).

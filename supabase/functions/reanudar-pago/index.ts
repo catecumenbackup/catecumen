@@ -50,6 +50,22 @@ serve(async (req: Request) => {
     if (!email)   throw new Error("email requerido");
     if (!retorno) throw new Error("retorno requerido");
 
+    // ── Interruptor MAESTRO de pagos (opt-in) ───────────────────────────────
+    // Sin `ajustes.pagos_habilitados` = {"habilitados": true} NO se reanuda
+    // ningún cobro. Por defecto bloqueado. El admin lo habilita desde el panel.
+    {
+      const { data: ph, error: phErr } = await supabase
+        .from("ajustes").select("valor").eq("clave", "pagos_habilitados").maybeSingle();
+      const habilitados = !phErr && (ph?.valor as any)?.habilitados === true;
+      if (!habilitados) {
+        return new Response(
+          JSON.stringify({ error:
+            "Los pagos aún no están habilitados en la plataforma." }),
+          { status: 403, headers: { ...CORS, "Content-Type": "application/json" } },
+        );
+      }
+    }
+
     // ── Si ya existe una cuenta activa con este correo, no hay nada que
     //    reanudar — debe iniciar sesión. ──────────────────────────────────
     const { count: yaActivo } = await supabase
