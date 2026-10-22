@@ -172,6 +172,7 @@
       <button class="tab" data-tab="preinscripcion">📝 Preinscripción</button>
       <button class="tab" data-tab="donativos">💛 Donativos</button>
       <button class="tab" data-tab="scholas">📖 Scholas</button>
+      <button class="tab" data-tab="qr">🔗 QR</button>
       <button class="tab" data-tab="auditoria">📜 Auditoría</button>
     </div>
 
@@ -506,6 +507,24 @@
     </div>
 
     <!-- TAB SCHOLAS -->
+    <div id="tab-qr" class="tabpane hidden">
+      <h2>🔗 Redirector de QR</h2>
+      <p style="color:var(--ivory-m);font-size:13px;margin:0 0 12px">
+        Enlaces cortos en <b>tu dominio</b> (catecumen.com/qr) que redirigen a donde indiques y <b>registran cada escaneo</b>. Puedes cambiar el destino cuando quieras sin reimprimir el QR. Codifica en el QR impreso la "URL del QR" que aparece en cada fila (botón <b>QR</b> para generarla y descargarla).
+      </p>
+      <div style="margin-bottom:12px;padding:12px 14px;border:1px solid rgba(200,169,81,.3);border-radius:10px;background:rgba(200,169,81,.05)">
+        <b style="font-size:14px">Nuevo / editar enlace</b>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-top:8px">
+          <label style="font-size:12px;color:var(--ivory-m)">Clave (slug)<br><input id="qr-slug" placeholder="flyer" style="width:130px"></label>
+          <label style="font-size:12px;color:var(--ivory-m)">Nombre<br><input id="qr-nombre" placeholder="Volante parroquias" style="width:190px"></label>
+          <label style="font-size:12px;color:var(--ivory-m)">Destino (URL)<br><input id="qr-destino" placeholder="https://www.catecumen.com/..." style="width:300px"></label>
+          <button class="btn" onclick="window.qrGuardar()">Guardar</button>
+          <span id="qr-msg" style="font-size:12px;color:var(--ivory-m)"></span>
+        </div>
+      </div>
+      <div id="qr-panel" style="margin-bottom:12px"></div>
+      <div id="qr-lista"></div>
+    </div>
     <div id="tab-scholas" class="tabpane hidden">
       <h2>📖 Scholas — Recursos de formación</h2>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
@@ -1092,6 +1111,70 @@
     $("don-guardado").textContent=error?("Error: "+error.message):"✓ Guardado";
     setTimeout(()=>{$("don-guardado").textContent="";},3000);
   };
+  // ---------- REDIRECTOR DE QR ----------
+  let _qrData=[];
+  async function cargarQR(){
+    $("qr-panel").innerHTML="";
+    const {data,error}=await sb.rpc("admin_qr_listar");
+    if(error){ $("qr-lista").innerHTML="<p style='color:#f88'>Error: "+error.message+"</p>"; return; }
+    _qrData=data||[];
+    if(!_qrData.length){ $("qr-lista").innerHTML="<p style='color:var(--ivory-m)'>Sin enlaces todavía.</p>"; return; }
+    const rows=_qrData.map(l=>{
+      const url = l.slug==="home" ? "https://www.catecumen.com/qr/" : "https://www.catecumen.com/qr/?c="+l.slug;
+      return `<tr style="border-top:1px solid rgba(200,169,81,.15)">
+        <td style="padding:6px 8px"><code>${l.slug}</code></td>
+        <td style="padding:6px 8px">${l.nombre||""}</td>
+        <td style="padding:6px 8px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><a href="${l.destino}" target="_blank" style="color:var(--gold-l)">${l.destino}</a></td>
+        <td style="padding:6px 8px;font-size:11px"><code>${url}</code></td>
+        <td style="padding:6px 8px;text-align:center"><b>${l.escaneos}</b></td>
+        <td style="padding:6px 8px;text-align:center"><input type="checkbox" ${l.activo?"checked":""} onchange="window.qrActivo('${l.slug}',this.checked)"></td>
+        <td style="padding:6px 8px;white-space:nowrap">
+          <button class="btn ghost" title="Editar" onclick="window.qrEditar('${l.slug}')">✎</button>
+          <button class="btn ghost" title="Estadísticas" onclick="window.qrStats('${l.slug}')">📊</button>
+          <button class="btn ghost" title="Ver/descargar QR" onclick="window.qrVerQR('${l.slug}')">QR</button>
+          ${l.slug!=="home" ? `<button class="btn ghost" title="Borrar" onclick="window.qrBorrar('${l.slug}')">🗑</button>` : ""}
+        </td></tr>`;
+    }).join("");
+    $("qr-lista").innerHTML="<table style='width:100%;border-collapse:collapse;font-size:13px'><thead><tr style='text-align:left;color:var(--gold)'><th style='padding:6px 8px'>Clave</th><th style='padding:6px 8px'>Nombre</th><th style='padding:6px 8px'>Destino</th><th style='padding:6px 8px'>URL del QR</th><th style='padding:6px 8px'>Escaneos</th><th style='padding:6px 8px'>Activo</th><th></th></tr></thead><tbody>"+rows+"</tbody></table>";
+  }
+  window.qrGuardar=async()=>{
+    const slug=$("qr-slug").value.trim(), nombre=$("qr-nombre").value.trim(), destino=$("qr-destino").value.trim();
+    if(!slug||!destino){ $("qr-msg").textContent="Clave y destino son obligatorios."; return; }
+    const {error}=await sb.rpc("admin_qr_guardar",{p_slug:slug,p_nombre:nombre,p_destino:destino,p_activo:true});
+    if(error){ $("qr-msg").textContent="Error: "+error.message; return; }
+    $("qr-msg").textContent="✓ Guardado"; $("qr-slug").value="";$("qr-nombre").value="";$("qr-destino").value="";
+    setTimeout(()=>{$("qr-msg").textContent="";},2500); cargarQR();
+  };
+  window.qrEditar=(slug)=>{ const l=_qrData.find(x=>x.slug===slug); if(!l)return; $("qr-slug").value=l.slug;$("qr-nombre").value=l.nombre||"";$("qr-destino").value=l.destino; $("qr-slug").focus(); };
+  window.qrActivo=async(slug,on)=>{ const l=_qrData.find(x=>x.slug===slug); if(!l)return; const {error}=await sb.rpc("admin_qr_guardar",{p_slug:slug,p_nombre:l.nombre,p_destino:l.destino,p_activo:on}); if(error){ alert("Error: "+error.message); cargarQR(); } else { l.activo=on; } };
+  window.qrBorrar=async(slug)=>{ if(!confirm("¿Borrar el enlace '"+slug+"' y todas sus estadísticas?"))return; const {error}=await sb.rpc("admin_qr_borrar",{p_slug:slug}); if(error){ alert("Error: "+error.message); return; } cargarQR(); };
+  window.qrStats=async(slug)=>{
+    const l=_qrData.find(x=>x.slug===slug);
+    const {data,error}=await sb.rpc("admin_qr_stats",{p_slug:slug});
+    if(error){ $("qr-panel").innerHTML="<p style='color:#f88'>Error: "+error.message+"</p>"; return; }
+    const dias=(data.por_dia||[]).map(x=>x.dia.slice(5)+": "+x.n).join(" · ")||"sin escaneos en 30 días";
+    $("qr-panel").innerHTML=`<div style="padding:14px;border:1px solid rgba(200,169,81,.3);border-radius:10px;max-width:620px;background:rgba(200,169,81,.05)">
+      <p style="margin:0 0 8px;font-size:14px"><b>📊 ${l?(l.nombre||l.slug):slug}</b></p>
+      <div style="display:flex;gap:18px;flex-wrap:wrap;font-size:13px">
+        <span>Total: <b>${data.total}</b></span><span>7 días: <b>${data.ult7}</b></span><span>30 días: <b>${data.ult30}</b></span>
+        <span>📱 Móvil: <b>${data.movil}</b></span><span>💻 Escritorio: <b>${data.escritorio}</b></span></div>
+      <p style="margin:10px 0 0;font-size:11.5px;color:var(--ivory-m)">Por día (30d): ${dias}</p>
+      <div style="margin-top:8px"><button class="btn ghost" onclick="$('qr-panel').innerHTML=''">Cerrar</button></div></div>`;
+  };
+  let _qrlibP=null;
+  function _qrlib(){ if(_qrlibP) return _qrlibP; _qrlibP=new Promise((res,rej)=>{ const sc=document.createElement("script"); sc.src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"; sc.onload=res; sc.onerror=rej; document.head.appendChild(sc); }); return _qrlibP; }
+  window.qrVerQR=async(slug)=>{
+    const l=_qrData.find(x=>x.slug===slug); if(!l)return;
+    const url = l.slug==="home" ? "https://www.catecumen.com/qr/" : "https://www.catecumen.com/qr/?c="+l.slug;
+    $("qr-panel").innerHTML="Generando QR…";
+    try{ await _qrlib();
+      const dataUrl=await window.QRCode.toDataURL(url,{width:360,margin:2,errorCorrectionLevel:"M",color:{dark:"#0A1430",light:"#ffffff"}});
+      $("qr-panel").innerHTML=`<div style="padding:14px;border:1px solid rgba(200,169,81,.3);border-radius:10px;text-align:center;max-width:420px;background:rgba(200,169,81,.05)">
+        <p style="margin:0 0 8px;font-size:13px">QR de <b>${l.nombre||l.slug}</b> — codifica<br><code style="font-size:11px">${url}</code></p>
+        <img src="${dataUrl}" style="width:300px;height:300px;border-radius:8px;background:#fff">
+        <div style="margin-top:10px"><a class="btn" href="${dataUrl}" download="qr-${l.slug}.png">Descargar PNG</a> <button class="btn ghost" onclick="$('qr-panel').innerHTML=''">Cerrar</button></div></div>`;
+    }catch(e){ $("qr-panel").innerHTML="<p style='color:#f88'>No se pudo generar el QR.</p>"; }
+  };
 
   // ---------- TABS ----------
   document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{
@@ -1114,6 +1197,7 @@
     if(t.dataset.tab==="tour") cargarTour();
     if(t.dataset.tab==="etiquetas") cargarEtiquetas();
     if(t.dataset.tab==="scholas") cargarScholas();
+    if(t.dataset.tab==="qr") cargarQR();
   }));
 
   // ---------- ESTADÍSTICAS ----------
