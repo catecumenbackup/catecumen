@@ -1168,7 +1168,21 @@
     const url = l.slug==="home" ? "https://www.catecumen.com/qr/" : "https://www.catecumen.com/qr/?c="+l.slug;
     $("qr-panel").innerHTML="Generando QR…";
     try{ const QR=await _qrlib();
-      const dataUrl=await QR.toDataURL(url,{width:360,margin:2,errorCorrectionLevel:"M",color:{dark:"#0A1430",light:"#ffffff"}});
+      // Nivel de corrección H (hasta ~30%) para tolerar el logo central sin perder legibilidad.
+      const size=512;
+      const canvas=document.createElement("canvas"); canvas.width=size; canvas.height=size;
+      await QR.toCanvas(canvas,url,{width:size,margin:2,errorCorrectionLevel:"H",color:{dark:"#0A1430",light:"#ffffff"}});
+      const ctx=canvas.getContext("2d");
+      try{
+        const logo=new Image();
+        await new Promise((res,rej)=>{ logo.onload=res; logo.onerror=rej; logo.src="/icon-192.png"; });
+        const ls=Math.round(size*0.24), lx=(size-ls)/2, ly=(size-ls)/2, pad=Math.round(ls*0.12);
+        ctx.fillStyle="#ffffff";
+        if(ctx.roundRect){ ctx.beginPath(); ctx.roundRect(lx-pad,ly-pad,ls+2*pad,ls+2*pad,Math.round(ls*0.18)); ctx.fill(); }
+        else ctx.fillRect(lx-pad,ly-pad,ls+2*pad,ls+2*pad);
+        ctx.drawImage(logo,lx,ly,ls,ls);
+      }catch(_){ /* si el logo no carga, el QR se entrega igual (sigue siendo válido) */ }
+      const dataUrl=canvas.toDataURL("image/png");
       $("qr-panel").innerHTML=`<div style="padding:14px;border:1px solid rgba(200,169,81,.3);border-radius:10px;text-align:center;max-width:420px;background:rgba(200,169,81,.05)">
         <p style="margin:0 0 8px;font-size:13px">QR de <b>${l.nombre||l.slug}</b> — codifica<br><code style="font-size:11px">${url}</code></p>
         <img src="${dataUrl}" style="width:300px;height:300px;border-radius:8px;background:#fff">
