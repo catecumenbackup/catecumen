@@ -2180,6 +2180,7 @@ export default function App(){
         <Suspense fallback={<div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(250,247,240,0.82)"}}><div style={{color:C.gold,fontFamily:"'Cinzel',serif"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div></div>}>
           <Dashboard formData={formData} sequence={sequence} progress={progress}
             userType={userType}
+            userId={uid}
             initialTab={dashTab}
             onUpdate={async(updates)=>{
               // Persiste los cambios de "Mi Cuenta" en la BD.

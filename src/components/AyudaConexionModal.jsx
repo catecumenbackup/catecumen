@@ -92,12 +92,12 @@ export default function AyudaConexionModal({ onClose }) {
         <div style={{ background: "rgba(200,169,81,0.10)", border: `1px solid ${C.gold}44`,
           borderRadius: 10, padding: "12px 14px", color: C.ivoryM, fontSize: 13.5, lineHeight: 1.6 }}>
           <p style={{ margin: "0 0 6px" }}>
-            ⬇️ {T("Por ahora, los videos necesitan conexión para reproducirse. Estamos preparando la descarga de lecciones por sección para verlas sin internet.",
-               "For now, videos need a connection to play. We're preparing section-by-section downloads so you can watch them offline.",
-               "Pour l'instant, les vidéos nécessitent une connexion pour être lues. Nous préparons le téléchargement des leçons par section pour les voir hors ligne.",
-               "Vorerst benötigen Videos eine Verbindung zum Abspielen. Wir bereiten den Download der Lektionen nach Abschnitt vor, damit du sie offline ansehen kannst.",
-               "Por enquanto, os vídeos precisam de conexão para reproduzir. Estamos preparando o download das lições por seção para vê-las sem internet.",
-               "Per ora i video richiedono una connessione per la riproduzione. Stiamo preparando il download delle lezioni per sezione per vederle offline.")}
+            ⬇️ {T("Puedes descargar las lecciones disponibles para verlas sin conexión: busca el botón «Descargar para ver sin conexión» en cada video. La descarga se guarda cifrada y ligada a tu cuenta, y la administras en «Mi Cuenta → Descargas».",
+               "You can download available lessons to watch offline: look for the “Download to watch offline” button on each video. The download is stored encrypted and tied to your account, and you manage it in “My Account → Downloads”.",
+               "Vous pouvez télécharger les leçons disponibles pour les voir hors ligne : cherchez le bouton « Télécharger pour voir hors ligne » sur chaque vidéo. Le téléchargement est chiffré et lié à votre compte ; gérez-le dans « Mon compte → Téléchargements ».",
+               "Du kannst verfügbare Lektionen zum Offline-Ansehen herunterladen: Suche bei jedem Video die Schaltfläche „Zum Offline-Ansehen herunterladen“. Der Download wird verschlüsselt und mit deinem Konto verknüpft gespeichert und in „Mein Konto → Downloads“ verwaltet.",
+               "Você pode baixar as lições disponíveis para vê-las offline: procure o botão “Baixar para ver offline” em cada vídeo. O download é salvo criptografado e vinculado à sua conta, e você o gerencia em “Minha Conta → Downloads”.",
+               "Puoi scaricare le lezioni disponibili per vederle offline: cerca il pulsante «Scarica per vedere offline» su ogni video. Il download viene salvato cifrato e legato al tuo account, e lo gestisci in «Il mio account → Download».")}
           </p>
           <p style={{ margin: 0 }}>
             🎓 {T("Tu constancia se emite cuando tengas conexión (requiere validación en línea).",

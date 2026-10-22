@@ -9,11 +9,12 @@ import { T, PICK } from "../i18n.js";
 
 const AgendaTab = lazy(() => import("./AgendaTab.jsx"));
 const MensajesTab = lazy(() => import("./MensajesTab.jsx"));
+const DescargasTab = lazy(() => import("./DescargasTab.jsx"));
 const Schola = lazy(() => import("./Schola.jsx"));
 
 // Panel "Mi Cuenta": progreso, datos personales editables, constancias y
 // las pestañas Agenda/Mensajes (diferidas). Extraído del monolito.
-export default function Dashboard({formData,sequence,progress,onUpdate,onClose,initialTab,userType}){
+export default function Dashboard({formData,sequence,progress,onUpdate,onClose,initialTab,userType,userId}){
   const [tab,setTab]=useState(initialTab||"progress");
   const [edit,setEdit]=useState({});
   const [saved,setSaved]=useState(false);
@@ -67,6 +68,7 @@ export default function Dashboard({formData,sequence,progress,onUpdate,onClose,i
     {k:"certs",es:"Constancias",en:"Certificates",fr:"Attestations",de:"Bescheinigungen",pt:"Certificados",it:"Attestati",icon:"🏆"},
     {k:"agenda",es:"Agenda",en:"Agenda",fr:"Agenda",de:"Termine",pt:"Agenda",it:"Agenda",icon:"📅"},
     {k:"mensajes",es:"Mensajes",en:"Messages",fr:"Messages",de:"Nachrichten",pt:"Mensagens",it:"Messaggi",icon:"✉️"},
+    {k:"descargas",es:"Descargas",en:"Downloads",fr:"Téléchargements",de:"Downloads",pt:"Downloads",it:"Download",icon:"⬇️"},
   ];
   return(
     <div style={{minHeight:"100vh",background:"rgba(250,247,240,0.82)",padding:"24px 16px",
@@ -283,6 +285,11 @@ export default function Dashboard({formData,sequence,progress,onUpdate,onClose,i
               <MensajesTab/>
             </Suspense>
           </div>
+        )}
+        {tab==="descargas"&&(
+          <Suspense fallback={<div style={{color:C.ivoryM,padding:20,textAlign:"center"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div>}>
+            <DescargasTab userId={userId}/>
+          </Suspense>
         )}
       </div>
     </div>
