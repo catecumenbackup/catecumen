@@ -1162,13 +1162,13 @@
       <div style="margin-top:8px"><button class="btn ghost" onclick="$('qr-panel').innerHTML=''">Cerrar</button></div></div>`;
   };
   let _qrlibP=null;
-  function _qrlib(){ if(_qrlibP) return _qrlibP; _qrlibP=new Promise((res,rej)=>{ const sc=document.createElement("script"); sc.src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"; sc.onload=res; sc.onerror=rej; document.head.appendChild(sc); }); return _qrlibP; }
+  function _qrlib(){ if(_qrlibP) return _qrlibP; _qrlibP=import("https://esm.sh/qrcode@1.5.4").then(m=>m.default||m); return _qrlibP; }
   window.qrVerQR=async(slug)=>{
     const l=_qrData.find(x=>x.slug===slug); if(!l)return;
     const url = l.slug==="home" ? "https://www.catecumen.com/qr/" : "https://www.catecumen.com/qr/?c="+l.slug;
     $("qr-panel").innerHTML="Generando QR…";
-    try{ await _qrlib();
-      const dataUrl=await window.QRCode.toDataURL(url,{width:360,margin:2,errorCorrectionLevel:"M",color:{dark:"#0A1430",light:"#ffffff"}});
+    try{ const QR=await _qrlib();
+      const dataUrl=await QR.toDataURL(url,{width:360,margin:2,errorCorrectionLevel:"M",color:{dark:"#0A1430",light:"#ffffff"}});
       $("qr-panel").innerHTML=`<div style="padding:14px;border:1px solid rgba(200,169,81,.3);border-radius:10px;text-align:center;max-width:420px;background:rgba(200,169,81,.05)">
         <p style="margin:0 0 8px;font-size:13px">QR de <b>${l.nombre||l.slug}</b> — codifica<br><code style="font-size:11px">${url}</code></p>
         <img src="${dataUrl}" style="width:300px;height:300px;border-radius:8px;background:#fff">
