@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "../supabaseClient.js";
+import { enqueue as syncEnqueue } from "../offline.js";
 import EstrellasInput from "./EstrellasInput.jsx";
 import { C, BTN, MODAL, OVERLAY } from "../ui.js";
 import { T, PICK } from "../i18n.js";
@@ -29,12 +30,20 @@ export default function EncuestaVideoModal({secId,vid,insBySec,bridge,onDone}){
       // `videos` mediante el puente. Sin esto, la encuesta no se guarda.
       const videoUuid = bridge?.frontToUuid?.[secId]?.[vid.id] || null;
       if(videoUuid){
-        await supabase.rpc("guardar_encuesta_video",{
+        const payload={
           p_video_id: videoUuid,
           p_claridad: claridad, p_contenido: contenido,
           p_audiovideo: audiovideo, p_utilidad: utilidad,
           p_comentario: comentario||null,
-        });
+        };
+        try{
+          const {error}=await supabase.rpc("guardar_encuesta_video",payload);
+          if(error) throw error;
+        }catch(e){
+          // Sin conexión: se encola y se envía al reconectar (la RPC hace upsert).
+          console.warn("guardar_encuesta_video → encolado:",e?.message||e);
+          syncEnqueue({tipo:"encuesta",payload});
+        }
       }else{
         console.warn("encuesta: no se encontró UUID para", secId, vid.id, "— no se guardó");
       }

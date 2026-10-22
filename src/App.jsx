@@ -32,6 +32,8 @@ import { SEC_META, Q, TEST_MODE, isSectionDone, videoState } from "./data/course
 import { appNav } from "./appNav.js";
 import { CUOTAS } from "./data/pricing.js";
 import { GoldenRain, StarRain } from "./components/effects.jsx";
+import OfflineBanner from "./components/OfflineBanner.jsx";
+import { enqueue as syncEnqueue, syncQueue } from "./offline.js";
 import { FRow, Input, PasswordInput, PhoneField, CountrySelect } from "./components/fields.jsx";
 import { CDOCS, COUNTRIES, COUNTRY_ISO, genRegistrationId } from "./data/countries.js";
 // Carga diferida: estas pantallas solo se descargan al abrir su pestaña
@@ -1297,16 +1299,21 @@ export default function App(){
     // Registrar el INTENTO (aprobado o no) para el listado de Atención del panel.
     // Usa la tabla `intentos_evaluacion` existente, que enlaza por inscripcion_id.
     (async()=>{
+      const videoUuid=bridge?.frontToUuid?.[secId]?.[vid.id];
+      const insId=insBySec[secId];
+      if(!videoUuid||!insId) return;
+      const payload={
+        p_inscripcion_id:insId, p_video_id:videoUuid,
+        p_aprobado:!!result.passed,
+        p_puntaje:(typeof result.score==="number"?result.score:null),
+        p_puntaje_maximo:(typeof result.total==="number"?result.total:null)};
       try{
-        const videoUuid=bridge?.frontToUuid?.[secId]?.[vid.id];
-        const insId=insBySec[secId];
-        if(!videoUuid||!insId) return;
-        await supabase.rpc("registrar_intento",{
-          p_inscripcion_id:insId, p_video_id:videoUuid,
-          p_aprobado:!!result.passed,
-          p_puntaje:(typeof result.score==="number"?result.score:null),
-          p_puntaje_maximo:(typeof result.total==="number"?result.total:null)});
-      }catch(e){ console.error("registrar_intento:",e); }
+        const {error}=await supabase.rpc("registrar_intento",payload);
+        if(error) throw error;
+      }catch(e){
+        console.warn("registrar_intento → encolado:",e?.message||e);
+        syncEnqueue({tipo:"intento",payload});
+      }
     })();
   };
 
@@ -1581,14 +1588,20 @@ export default function App(){
   // Guarda (upsert) el avance de un video en progreso_videos. No bloquea la UI:
   // si algo falla, solo se registra en consola (el estado local sigue vigente).
   const persistProgreso=async(secId,vidId,fields)=>{
+    const insId=insBySec[secId];
+    const videoUuid=bridge?.frontToUuid?.[secId]?.[vidId];
+    if(!insId||!videoUuid) return;
     try{
-      const insId=insBySec[secId];
-      const videoUuid=bridge?.frontToUuid?.[secId]?.[vidId];
-      if(!insId||!videoUuid) return;
-      await supabase.from("progreso_videos").upsert(
+      const {error}=await supabase.from("progreso_videos").upsert(
         {inscripcion_id:insId,video_id:videoUuid,...fields},
         {onConflict:"inscripcion_id,video_id"});
-    }catch(e){ console.error("persistProgreso:",e); }
+      if(error) throw error;
+    }catch(e){
+      // Sin conexión o red intermitente: no se pierde el avance; se encola y
+      // se sincroniza al reconectar (idempotente por la clave única).
+      console.warn("persistProgreso → encolado:",e?.message||e);
+      syncEnqueue({tipo:"progreso",inscripcion_id:insId,video_id:videoUuid,fields});
+    }
   };
 
   // Guarda TODO el progreso actual de una vez (red de seguridad al cerrar sesión).
@@ -1623,6 +1636,16 @@ export default function App(){
     document.addEventListener("visibilitychange",onHide);
     return ()=>{ window.removeEventListener("pagehide",flushProgress); document.removeEventListener("visibilitychange",onHide); };
   },[progress,insBySec,bridge]);
+
+  // Sincronización de la cola offline: al montar (por si quedó avance de una
+  // sesión anterior sin conexión) y cada vez que vuelve la señal ("online").
+  // syncQueue es idempotente y se autoprotege de ejecuciones concurrentes.
+  useEffect(()=>{
+    const run=()=>{ syncQueue(supabase).catch(()=>{}); };
+    run();
+    window.addEventListener("online",run);
+    return ()=>window.removeEventListener("online",run);
+  },[]);
 
   // Cerrar sesión: primero asegura que el progreso quede guardado, luego signOut.
   const handleLogout=async()=>{
@@ -1854,6 +1877,7 @@ export default function App(){
         }
       `}</style>
 
+      <OfflineBanner/>
       <GoldenRain show={goldRain}/>
       <StarRain show={starBurst}/>
       {validarCodigo&&(
