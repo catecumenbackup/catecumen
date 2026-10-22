@@ -33,6 +33,7 @@ import { appNav } from "./appNav.js";
 import { CUOTAS } from "./data/pricing.js";
 import { GoldenRain, StarRain } from "./components/effects.jsx";
 import OfflineBanner from "./components/OfflineBanner.jsx";
+import { AyudaConexionButton } from "./components/AyudaConexion.jsx";
 import { enqueue as syncEnqueue, syncQueue } from "./offline.js";
 import { FRow, Input, PasswordInput, PhoneField, CountrySelect } from "./components/fields.jsx";
 import { CDOCS, COUNTRIES, COUNTRY_ISO, genRegistrationId } from "./data/countries.js";
@@ -648,6 +649,7 @@ function WelcomeModal({onContinue,onLogin}){
         </div>
       )}
       <DirectorioButton estilo={{width:"100%"}} tono="green"/>
+      <AyudaConexionButton estilo={{width:"100%"}}/>
       <a href="/apoyar/" style={{width:"100%",boxSizing:"border-box",justifyContent:"center",fontSize:14,cursor:"pointer",
         display:"inline-flex",alignItems:"center",gap:8,fontFamily:"'Cinzel',serif",fontWeight:700,letterSpacing:"0.04em",
         background:"#F4B183",color:"#3A2205",border:"1px solid #E89B63",borderRadius:10,padding:"12px 14px",

@@ -9,6 +9,7 @@ import { C } from "../ui.js";
 import { T } from "../i18n.js";
 import { useOnline } from "../hooks/useOnline.js";
 import { count } from "../offline.js";
+import { AyudaConexionButton } from "./AyudaConexion.jsx";
 
 export default function OfflineBanner() {
   const online = useOnline();
@@ -74,6 +75,7 @@ export default function OfflineBanner() {
         }}
       />
       <span>{msg}</span>
+      {offline && <AyudaConexionButton variant="link" />}
       <style>{"@keyframes catPulse{0%,100%{opacity:.35}50%{opacity:1}}"}</style>
     </div>
   );
