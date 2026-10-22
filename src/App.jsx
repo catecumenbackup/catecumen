@@ -1073,6 +1073,7 @@ export default function App(){
   const [marriage,setMarriage]=useState(null);
   const [encuadreKey,setEncuadreKey]=useState(null);
   const [formData,setFormData]=useState({});
+  const [uid,setUid]=useState(null); // id de la cuenta (para ligar descargas offline cifradas)
   const [sequence,setSequence]=useState([]);
   const [seqIdx,setSeqIdx]=useState(0);
   const [progress,setProgress]=useState({}); // {secId:{vidId:{visto,passed,score}}}
@@ -1441,6 +1442,7 @@ export default function App(){
 
   const handleLoginSuccess=async(authUser)=>{
     try{
+      setUid(authUser?.id||null); // ligar las descargas offline a esta cuenta
       const {data:u,error}=await supabase.from("usuarios")
         .select("*").eq("id",authUser?.id).maybeSingle();
       if(error||!u){
@@ -1654,7 +1656,7 @@ export default function App(){
     await flushProgress();
     try{ await supabase.auth.signOut(); }catch(e){ console.error("signOut:",e); }
     setSequence([]); setSeqIdx(0); setProgress({}); setInsBySec({});
-    setUserType(null); setSelectedSacs([]); setFormData({});
+    setUserType(null); setSelectedSacs([]); setFormData({}); setUid(null);
     setShowResult(false); setShowSecComplete(false); setShowCerts(false); setShowDash(false);
     setPhase("welcome");
   };
@@ -2138,6 +2140,7 @@ export default function App(){
             <VideoModal secId={activeVideo.secId} vid={activeVideo.vid} bridge={bridge}
               startAt={progress[activeVideo.secId]?.[activeVideo.vid.id]?.pos||0}
               marca={`${[formData.nombre,formData.apellido].filter(Boolean).join(" ")}${formData.registrationId?" · "+formData.registrationId:(formData.email?" · "+formData.email:"")}`.trim()}
+              userId={uid}
               onProgress={(s)=>{ const sec=activeVideo.secId, vi=activeVideo.vid.id;
                 persistProgreso(sec,vi,{posicion_seg:s});
                 setProgress(p=>{ const sp=p[sec]||{}; return {...p,[sec]:{...sp,[vi]:{...sp[vi],pos:s}}}; }); }}

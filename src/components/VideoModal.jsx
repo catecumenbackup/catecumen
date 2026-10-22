@@ -3,7 +3,8 @@ import { SEC_META } from "../data/course.js";
 import { supabase } from "../supabaseClient.js";
 import { SoporteLink } from "./support.jsx";
 import { C, BTN, MODAL, OVERLAY } from "../ui.js";
-import { T, PICK } from "../i18n.js";
+import { T, PICK, LANG } from "../i18n.js";
+import * as videoStore from "../videoStore.js";
 
 // hls.js (streaming adaptativo) se carga por CDN SOLO cuando una URL es HLS
 // (.m3u8) — p. ej. Bunny Stream / Cloudflare Stream. Los .mp4 directos (Supabase
@@ -40,11 +41,16 @@ async function resolverFuente(url){
   return null; // Bunny sin firma válida: no reproducir crudo
 }
 
-export default function VideoModal({secId,vid,bridge,startAt=0,marca="",onProgress,onWatched,onClose}){
+export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=null,onProgress,onWatched,onClose}){
   const [watching,setWatching]=useState(false);
   const [done,setDone]=useState(false);
   const [secs,setSecs]=useState(0);
   const [videoError,setVideoError]=useState(false); // el archivo de video no cargó (404)
+  // Descarga offline (copia cifrada en el dispositivo, atada a la cuenta).
+  const [offlineUrl,setOfflineUrl]=useState(null); // Blob URL de la copia descifrada
+  const [descargado,setDescargado]=useState(false);
+  const [descargando,setDescargando]=useState(false);
+  const [descError,setDescError]=useState(false);
   // Marca de agua anti-fuga: muestra la identidad del alumno sobre el video y la
   // reposiciona cada pocos segundos (dificulta recortarla y disuade la grabación
   // de pantalla, porque quien reproduzca graba su propio nombre).
@@ -68,15 +74,56 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",onProgre
   const videoPrueba=urlReal||PICK(SEC_META[secId]?.videoPrueba)||null; // real o prueba, en el idioma activo
   const SIM_DUR=5; // seconds to simulate watching (usado solo si no hay video de prueba)
 
+  // ── Descarga offline (solo mp4 progresivo; HLS aún no) ──────────────────────
+  const claveOffline=`${secId}|${vid?.id}|${LANG}`;
+  const esDescargable=!!videoPrueba && !esHls(videoPrueba) && !!userId;
+
+  // Si existe una copia offline de ESTA cuenta, la cargamos y la preferimos.
+  useEffect(()=>{
+    let url=null, vivo=true;
+    (async()=>{
+      if(!userId) return;
+      const blob=await videoStore.obtenerBlob({clave:claveOffline,ownerId:userId});
+      if(!vivo) return;
+      if(blob){ url=URL.createObjectURL(blob); setOfflineUrl(url); setDescargado(true); }
+    })();
+    return()=>{ vivo=false; if(url) URL.revokeObjectURL(url); };
+  },[claveOffline,userId]);
+
+  const descargar=async()=>{
+    if(!esDescargable||descargando) return;
+    setDescError(false); setDescargando(true);
+    try{
+      const src=await resolverFuente(videoPrueba); // firma si es Bunny; null si no pudo
+      if(!src) throw new Error("sin fuente");
+      const resp=await fetch(src);
+      if(!resp.ok) throw new Error("HTTP "+resp.status);
+      const bytes=new Uint8Array(await resp.arrayBuffer());
+      await videoStore.guardar({clave:claveOffline,ownerId:userId,bytes,
+        mime:resp.headers.get("content-type")||"video/mp4",
+        meta:{secId,vid:vid?.id,titulo:PICK(vid),lang:LANG}});
+      const blob=await videoStore.obtenerBlob({clave:claveOffline,ownerId:userId});
+      if(blob){ const u=URL.createObjectURL(blob); setOfflineUrl(u); setDescargado(true); }
+    }catch(e){ console.error("descargar offline:",e); setDescError(true); }
+    setDescargando(false);
+  };
+  const borrarDescarga=async()=>{
+    await videoStore.borrar(claveOffline);
+    setOfflineUrl(u=>{ if(u) URL.revokeObjectURL(u); return null; });
+    setDescargado(false);
+  };
+
   // Conecta la fuente al <video>: HLS vía hls.js (o nativo en Safari) para .m3u8,
   // asignación directa de src para .mp4.
   useEffect(()=>{
     if(!videoRef.current||!videoPrueba||videoError) return;
     let hls, cancelado=false;
     (async()=>{
-      const src=await resolverFuente(videoPrueba); // firma si es Bunny; null si no pudo firmarse
       const v=videoRef.current;
       if(cancelado||!v) return;
+      if(offlineUrl){ v.src=offlineUrl; return; } // copia cifrada local: ver sin conexión
+      const src=await resolverFuente(videoPrueba); // firma si es Bunny; null si no pudo firmarse
+      if(cancelado) return;
       if(src===null){ setVideoError(true); return; } // Bunny sin firma: no servir crudo
       if(esHls(src)){
         if(v.canPlayType("application/vnd.apple.mpegurl")){
@@ -105,7 +152,7 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",onProgre
       }
     })();
     return()=>{ cancelado=true; if(hls) hls.destroy(); };
-  },[videoPrueba,videoError]);
+  },[videoPrueba,videoError,offlineUrl]);
   useEffect(()=>{
     if(!watching||(videoPrueba&&!videoError)) return; // con video real cargando, el avance lo marca el <video>
     const t=setInterval(()=>{
@@ -191,6 +238,38 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",onProgre
             )}
           </>)}
         </div>
+        {(esDescargable||descargado)&&(
+          <div style={{marginBottom:14,fontSize:13}}>
+            {descargado?(
+              <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10,flexWrap:"wrap"}}>
+                <span style={{color:"#22C55E",fontFamily:"'Crimson Text',serif"}}>
+                  ⬇️ {T("Disponible sin conexión","Available offline","Disponible hors ligne","Offline verfügbar","Disponível offline","Disponibile offline")}
+                </span>
+                <button onClick={borrarDescarga} style={{background:"none",border:"none",cursor:"pointer",
+                  color:C.ivoryM,textDecoration:"underline",fontSize:12.5,fontFamily:"'Crimson Text',serif"}}>
+                  {T("Borrar descarga","Delete download","Supprimer le téléchargement","Download löschen","Excluir download","Elimina download")}
+                </button>
+              </div>
+            ):(
+              <div style={{textAlign:"center"}}>
+                <button onClick={descargar} disabled={descargando}
+                  style={{...BTN("sec"),fontSize:12,opacity:descargando?0.6:1,cursor:descargando?"default":"pointer"}}>
+                  {descargando
+                    ? T("Descargando…","Downloading…","Téléchargement…","Wird heruntergeladen…","Baixando…","Scaricamento…")
+                    : "⬇️ "+T("Descargar para ver sin conexión","Download to watch offline","Télécharger pour voir hors ligne","Zum Offline-Ansehen herunterladen","Baixar para ver offline","Scarica per vedere offline")}
+                </button>
+                <p style={{color:C.ivoryM,fontSize:11.5,marginTop:6,lineHeight:1.4,maxWidth:360,marginLeft:"auto",marginRight:"auto"}}>
+                  {T("Se guarda cifrado en este dispositivo y ligado a tu cuenta.","Saved encrypted on this device and tied to your account.","Enregistré chiffré sur cet appareil et lié à votre compte.","Verschlüsselt auf diesem Gerät gespeichert und mit deinem Konto verknüpft.","Salvo criptografado neste dispositivo e vinculado à sua conta.","Salvato cifrato su questo dispositivo e legato al tuo account.")}
+                </p>
+                {descError&&(
+                  <p style={{color:"#F87171",fontSize:12,marginTop:4}}>
+                    {T("No se pudo descargar. Revisa tu conexión e inténtalo de nuevo.","Download failed. Check your connection and try again.","Échec du téléchargement. Vérifiez votre connexion et réessayez.","Download fehlgeschlagen. Prüfe deine Verbindung und versuche es erneut.","Falha no download. Verifique sua conexão e tente novamente.","Download non riuscito. Controlla la connessione e riprova.")}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
         {videoPrueba&&done&&(
           <p style={{color:"#22C55E",fontFamily:"'Crimson Text',serif",fontSize:14.5,marginTop:-10,marginBottom:16}}>
             ✅ {T("Video completado","Video completed","Vidéo terminée","Video abgeschlossen","Vídeo concluído","Video completato")}
