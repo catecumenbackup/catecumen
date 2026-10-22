@@ -2137,6 +2137,7 @@ export default function App(){
           {activeVideo&&(
             <VideoModal secId={activeVideo.secId} vid={activeVideo.vid} bridge={bridge}
               startAt={progress[activeVideo.secId]?.[activeVideo.vid.id]?.pos||0}
+              marca={`${[formData.nombre,formData.apellido].filter(Boolean).join(" ")}${formData.registrationId?" · "+formData.registrationId:(formData.email?" · "+formData.email:"")}`.trim()}
               onProgress={(s)=>{ const sec=activeVideo.secId, vi=activeVideo.vid.id;
                 persistProgreso(sec,vi,{posicion_seg:s});
                 setProgress(p=>{ const sp=p[sec]||{}; return {...p,[sec]:{...sp,[vi]:{...sp[vi],pos:s}}}; }); }}

@@ -221,6 +221,7 @@
         <label>Sacramento: <select id="fv-sacramento" style="width:auto;display:inline-block"><option value="">Todos</option></select></label>
         <label><input type="checkbox" id="fv-inactivos"/> Mostrar inactivos</label>
       </div>
+      <div id="video-proteccion" style="margin:10px 0"></div>
       <div class="scroll"><table><thead><tr>
         <th>#</th><th>Título</th><th>Sacramento</th><th>URL</th><th class="num">Preg.</th><th class="num">Estado</th><th>Acciones</th>
       </tr></thead><tbody id="videos-body"></tbody></table></div>
@@ -1286,7 +1287,39 @@
       const opt='<option value="">Todos</option>'+SACS.map(s=>`<option value="${s.id}">${esc(s.nombre_es)}</option>`).join("");
       $("fv-sacramento").innerHTML=opt;
       renderVideos();
+      diagProteccion();
     }catch(e){ $("videos-msg").className="msg err"; $("videos-msg").textContent="Error al cargar videos: "+(e.message||e); console.error(e); }
+  }
+  // Diagnóstico de protección del streaming: avisa si hay URLs reales sin firmar
+  // o si la firma de Bunny no está funcionando (p. ej. secrets faltantes o token OFF).
+  async function diagProteccion(){
+    const box=$("video-proteccion"); if(!box) return;
+    const caja=(bg,bd,html)=>`<div style="background:${bg};border:1px solid ${bd};border-radius:10px;padding:10px 13px;font-size:13px;line-height:1.5;color:var(--ivory)">${html}</div>`;
+    const bunny=(VIDEOS||[]).filter(v=>/\.b-cdn\.net\//i.test(v.url_video||""));
+    const reales=(VIDEOS||[]).filter(v=>v.url_video&&v.url_video!=="PENDIENTE");
+    if(!bunny.length){
+      if(reales.length){
+        box.innerHTML=caja("rgba(244,177,99,.12)","rgba(244,177,99,.4)",
+          "⚠️ Hay URLs de video cargadas, pero ninguna es de <b>Bunny Stream</b> (<code>.b-cdn.net</code>). Ese contenido se sirve <b>sin</b> la protección de token/HLS de Bunny. Para protegerlo, súbelo a Bunny y pega la URL <code>.m3u8</code>.");
+      } else { box.innerHTML=""; } // solo PENDIENTE / videos de prueba: nada que proteger aún
+      return;
+    }
+    box.innerHTML=caja("rgba(120,160,220,.12)","rgba(120,160,220,.4)","⏳ Verificando la firma de protección de Bunny…");
+    try{
+      const {data,error}=await sb.functions.invoke("firmar-video",{body:{url:bunny[0].url_video}});
+      if(error) throw error;
+      if(data&&typeof data.url==="string"&&/[?&]token=/.test(data.url)){
+        box.innerHTML=caja("rgba(45,122,90,.15)","rgba(45,122,90,.5)",
+          "✅ <b>Firma de Bunny activa.</b> Las URLs se firman con token (caducan y exigen sesión). <b>Importante:</b> confirma además en tu Video Library de Bunny que <b>Token Authentication esté en ON</b> — si está en OFF, la URL cruda seguiría sirviendo sin protección. El reproductor ya NO reproduce un video de Bunny que no se pueda firmar.");
+      } else {
+        box.innerHTML=caja("rgba(244,177,99,.12)","rgba(244,177,99,.4)",
+          "⚠️ La función respondió pero no devolvió una URL firmada. Revisa la configuración de <code>firmar-video</code>.");
+      }
+    }catch(e){
+      const m=((e&&(e.message||e.error))||"")+"";
+      box.innerHTML=caja("rgba(220,90,90,.14)","rgba(220,90,90,.5)",
+        "⛔ <b>No se pudo firmar un video de Bunny</b> ("+esc(m||"error")+"). Revisa que <code>firmar-video</code> esté desplegada y con los secrets <code>BUNNY_TOKEN_KEY</code> y <code>BUNNY_CDN_HOST</code>. Mientras no se firme, esos videos <b>no se reproducirán</b> (protección activa).");
+    }
   }
   function renderVideos(){
     const sac=$("fv-sacramento").value, verInact=$("fv-inactivos").checked;

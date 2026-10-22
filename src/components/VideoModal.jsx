@@ -27,22 +27,36 @@ const esHls=(url)=>/\.m3u8(\?|#|$)/i.test(url||"");
 const esBunny=(url)=>/\.b-cdn\.net\//i.test(url||"");
 
 // Firma las URLs de Bunny (contenido de pago) vía la edge function `firmar-video`.
-// Si el token está apagado o la función no responde, devuelve la URL cruda (que
-// reproduce igual). Los .mp4 locales / Supabase no se tocan.
+// ENDURECIDO: si no se logra firmar un video de Bunny, NO se reproduce con la URL
+// cruda (eso dejaría el contenido de pago desprotegido ante un fallo silencioso de
+// configuración). Devuelve null → el reproductor muestra un aviso en vez de servir
+// sin protección. Los .mp4 locales / de prueba / Supabase no se tocan (siguen igual).
 async function resolverFuente(url){
   if(!esBunny(url)) return url;
   try{
     const {data,error}=await supabase.functions.invoke("firmar-video",{body:{url}});
     if(!error && data?.url) return data.url;
-  }catch{/* sin conexión / función no desplegada: se usa la URL cruda */}
-  return url;
+  }catch{/* sin conexión / función no desplegada */}
+  return null; // Bunny sin firma válida: no reproducir crudo
 }
 
-export default function VideoModal({secId,vid,bridge,startAt=0,onProgress,onWatched,onClose}){
+export default function VideoModal({secId,vid,bridge,startAt=0,marca="",onProgress,onWatched,onClose}){
   const [watching,setWatching]=useState(false);
   const [done,setDone]=useState(false);
   const [secs,setSecs]=useState(0);
   const [videoError,setVideoError]=useState(false); // el archivo de video no cargó (404)
+  // Marca de agua anti-fuga: muestra la identidad del alumno sobre el video y la
+  // reposiciona cada pocos segundos (dificulta recortarla y disuade la grabación
+  // de pantalla, porque quien reproduzca graba su propio nombre).
+  const [wmPos,setWmPos]=useState({top:"8%",left:"6%"});
+  useEffect(()=>{
+    if(!marca) return;
+    const spots=[{top:"8%",left:"6%"},{top:"8%",right:"6%"},{bottom:"20%",right:"6%"},
+      {bottom:"20%",left:"6%"},{top:"45%",left:"34%"}];
+    let i=0;
+    const t=setInterval(()=>{ i=(i+1)%spots.length; setWmPos(spots[i]); },6000);
+    return()=>clearInterval(t);
+  },[marca]);
   const videoRef=useRef(null);
   const lastReport=useRef(0); // último segundo reportado (throttle del guardado)
   // Coloca el video en la posición guardada al cargar los metadatos, y reporta el
@@ -60,9 +74,10 @@ export default function VideoModal({secId,vid,bridge,startAt=0,onProgress,onWatc
     if(!videoRef.current||!videoPrueba||videoError) return;
     let hls, cancelado=false;
     (async()=>{
-      const src=await resolverFuente(videoPrueba); // firma si es Bunny; si no, igual
+      const src=await resolverFuente(videoPrueba); // firma si es Bunny; null si no pudo firmarse
       const v=videoRef.current;
       if(cancelado||!v) return;
+      if(src===null){ setVideoError(true); return; } // Bunny sin firma: no servir crudo
       if(esHls(src)){
         if(v.canPlayType("application/vnd.apple.mpegurl")){
           v.src=src; // Safari / iOS reproducen HLS de forma nativa
@@ -119,10 +134,14 @@ export default function VideoModal({secId,vid,bridge,startAt=0,onProgress,onWatc
         <div style={{background:"#000",borderRadius:12,minHeight:200,display:"flex",flexDirection:"column",
           alignItems:"center",justifyContent:"center",marginBottom:20,position:"relative",overflow:"hidden"}}>
           {videoPrueba&&!videoError?(
+            <>
             <video
               key={videoPrueba}
               ref={videoRef}
               controls
+              controlsList="nodownload"
+              disablePictureInPicture
+              onContextMenu={(e)=>e.preventDefault()}
               playsInline
               style={{width:"100%",maxHeight:320,display:"block",borderRadius:12}}
               onLoadedMetadata={seekInicial}
@@ -132,6 +151,14 @@ export default function VideoModal({secId,vid,bridge,startAt=0,onProgress,onWatc
               onEnded={()=>{ setDone(true); if(onProgress) onProgress(0); }}
               onError={()=>setVideoError(true)}
             />
+            {marca&&(
+              <div aria-hidden="true" style={{position:"absolute",...wmPos,pointerEvents:"none",
+                color:"rgba(255,255,255,0.30)",fontFamily:"Arial,sans-serif",fontSize:12,fontWeight:700,
+                textShadow:"0 1px 2px rgba(0,0,0,0.7)",letterSpacing:"0.04em",maxWidth:"72%",
+                transform:"rotate(-16deg)",whiteSpace:"nowrap",userSelect:"none",
+                transition:"top .6s ease,left .6s ease,right .6s ease,bottom .6s ease"}}>{marca}</div>
+            )}
+            </>
           ):(<>
             {videoError&&!watching&&!done&&(
               <p style={{color:C.ivoryM,fontSize:12.5,marginBottom:12,maxWidth:340}}>
