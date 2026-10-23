@@ -688,7 +688,7 @@ function WelcomeModal({onContinue,onLogin}){
     <>
       <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:2,margin:"10px 0 4px"}}>
         {cards.map((_,k)=>(
-          <button key={k} aria-label={`Ir a ${k+1}`} aria-current={k===i?"true":undefined} onClick={()=>setI(k)}
+          <button key={k} aria-label={`Ir a ${k+1}`} aria-current={k===i?"true":undefined} onClick={()=>{track("home_tour_dot");setI(k);}}
             style={{width:24,height:24,padding:0,border:"none",background:"none",cursor:"pointer",
               display:"flex",alignItems:"center",justifyContent:"center"}}>
             <span style={{width:k===i?28:11,height:11,borderRadius:99,display:"block",
