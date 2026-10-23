@@ -7,11 +7,13 @@
 import { lazy, Suspense, useState } from "react";
 import { C, BTN, OVERLAY } from "../ui.js";
 import { T } from "../i18n.js";
+import { track as trackEvento } from "../track.js";
 
 const AyudaConexionModal = lazy(() => import("./AyudaConexionModal.jsx"));
 
-export function AyudaConexionButton({ variant = "button", estilo = {} }) {
+export function AyudaConexionButton({ variant = "button", estilo = {}, track = null }) {
   const [open, setOpen] = useState(false);
+  const abrir = () => { if (track) trackEvento(track); setOpen(true); };
   const label = T("Estudiar con poca o sin conexión", "Study with little or no internet",
     "Étudier avec peu ou pas de connexion", "Mit wenig oder ohne Internet lernen",
     "Estudar com pouca ou nenhuma conexão", "Studiare con poca o nessuna connessione");
@@ -22,13 +24,13 @@ export function AyudaConexionButton({ variant = "button", estilo = {} }) {
   return (
     <>
       {variant === "link" ? (
-        <button onClick={() => setOpen(true)} style={{
+        <button onClick={abrir} style={{
           background: "none", border: "none", padding: 0, margin: 0, cursor: "pointer",
           color: "#fff", textDecoration: "underline", fontFamily: "'Crimson Text',serif",
           fontSize: 13, opacity: 0.95,
         }}>{linkLabel}</button>
       ) : (
-        <button onClick={() => setOpen(true)} style={{
+        <button onClick={abrir} style={{
           ...BTN("sec"), fontSize: 12, width: estilo.width === "100%" ? "100%" : undefined,
           justifyContent: "center", ...estilo,
         }}>📶 {label}</button>

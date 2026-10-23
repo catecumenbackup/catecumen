@@ -35,6 +35,7 @@ import { GoldenRain, StarRain } from "./components/effects.jsx";
 import OfflineBanner from "./components/OfflineBanner.jsx";
 import { AyudaConexionButton } from "./components/AyudaConexion.jsx";
 import { enqueue as syncEnqueue, syncQueue } from "./offline.js";
+import { track } from "./track.js";
 import { FRow, Input, PasswordInput, PhoneField, CountrySelect } from "./components/fields.jsx";
 import { CDOCS, COUNTRIES, COUNTRY_ISO, genRegistrationId } from "./data/countries.js";
 // Carga diferida: estas pantallas solo se descargan al abrir su pestaña
@@ -627,10 +628,10 @@ function WelcomeModal({onContinue,onLogin}){
     <div style={{display:"flex",flexDirection:"column",gap:10}}>
       {desktop?(
         <>
-          <button onClick={onContinue} style={{...BTN("pri"),width:"100%",justifyContent:"center",fontSize:15,color:"#FFFFFF"}}>
+          <button onClick={()=>{track("home_registrarme");onContinue();}} style={{...BTN("pri"),width:"100%",justifyContent:"center",fontSize:15,color:"#FFFFFF"}}>
             ✝️ {T("Registrarme","Register","M'inscrire","Registrieren","Registrar-me","Registrati")}
           </button>
-          <button onClick={onLogin} style={{width:"100%",justifyContent:"center",fontSize:14,cursor:"pointer",
+          <button onClick={()=>{track("home_login");onLogin();}} style={{width:"100%",justifyContent:"center",fontSize:14,cursor:"pointer",
             display:"inline-flex",alignItems:"center",gap:8,fontFamily:"'Cinzel',serif",fontWeight:700,letterSpacing:"0.05em",
             background:"rgba(70,120,190,0.18)",color:C.ivory,border:"1px solid rgba(70,120,190,0.55)",borderRadius:10,padding:"12px 14px"}}>
             🔑 {T("Iniciar sesión","Sign in","Se connecter","Anmelden","Entrar","Accedi")}
@@ -638,19 +639,19 @@ function WelcomeModal({onContinue,onLogin}){
         </>
       ):(
         <div style={{display:"flex",gap:10}}>
-          <button onClick={onContinue} style={{...BTN("pri"),flex:"1.7 1 0",justifyContent:"center",fontSize:15,color:"#FFFFFF"}}>
+          <button onClick={()=>{track("home_registrarme");onContinue();}} style={{...BTN("pri"),flex:"1.7 1 0",justifyContent:"center",fontSize:15,color:"#FFFFFF"}}>
             ✝️ {T("Registrarme","Register","M'inscrire","Registrieren","Registrar-me","Registrati")}
           </button>
-          <button onClick={onLogin} style={{flex:"1 1 0",justifyContent:"center",fontSize:14,cursor:"pointer",
+          <button onClick={()=>{track("home_login");onLogin();}} style={{flex:"1 1 0",justifyContent:"center",fontSize:14,cursor:"pointer",
             display:"inline-flex",alignItems:"center",gap:8,fontFamily:"'Cinzel',serif",fontWeight:700,letterSpacing:"0.05em",
             background:"rgba(70,120,190,0.18)",color:C.ivory,border:"1px solid rgba(70,120,190,0.55)",borderRadius:10,padding:"12px 14px"}}>
             🔑 {T("Iniciar sesión","Sign in","Se connecter","Anmelden","Entrar","Accedi")}
           </button>
         </div>
       )}
-      <DirectorioButton estilo={{width:"100%"}} tono="green"/>
-      <AyudaConexionButton estilo={{width:"100%"}}/>
-      <a href="/apoyar/" style={{width:"100%",boxSizing:"border-box",justifyContent:"center",fontSize:14,cursor:"pointer",
+      <DirectorioButton estilo={{width:"100%"}} tono="green" track="home_buscar_parroquia"/>
+      <AyudaConexionButton estilo={{width:"100%"}} track="home_ayuda_conexion"/>
+      <a href="/apoyar/" onClick={()=>track("home_apoyar")} style={{width:"100%",boxSizing:"border-box",justifyContent:"center",fontSize:14,cursor:"pointer",
         display:"inline-flex",alignItems:"center",gap:8,fontFamily:"'Cinzel',serif",fontWeight:700,letterSpacing:"0.04em",
         background:"#F4B183",color:"#3A2205",border:"1px solid #E89B63",borderRadius:10,padding:"12px 14px",
         textDecoration:"none",boxShadow:"0 4px 14px rgba(244,177,131,0.35)"}}>
@@ -673,7 +674,7 @@ function WelcomeModal({onContinue,onLogin}){
           <span style={{color:C.ivory,fontFamily:FONT_READ,fontSize:16.5,lineHeight:1.7}}>{cur.t}</span>
         </div>
         {cur.scene==="muestra"&&(
-          <button onClick={()=>setShowPromo(true)}
+          <button onClick={()=>{track("home_ver_presentacion");setShowPromo(true);}}
             style={{...BTN("pri"),width:"100%",justifyContent:"center",marginTop:14,color:"#FFFFFF"}}>
             ▶ {T("Ver presentación","Watch the presentation","Voir la présentation","Präsentation ansehen","Ver a apresentação","Guarda la presentazione")}
           </button>
@@ -700,7 +701,7 @@ function WelcomeModal({onContinue,onLogin}){
           {i+1} / {n} · <span style={{opacity:.8}}>{T("desliza o usa las flechas","swipe or use arrows","glissez ou flèches","wischen oder Pfeile","deslize ou use as setas","scorri o usa le frecce")}</span>
         </p>
         {i<n-1?(
-          <button onClick={onContinue}
+          <button onClick={()=>{track("home_tour_omitir");onContinue();}}
             style={{background:"none",border:"none",color:C.ivoryM,fontSize:13,cursor:"pointer",
               textDecoration:"underline",padding:0,whiteSpace:"nowrap"}}>
             {T("Omitir presentación","Skip intro","Passer l'introduction","Einführung überspringen","Pular apresentação","Salta introduzione")}

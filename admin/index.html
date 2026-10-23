@@ -173,6 +173,7 @@
       <button class="tab" data-tab="donativos">💛 Donativos</button>
       <button class="tab" data-tab="scholas">📖 Scholas</button>
       <button class="tab" data-tab="qr">🔗 QR</button>
+      <button class="tab" data-tab="clics">📈 Clics</button>
       <button class="tab" data-tab="auditoria">📜 Auditoría</button>
     </div>
 
@@ -525,6 +526,15 @@
       </div>
       <div id="qr-panel" style="margin-bottom:12px"></div>
       <div id="qr-lista"></div>
+    </div>
+    <!-- TAB CLICS -->
+    <div id="tab-clics" class="tabpane hidden">
+      <h2>📈 Clics del inicio</h2>
+      <p style="color:var(--ivory-m);font-size:13px;margin:0 0 12px">
+        Conteo <b>anónimo</b> de clics en los botones de la pantalla de bienvenida (sin cookies ni datos personales). El total cuenta a todos; Google Analytics (si lo usas) solo cuenta a quien acepta cookies.
+      </p>
+      <div style="margin-bottom:12px"><button class="btn ghost" onclick="cargarClics()">↻ Recargar</button></div>
+      <div id="clics-panel"></div>
     </div>
     <div id="tab-scholas" class="tabpane hidden">
       <h2>📖 Scholas — Recursos de formación</h2>
@@ -1149,6 +1159,30 @@
   window.qrEditar=(slug)=>{ const l=_qrData.find(x=>x.slug===slug); if(!l)return; $("qr-slug").value=l.slug;$("qr-nombre").value=l.nombre||"";$("qr-destino").value=l.destino; $("qr-slug").focus(); };
   window.qrActivo=async(slug,on)=>{ const l=_qrData.find(x=>x.slug===slug); if(!l)return; const {error}=await sb.rpc("admin_qr_guardar",{p_slug:slug,p_nombre:l.nombre,p_destino:l.destino,p_activo:on}); if(error){ alert("Error: "+error.message); cargarQR(); } else { l.activo=on; } };
   window.qrBorrar=async(slug)=>{ if(!confirm("¿Borrar el enlace '"+slug+"' y todas sus estadísticas?"))return; const {error}=await sb.rpc("admin_qr_borrar",{p_slug:slug}); if(error){ alert("Error: "+error.message); return; } cargarQR(); };
+
+  // ---------- CLICS DEL INICIO ----------
+  const CLIC_NOMBRES={
+    home_registrarme:"Registrarme", home_login:"Iniciar sesión",
+    home_buscar_parroquia:"Buscar parroquia afiliada", home_ayuda_conexion:"Estudiar sin conexión",
+    home_apoyar:"Apoya esta obra", home_ver_presentacion:"Ver presentación",
+    home_tour_omitir:"Omitir presentación",
+  };
+  async function cargarClics(){
+    const box=$("clics-panel"); box.innerHTML="Cargando…";
+    const {data,error}=await sb.rpc("admin_eventos_ui_stats");
+    if(error){ box.innerHTML="<p style='color:#f88'>Error: "+esc(error.message)+"</p>"; return; }
+    const ev=(data&&data.por_evento)||[];
+    if(!ev.length){ box.innerHTML="<p style='color:var(--ivory-m)'>Aún no hay clics registrados.</p>"; return; }
+    const dias=((data.por_dia)||[]).map(x=>x.dia.slice(5)+": "+x.n).join(" · ")||"—";
+    const filas=ev.map(e=>`<tr>
+      <td>${esc(CLIC_NOMBRES[e.evento]||e.evento)}<br><span style="font-size:11px;color:var(--ivory-m)">${esc(e.evento)}</span></td>
+      <td class="num">${e.total}</td><td class="num">${e.ult7}</td><td class="num">${e.ult30}</td>
+      <td class="num">${e.movil}</td><td class="num">${e.escritorio}</td></tr>`).join("");
+    box.innerHTML=`
+      <p style="font-size:13px;color:var(--ivory-m);margin:0 0 10px">Total de clics registrados: <b style="color:var(--gold)">${data.total}</b></p>
+      <div class="scroll"><table><thead><tr><th>Botón</th><th class="num">Total</th><th class="num">7 días</th><th class="num">30 días</th><th class="num">📱 Móvil</th><th class="num">💻 Escr.</th></tr></thead><tbody>${filas}</tbody></table></div>
+      <p style="font-size:11.5px;color:var(--ivory-m);margin-top:10px">Por día (30d): ${esc(dias)}</p>`;
+  }
   window.qrStats=async(slug)=>{
     const l=_qrData.find(x=>x.slug===slug);
     const {data,error}=await sb.rpc("admin_qr_stats",{p_slug:slug});
@@ -1213,6 +1247,7 @@
     if(t.dataset.tab==="etiquetas") cargarEtiquetas();
     if(t.dataset.tab==="scholas") cargarScholas();
     if(t.dataset.tab==="qr") cargarQR();
+    if(t.dataset.tab==="clics") cargarClics();
   }));
 
   // ---------- ESTADÍSTICAS ----------

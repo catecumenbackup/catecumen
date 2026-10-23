@@ -4,6 +4,7 @@ import { supabase } from "../supabaseClient.js";
 import useEtiquetasOpciones from "../hooks/useEtiquetasOpciones.js";
 import { C, BTN, CARD, MODAL, OVERLAY } from "../ui.js";
 import { T, LANG } from "../i18n.js";
+import { track as trackEvento } from "../track.js";
 
 const ConsultarIAModal = lazy(() => import("./ConsultarIAModal.jsx"));
 const ConsultarCatequistaModal = lazy(() => import("./ConsultarCatequistaModal.jsx"));
@@ -282,7 +283,7 @@ export function ConsultarDudasButton({contexto="",size="sec"}){
 // etiquetable/bloqueable desde el panel admin (clave "buscar_parroquia"): con la
 // etiqueta activa muestra el sello y queda deshabilitado. `tono` da el color del
 // contenedor (p. ej. "green" en la bienvenida).
-export function DirectorioButton({size="sec",estilo={},tono=null}){
+export function DirectorioButton({size="sec",estilo={},tono=null,track=null}){
   const [open,setOpen]=useState(false);
   const etiquetas=useEtiquetasOpciones();
   const etq=etiquetas["buscar_parroquia"];        // hay etiqueta → se muestra el chip
@@ -293,7 +294,7 @@ export function DirectorioButton({size="sec",estilo={},tono=null}){
   };
   return(
     <div style={{display:full?"block":"inline-block",...estilo}}>
-      <button onClick={bloqueado?undefined:()=>setOpen(true)} disabled={bloqueado} aria-disabled={bloqueado}
+      <button onClick={bloqueado?undefined:()=>{if(track)trackEvento(track);setOpen(true);}} disabled={bloqueado} aria-disabled={bloqueado}
         style={{...BTN(size),fontSize:12,...(full?{width:"100%",justifyContent:"center"}:{}),
           ...(tono&&tonos[tono]?tonos[tono]:{}),...(bloqueado?{opacity:0.55,cursor:"not-allowed"}:{})}}>
         ⛪ {T("Buscar parroquia afiliada","Find affiliated parish","Trouver une paroisse affiliée","Angeschlossene Pfarrei finden","Buscar paróquia afiliada","Trova parrocchia affiliata")}
