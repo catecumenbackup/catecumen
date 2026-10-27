@@ -77,6 +77,17 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const raw = typeof body?.url === "string" ? body.url : "";
     if (!raw) return json({ error: "missing url" }, 400);
+
+    // 2.1) ENDURECIMIENTO: si se indica el video, no firmar si el acceso está
+    // bloqueado (evaluación aprobada o tope de 72 h vencido). La verificación la
+    // hace el servidor con la RPC mi_acceso_video (SECURITY DEFINER sobre auth.uid()).
+    const videoId = typeof body?.video_id === "string" ? body.video_id : "";
+    if (videoId) {
+      const { data: acc } = await sb.rpc("mi_acceso_video", { p_video_id: videoId });
+      if (acc && acc.puede_ver === false) {
+        return json({ error: "acceso_bloqueado", mensaje: "El acceso a este video está cerrado." }, 403);
+      }
+    }
     let u: URL;
     try { u = new URL(raw); } catch { return json({ error: "bad url" }, 400); }
     if (u.hostname !== BUNNY_HOST) return json({ error: "host not allowed" }, 403);

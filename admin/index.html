@@ -1239,12 +1239,16 @@
     const {data,error}=await sb.rpc("admin_descargas_listar",{p_q:$("desc-q").value||null,p_limite:300});
     if(error){ box.innerHTML="<p style='color:#f88'>Error: "+esc(error.message)+"</p>"; return; }
     if(!data||!data.length){ box.innerHTML="<p style='color:var(--ivory-m)'>Sin descargas registradas.</p>"; return; }
-    box.innerHTML=`<table><thead><tr><th>Usuario (correo)</th><th>Video</th><th class="num">Resultado</th><th>Disp.</th><th>Fecha</th></tr></thead><tbody>`+
+    const _res=(r)=> r==='exito'?'<span class="pill ok">éxito</span>'
+      : r==='reproduccion_offline'?'<span class="pill ok">reprod. offline</span>'
+      : '<span class="pill warn">intento</span>';
+    box.innerHTML=`<table><thead><tr><th>Usuario (correo)</th><th>Video</th><th class="num">Resultado</th><th>Disp.</th><th>Equipo</th><th>Fecha</th></tr></thead><tbody>`+
       data.map(d=>`<tr>
         <td>${esc(d.nombre||"—")}<br><span style="font-size:11px;color:var(--ivory-m)">${esc(d.email||"")}</span></td>
         <td>${esc(d.sacramento||"—")}${d.orden?' · #'+d.orden:''}</td>
-        <td class="num">${d.resultado==='exito'?'<span class="pill ok">éxito</span>':'<span class="pill warn">intento</span>'}</td>
+        <td class="num">${_res(d.resultado)}</td>
         <td style="font-size:12px">${esc(d.dispositivo||"")}</td>
+        <td style="font-size:11px;color:var(--ivory-m)" title="${esc(d.device_id||"")}">${d.device_id?esc(String(d.device_id).slice(0,8)):"—"}</td>
         <td style="font-size:12px">${_fechaCorta(d.creado)}</td>
       </tr>`).join("")+`</tbody></table>`;
   }

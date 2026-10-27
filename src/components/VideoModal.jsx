@@ -27,18 +27,27 @@ function loadHls(){
 const esHls=(url)=>/\.m3u8(\?|#|$)/i.test(url||"");
 const esBunny=(url)=>/\.b-cdn\.net\//i.test(url||"");
 
+// Id de dispositivo persistente (para rastrear cuántos equipos usa una cuenta).
+function deviceId(){
+  try{
+    let id=localStorage.getItem("catecumen_device_id");
+    if(!id){ id=(crypto.randomUUID?crypto.randomUUID():String(Date.now())+"-"+Math.random().toString(36).slice(2)); localStorage.setItem("catecumen_device_id",id); }
+    return id;
+  }catch{ return null; }
+}
+
 // Firma las URLs de Bunny (contenido de pago) vía la edge function `firmar-video`.
 // ENDURECIDO: si no se logra firmar un video de Bunny, NO se reproduce con la URL
 // cruda (eso dejaría el contenido de pago desprotegido ante un fallo silencioso de
 // configuración). Devuelve null → el reproductor muestra un aviso en vez de servir
 // sin protección. Los .mp4 locales / de prueba / Supabase no se tocan (siguen igual).
-async function resolverFuente(url){
+async function resolverFuente(url, videoId){
   if(!esBunny(url)) return url;
   try{
-    const {data,error}=await supabase.functions.invoke("firmar-video",{body:{url}});
+    const {data,error}=await supabase.functions.invoke("firmar-video",{body:{url, video_id:videoId||undefined}});
     if(!error && data?.url) return data.url;
-  }catch{/* sin conexión / función no desplegada */}
-  return null; // Bunny sin firma válida: no reproducir crudo
+  }catch{/* sin conexión / función no desplegada / acceso bloqueado (403) */}
+  return null; // Bunny sin firma válida o acceso bloqueado: no reproducir crudo
 }
 
 export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=null,onProgress,onWatched,onClose}){
@@ -51,11 +60,11 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
   const [descargado,setDescargado]=useState(false);
   const [descargando,setDescargando]=useState(false);
   const [descError,setDescError]=useState(false);
-  // Control de acceso (ventana de 72 h + reapertura por admin).
-  const [acceso,setAcceso]=useState(null);    // null = verificando; {puede_ver,...}
-  const [cierre,setCierre]=useState(null);     // null | 'pendiente' | 'resuelto'
+  // Control de acceso (bloqueo por aprobación ≥8 o tope de 72 h + reapertura admin).
+  const [acceso,setAcceso]=useState(null);    // null = verificando; {puede_ver, restante_horas, ...}
   const [solPend,setSolPend]=useState(false);  // solicitud de reapertura pendiente
   const [accBusy,setAccBusy]=useState(false);  // botón de acceso en curso
+  const [limite,setLimite]=useState(null);     // {permitido, restantes, limite} de descargas
   // Marca de agua anti-fuga: muestra la identidad del alumno sobre el video y la
   // reposiciona cada pocos segundos (dificulta recortarla y disuade la grabación
   // de pantalla, porque quien reproduzca graba su propio nombre).
@@ -99,11 +108,19 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
 
   const descargar=async()=>{
     if(!esDescargable||descargando) return;
+    const dev=deviceId();
+    // Límite diario de descargas (configurable por el admin). Si se agotó, avisar.
+    if(videoUuid){
+      try{
+        const {data:lim}=await supabase.rpc("puedo_descargar",{p_video_id:videoUuid});
+        if(lim){ setLimite(lim); if(lim.permitido===false){ return; } }
+      }catch{/* ante error, no bloquear la descarga */}
+    }
     setDescError(false); setDescargando(true);
     // Rastreo: registra el INTENTO de descarga (con el usuario → correo en el panel).
-    if(videoUuid){ try{ supabase.rpc("registrar_descarga",{p_video_id:videoUuid,p_resultado:"intento",p_ua:navigator.userAgent}).then(()=>{},()=>{}); }catch{} }
+    if(videoUuid){ try{ supabase.rpc("registrar_descarga",{p_video_id:videoUuid,p_resultado:"intento",p_ua:navigator.userAgent,p_device_id:dev}).then(()=>{},()=>{}); }catch{} }
     try{
-      const src=await resolverFuente(videoPrueba); // firma si es Bunny; null si no pudo
+      const src=await resolverFuente(videoPrueba, videoUuid); // firma si es Bunny; null si no pudo
       if(!src) throw new Error("sin fuente");
       const resp=await fetch(src);
       if(!resp.ok) throw new Error("HTTP "+resp.status);
@@ -114,7 +131,7 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
       const blob=await videoStore.obtenerBlob({clave:claveOffline,ownerId:userId});
       if(blob){ const u=URL.createObjectURL(blob); setOfflineUrl(u); setDescargado(true); }
       // Rastreo: descarga EXITOSA.
-      if(videoUuid){ try{ supabase.rpc("registrar_descarga",{p_video_id:videoUuid,p_resultado:"exito",p_ua:navigator.userAgent}).then(()=>{},()=>{}); }catch{} }
+      if(videoUuid){ try{ supabase.rpc("registrar_descarga",{p_video_id:videoUuid,p_resultado:"exito",p_ua:navigator.userAgent,p_device_id:dev}).then(()=>{},()=>{}); }catch{} }
     }catch(e){ console.error("descargar offline:",e); setDescError(true); }
     setDescargando(false);
   };
@@ -141,16 +158,6 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
     return ()=>{vivo=false;};
   },[videoUuid]);
 
-  // Al concluir el video (real o simulado), ofrecer conservar 72 h o cerrar.
-  useEffect(()=>{ if(done && videoUuid && cierre===null) setCierre("pendiente"); },[done,videoUuid]);
-
-  // Conclusión: conservar 72 h más (extender=true) o cerrar ya (false).
-  const concluir=async(extender)=>{
-    if(accBusy) return; setAccBusy(true);
-    try{ if(videoUuid) await supabase.rpc("concluir_video",{p_video_id:videoUuid,p_extender:extender}); }
-    catch(e){ console.warn("concluir_video:",e); }
-    setCierre("resuelto"); setAccBusy(false);
-  };
   // Solicitar al admin otra apertura de 72 h.
   const solicitarReapertura=async()=>{
     if(accBusy||!videoUuid) return; setAccBusy(true);
@@ -168,8 +175,10 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
     (async()=>{
       const v=videoRef.current;
       if(cancelado||!v) return;
-      if(offlineUrl){ v.src=offlineUrl; return; } // copia cifrada local: ver sin conexión
-      const src=await resolverFuente(videoPrueba); // firma si es Bunny; null si no pudo firmarse
+      if(offlineUrl){ v.src=offlineUrl;
+        if(videoUuid){ try{ supabase.rpc("registrar_descarga",{p_video_id:videoUuid,p_resultado:"reproduccion_offline",p_ua:navigator.userAgent,p_device_id:deviceId()}).then(()=>{},()=>{}); }catch{} }
+        return; } // copia cifrada local: ver sin conexión (queda registrado)
+      const src=await resolverFuente(videoPrueba, videoUuid); // firma si es Bunny; null si no pudo firmarse
       if(cancelado) return;
       if(src===null){ setVideoError(true); return; } // Bunny sin firma: no servir crudo
       if(esHls(src)){
@@ -306,6 +315,39 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
             )}
           </>)}
         </div>
+        {acceso&&acceso.puede_ver!==false&&videoPrueba&&!videoError&&(
+          <div style={{background:"rgba(70,120,190,0.10)",border:"1px solid rgba(70,120,190,0.35)",
+            borderRadius:10,padding:"10px 13px",marginBottom:14,textAlign:"left"}}>
+            <p style={{color:C.ivory,fontFamily:"'Crimson Text',serif",fontSize:12.5,lineHeight:1.5,margin:0}}>
+              ⏳ {acceso.restante_horas!=null
+                ? T(`Este video permanece disponible como máximo 72 horas desde que lo abriste (te quedan ~${Math.max(0,Math.round(acceso.restante_horas))} h). Al aprobar la evaluación se cierra el acceso.`,
+                    `This video stays available for at most 72 hours after you opened it (about ${Math.max(0,Math.round(acceso.restante_horas))} h left). Passing the evaluation closes access.`,
+                    `Cette vidéo reste disponible au maximum 72 heures après son ouverture (il reste ~${Math.max(0,Math.round(acceso.restante_horas))} h). Réussir l'évaluation ferme l'accès.`,
+                    `Dieses Video bleibt höchstens 72 Stunden nach dem Öffnen verfügbar (noch ca. ${Math.max(0,Math.round(acceso.restante_horas))} Std.). Das Bestehen der Bewertung schließt den Zugriff.`,
+                    `Este vídeo fica disponível no máximo 72 horas após você abri-lo (faltam ~${Math.max(0,Math.round(acceso.restante_horas))} h). Aprovar a avaliação encerra o acesso.`,
+                    `Questo video resta disponibile al massimo 72 ore dall'apertura (restano ~${Math.max(0,Math.round(acceso.restante_horas))} h). Superare la valutazione chiude l'accesso.`)
+                : T("Este video permanece disponible como máximo 72 horas desde que lo abres. Al aprobar la evaluación se cierra el acceso.",
+                    "This video stays available for at most 72 hours after you open it. Passing the evaluation closes access.",
+                    "Cette vidéo reste disponible au maximum 72 heures après son ouverture. Réussir l'évaluation ferme l'accès.",
+                    "Dieses Video bleibt höchstens 72 Stunden nach dem Öffnen verfügbar. Das Bestehen der Bewertung schließt den Zugriff.",
+                    "Este vídeo fica disponível no máximo 72 horas após abri-lo. Aprovar a avaliação encerra o acesso.",
+                    "Questo video resta disponibile al massimo 72 ore dall'apertura. Superare la valutazione chiude l'accesso.")}
+            </p>
+            <p style={{color:C.ivoryM,fontFamily:"'Crimson Text',serif",fontSize:11.5,lineHeight:1.5,margin:"6px 0 0"}}>
+              ⚖️ {T("Aviso legal: este contenido es propiedad de Catecumen. Queda PROHIBIDA su descarga, copia, grabación o redistribución por medios no autorizados. El acceso es personal e intransferible y queda registrado.",
+                    "Legal notice: this content is property of Catecumen. Downloading, copying, recording or redistributing it by unauthorized means is PROHIBITED. Access is personal, non-transferable and is logged.",
+                    "Mention légale : ce contenu est la propriété de Catecumen. Son téléchargement, sa copie, son enregistrement ou sa redistribution par des moyens non autorisés sont INTERDITS. L'accès est personnel, non transférable et enregistré.",
+                    "Rechtlicher Hinweis: Dieser Inhalt ist Eigentum von Catecumen. Herunterladen, Kopieren, Aufzeichnen oder Weitergeben mit unbefugten Mitteln ist VERBOTEN. Der Zugriff ist persönlich, nicht übertragbar und wird protokolliert.",
+                    "Aviso legal: este conteúdo é propriedade da Catecumen. É PROIBIDO baixá-lo, copiá-lo, gravá-lo ou redistribuí-lo por meios não autorizados. O acesso é pessoal, intransferível e fica registrado.",
+                    "Avviso legale: questo contenuto è di proprietà di Catecumen. È VIETATO scaricarlo, copiarlo, registrarlo o redistribuirlo con mezzi non autorizzati. L'accesso è personale, non trasferibile e registrato.")}
+            </p>
+          </div>
+        )}
+        {limite&&limite.permitido===false&&(
+          <p style={{color:"#F87171",fontFamily:"'Crimson Text',serif",fontSize:12.5,marginBottom:12,textAlign:"center"}}>
+            {T(`Alcanzaste el límite de descargas por día (${limite.limite}). Intenta de nuevo mañana.`,`You reached the daily download limit (${limite.limite}). Try again tomorrow.`,`Vous avez atteint la limite de téléchargements par jour (${limite.limite}). Réessayez demain.`,`Du hast das tägliche Download-Limit erreicht (${limite.limite}). Versuche es morgen erneut.`,`Você atingiu o limite diário de downloads (${limite.limite}). Tente novamente amanhã.`,`Hai raggiunto il limite giornaliero di download (${limite.limite}). Riprova domani.`)}
+          </p>
+        )}
         {(esDescargable||descargado)&&(
           <div style={{marginBottom:14,fontSize:13}}>
             {descargado?(
@@ -338,25 +380,7 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
             )}
           </div>
         )}
-        {done&&cierre==="pendiente"&&(
-          <div style={{background:"rgba(200,169,81,0.10)",border:`1px solid ${C.gold}44`,borderRadius:12,
-            padding:"14px 16px",marginBottom:16}}>
-            <p style={{color:C.ivory,fontFamily:"'Crimson Text',serif",fontSize:14.5,lineHeight:1.55,margin:"0 0 12px"}}>
-              {T("Terminaste este video. ¿Deseas conservar el acceso 72 horas más, o cerrarlo ahora? Cerrado, para volver a verlo tendrás que solicitar una nueva apertura.","You finished this video. Keep access for 72 more hours, or close it now? Once closed, you'll need to request a new opening to watch it again.","Vous avez terminé cette vidéo. Conserver l'accès 72 heures de plus, ou le fermer maintenant ? Une fois fermé, il faudra demander une nouvelle ouverture pour la revoir.","Du hast dieses Video beendet. Zugriff 72 Stunden länger behalten oder jetzt schließen? Nach dem Schließen musst du eine neue Öffnung anfordern, um es erneut anzusehen.","Você terminou este vídeo. Deseja manter o acesso por mais 72 horas ou fechá-lo agora? Fechado, para vê-lo novamente será preciso solicitar uma nova abertura.","Hai finito questo video. Vuoi mantenere l'accesso per altre 72 ore o chiuderlo ora? Una volta chiuso, per rivederlo dovrai richiedere una nuova apertura.")}
-            </p>
-            <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-              <button onClick={()=>concluir(true)} disabled={accBusy}
-                style={{...BTN("pri"),flex:1,justifyContent:"center",fontSize:12.5,opacity:accBusy?0.6:1}}>
-                ⏳ {T("Conservar 72 h","Keep 72 h","Garder 72 h","72 Std. behalten","Manter 72 h","Mantieni 72 h")}
-              </button>
-              <button onClick={()=>concluir(false)} disabled={accBusy}
-                style={{...BTN("sec"),flex:1,justifyContent:"center",fontSize:12.5,opacity:accBusy?0.6:1}}>
-                🔒 {T("Cerrar ahora","Close now","Fermer maintenant","Jetzt schließen","Fechar agora","Chiudi ora")}
-              </button>
-            </div>
-          </div>
-        )}
-        {videoPrueba&&done&&cierre!=="pendiente"&&(
+        {videoPrueba&&done&&(
           <p style={{color:"#22C55E",fontFamily:"'Crimson Text',serif",fontSize:14.5,marginTop:-10,marginBottom:16}}>
             ✅ {T("Video completado","Video completed","Vidéo terminée","Video abgeschlossen","Vídeo concluído","Video completato")}
           </p>
@@ -365,7 +389,7 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
           <button onClick={onClose} style={{...BTN("sec"),flex:1,justifyContent:"center"}}>
             ✕ {T("Cerrar","Close","Fermer","Schließen","Fechar","Chiudi")}
           </button>
-          {done&&cierre!=="pendiente"&&(
+          {done&&(
             <button onClick={onWatched} style={{...BTN("pri"),flex:2,justifyContent:"center"}}>
               {T("Realizar evaluación","Take evaluation","Passer l'évaluation","Bewertung durchführen","Realizar avaliação","Esegui la valutazione")} →
             </button>

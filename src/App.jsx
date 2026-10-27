@@ -1318,6 +1318,11 @@ export default function App(){
         console.warn("registrar_intento → encolado:",e?.message||e);
         syncEnqueue({tipo:"intento",payload});
       }
+      // Si APROBÓ (≥8), bloquear automáticamente el acceso al video.
+      if(result.passed){
+        try{ await supabase.rpc("aprobar_video",{p_video_id:videoUuid}); }
+        catch(e){ console.warn("aprobar_video:",e); }
+      }
     })();
   };
 
