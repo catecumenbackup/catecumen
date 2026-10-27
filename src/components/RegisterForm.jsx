@@ -767,7 +767,7 @@ export default function RegisterForm({userType,sacraments,onNext,onBack}){
               style={{...checkStyle(d.terms||false,18),marginTop:3}}/>
             <span style={{color:C.ivoryM,fontFamily:"'Crimson Text',serif",fontSize:15,lineHeight:1.55}}>
               {T("He leído y acepto el ","I have read and accept the ","J'ai lu et j'accepte le ","Ich habe gelesen und akzeptiere die ","Li e aceito o ","Ho letto e accetto il ")}
-              <a href={T("/normatividad_catecumen.pdf","/norms_catecumen_en.pdf","/norms_catecumen_en.pdf","/norms_catecumen_en.pdf","/norms_catecumen_en.pdf","/norms_catecumen_en.pdf")}
+              <a href={T("/normatividad_catecumen.pdf","/norms_catecumen_en.pdf","/norms_catecumen_fr.pdf","/norms_catecumen_de.pdf","/norms_catecumen_pt.pdf","/norms_catecumen_it.pdf")}
                 target="_blank" rel="noopener noreferrer"
                 style={{color:C.gold,textDecoration:"underline",textUnderlineOffset:3}}>
                 {T("Reglamento de la Plataforma, Términos y Condiciones y Aviso de Privacidad","Platform Rules, Terms & Conditions and Privacy Notice","Règlement de la plateforme, Conditions générales et Politique de confidentialité","Plattformregeln, Allgemeine Geschäftsbedingungen und Datenschutzerklärung","Regulamento da Plataforma, Termos e Condições e Aviso de Privacidade","Regolamento della piattaforma, Termini e Condizioni e Informativa sulla privacy")}
