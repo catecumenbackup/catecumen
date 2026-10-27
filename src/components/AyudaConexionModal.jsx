@@ -5,6 +5,7 @@
 // y la constancia se emite en línea. Incluye el buscador de parroquias afiliadas
 // como "punto puente" de conexión.
 import { lazy, Suspense, useState } from "react";
+import { createPortal } from "react-dom";
 import { C, BTN, MODAL, OVERLAY } from "../ui.js";
 import { T } from "../i18n.js";
 
@@ -30,8 +31,10 @@ function Bloque({ icono, titulo, children }) {
 export default function AyudaConexionModal({ onClose }) {
   const [dir, setDir] = useState(false);
 
-  return (
-    <div style={OVERLAY}>
+  // Portal a document.body: en la bienvenida hay ancestros con transform/animación
+  // que anclarían este position:fixed a su caja y recortarían el modal en escritorio.
+  return createPortal(
+    <div style={{ ...OVERLAY, zIndex: 2000 }}>
       <div style={{ ...MODAL, maxWidth: 620, maxHeight: "86vh", overflowY: "auto" }}>
         <div style={{ textAlign: "center", marginBottom: 14 }}>
           <div style={{ fontSize: 30, marginBottom: 6 }} aria-hidden="true">📶</div>
@@ -122,6 +125,7 @@ export default function AyudaConexionModal({ onClose }) {
           <DirectorioAfiliados onClose={() => setDir(false)} />
         </Suspense>
       )}
-    </div>
+    </div>,
+    document.body
   );
 }
