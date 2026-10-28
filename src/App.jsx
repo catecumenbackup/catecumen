@@ -33,6 +33,7 @@ import { appNav } from "./appNav.js";
 import { CUOTAS } from "./data/pricing.js";
 import { GoldenRain, StarRain } from "./components/effects.jsx";
 import OfflineBanner from "./components/OfflineBanner.jsx";
+import PlazoBloqueo, { PlazoAviso } from "./components/PlazoBloqueo.jsx";
 import { AyudaConexionButton } from "./components/AyudaConexion.jsx";
 import { enqueue as syncEnqueue, syncQueue } from "./offline.js";
 import { track } from "./track.js";
@@ -1075,6 +1076,7 @@ export default function App(){
   const [encuadreKey,setEncuadreKey]=useState(null);
   const [formData,setFormData]=useState({});
   const [uid,setUid]=useState(null); // id de la cuenta (para ligar descargas offline cifradas)
+  const [formacion,setFormacion]=useState(null); // plazo máximo de formación {limite,dias_restantes,vencido,...}
   const [sequence,setSequence]=useState([]);
   const [seqIdx,setSeqIdx]=useState(0);
   const [progress,setProgress]=useState({}); // {secId:{vidId:{visto,passed,score}}}
@@ -1588,6 +1590,12 @@ export default function App(){
           }catch(encErr){ console.error("cargar encuestas hechas:",encErr); }
         }
       }
+      // Plazo máximo de formación: arranca el conteo en el primer acceso y lee el estado.
+      try{
+        await supabase.rpc("iniciar_formacion");
+        const {data:f}=await supabase.rpc("mi_formacion");
+        setFormacion(f||null);
+      }catch(fErr){ console.warn("formacion:",fErr); }
       setPhase("course");
     }catch(e){
       console.error("handleLoginSuccess:",e);
@@ -1662,7 +1670,7 @@ export default function App(){
     await flushProgress();
     try{ await supabase.auth.signOut(); }catch(e){ console.error("signOut:",e); }
     setSequence([]); setSeqIdx(0); setProgress({}); setInsBySec({});
-    setUserType(null); setSelectedSacs([]); setFormData({}); setUid(null);
+    setUserType(null); setSelectedSacs([]); setFormData({}); setUid(null); setFormacion(null);
     setShowResult(false); setShowSecComplete(false); setShowCerts(false); setShowDash(false);
     setPhase("welcome");
   };
@@ -1888,6 +1896,8 @@ export default function App(){
       `}</style>
 
       <OfflineBanner/>
+      <PlazoAviso formacion={formacion}/>
+      {formacion?.vencido && <PlazoBloqueo formacion={formacion} onLogout={handleLogout}/>}
       <GoldenRain show={goldRain}/>
       <StarRain show={starBurst}/>
       {validarCodigo&&(

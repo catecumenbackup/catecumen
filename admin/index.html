@@ -558,6 +558,19 @@
         <button class="btn ghost" onclick="cargarDescargas()">Buscar</button>
       </div>
       <div id="desc-lista" class="scroll"></div>
+      <hr style="border-color:rgba(200,169,81,.2);margin:18px 0">
+      <h3 style="color:var(--gold);font-family:'Cinzel',serif;margin:6px 0 8px">Prórrogas de plazo de formación</h3>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+        <label>Estado:
+          <select id="prorr-estado" onchange="cargarProrrogas()" style="width:auto;display:inline-block">
+            <option value="pendiente">Pendientes</option>
+            <option value="todas">Todas</option>
+          </select>
+        </label>
+        <label>Días por defecto: <input id="prorr-dias" type="number" value="30" min="1" style="width:70px;display:inline-block"></label>
+        <button class="btn ghost" onclick="cargarProrrogas()">↻ Recargar</button>
+      </div>
+      <div id="prorr-lista" class="scroll"></div>
     </div>
     <div id="tab-scholas" class="tabpane hidden">
       <h2>📖 Scholas — Recursos de formación</h2>
@@ -1254,12 +1267,37 @@
   }
   async function refrescarBadgeAccesos(){
     try{
-      const {data,error}=await sb.rpc("admin_solicitudes_pendientes");
+      const [{data:a},{data:p}]=await Promise.all([
+        sb.rpc("admin_solicitudes_pendientes"), sb.rpc("admin_prorrogas_pendientes")]);
+      const n=(Number(a)||0)+(Number(p)||0);
       const b=$("badge-accesos"); if(!b) return;
-      if(!error && data>0){ b.textContent=data; b.style.display="inline-flex"; }
-      else { b.style.display="none"; }
+      if(n>0){ b.textContent=n; b.style.display="inline-flex"; } else { b.style.display="none"; }
     }catch{}
   }
+  async function cargarProrrogas(){
+    const box=$("prorr-lista"); if(!box) return; box.innerHTML="Cargando…";
+    const {data,error}=await sb.rpc("admin_prorrogas_listar",{p_estado:$("prorr-estado").value});
+    if(error){ box.innerHTML="<p style='color:#f88'>Error: "+esc(error.message)+"</p>"; return; }
+    if(!data||!data.length){ box.innerHTML="<p style='color:var(--ivory-m)'>Sin solicitudes de prórroga.</p>"; return; }
+    box.innerHTML=`<table><thead><tr><th>Usuario</th><th>Motivo</th><th>Límite actual</th><th class="num">Estado</th><th>Fecha</th><th>Acciones</th></tr></thead><tbody>`+
+      data.map(s=>`<tr>
+        <td>${esc(s.nombre||"—")}<br><span style="font-size:11px;color:var(--ivory-m)">${esc(s.email||"")}</span></td>
+        <td style="font-size:12px;max-width:220px">${esc(s.motivo||"—")}</td>
+        <td style="font-size:12px">${s.limite?_fechaCorta(s.limite):"—"}</td>
+        <td class="num">${_pillEstado(s.estado)}</td>
+        <td style="font-size:12px">${_fechaCorta(s.creado)}</td>
+        <td>${s.estado==='pendiente'
+          ? `<button class="btn sm" onclick="window.prorrResolver(${s.id},true)">Aprobar</button> <button class="btn danger sm" onclick="window.prorrResolver(${s.id},false)">Rechazar</button>`
+          : (s.dias_concedidos?('+'+s.dias_concedidos+' días'):'—')}</td>
+      </tr>`).join("")+`</tbody></table>`;
+  }
+  window.prorrResolver=async(id,ap)=>{
+    const dias=parseInt($("prorr-dias").value,10)||null;
+    if(!confirm(ap?("¿Aprobar y extender "+(dias||30)+" días?"):"¿Rechazar la solicitud?")) return;
+    const {error}=await sb.rpc("admin_resolver_prorroga",{p_id:id,p_aprobar:ap,p_dias:ap?dias:null});
+    if(error){ alert("Error: "+error.message); return; }
+    cargarProrrogas(); refrescarBadgeAccesos();
+  };
   window.qrStats=async(slug)=>{
     const l=_qrData.find(x=>x.slug===slug);
     const {data,error}=await sb.rpc("admin_qr_stats",{p_slug:slug});
@@ -1325,7 +1363,7 @@
     if(t.dataset.tab==="scholas") cargarScholas();
     if(t.dataset.tab==="qr") cargarQR();
     if(t.dataset.tab==="clics") cargarClics();
-    if(t.dataset.tab==="accesos"){ cargarSolicitudes(); cargarDescargas(); }
+    if(t.dataset.tab==="accesos"){ cargarSolicitudes(); cargarDescargas(); cargarProrrogas(); }
   }));
 
   // ---------- ESTADÍSTICAS ----------
