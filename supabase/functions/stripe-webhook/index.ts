@@ -62,6 +62,17 @@ const CERO_DECIMALES = new Set([
   "RWF","UGX","VND","VUV","XAF","XOF","XPF",
 ]);
 
+// Remitente configurable desde el panel admin (ajuste `correo_remitente`);
+// si no está, usa el secret RESEND_FROM.
+async function remitenteFrom(): Promise<string> {
+  try {
+    const { data } = await supabase.from("ajustes").select("valor").eq("clave", "correo_remitente").maybeSingle();
+    const f = (data?.valor as any)?.from;
+    if (f && typeof f === "string" && f.trim()) return f.trim();
+  } catch { /* usa el valor por defecto */ }
+  return resendFrom;
+}
+
 // ── Envío de correo (best-effort: si falla, se registra pero no rompe el flujo) ──
 async function enviarCorreo(to: string, subject: string, html: string) {
   if (!resendApiKey) {
@@ -75,7 +86,7 @@ async function enviarCorreo(to: string, subject: string, html: string) {
         "Authorization": `Bearer ${resendApiKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ from: resendFrom, to: [to], subject, html }),
+      body: JSON.stringify({ from: await remitenteFrom(), to: [to], subject, html }),
     });
     if (!res.ok) console.error("[stripe-webhook] Resend error:", res.status, await res.text());
   } catch (e) {

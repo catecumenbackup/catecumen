@@ -266,6 +266,15 @@
 
     <!-- TAB MENSAJES -->
     <div id="tab-mensajes" class="tabpane hidden">
+      <div style="margin-bottom:12px;padding:10px 13px;border:1px solid rgba(200,169,81,.3);border-radius:10px;background:rgba(200,169,81,.05);font-size:13px">
+        <b>Correo remitente de la plataforma</b> (desde el que salen los correos a los usuarios):
+        <div style="display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap">
+          <input id="remitente-from" placeholder="Catecumen &lt;admin@catecumen.com&gt;" style="width:320px">
+          <button class="btn" onclick="window.guardarRemitente()">Guardar</button>
+          <span id="remitente-msg" style="font-size:12px;color:var(--ivory-m)"></span>
+        </div>
+        <p style="font-size:11.5px;color:var(--ivory-m);margin:6px 0 0">Formato: <code>Nombre &lt;correo@dominio&gt;</code>. El dominio debe estar verificado en Resend. Tras guardar, las funciones de correo deben redesplegarse para tomar el cambio.</p>
+      </div>
       <div class="controls">
         <button id="msg-difundir" class="btn">📢 Enviar difusión</button>
         <button id="msg-recargar" class="btn ghost sm">Actualizar</button>
@@ -1348,7 +1357,7 @@
     $("tab-"+t.dataset.tab).classList.remove("hidden");
     if(t.dataset.tab==="auditoria") cargarLog();
     if(t.dataset.tab==="usuarios") cargarUsuarios();
-    if(t.dataset.tab==="mensajes") cargarConversaciones();
+    if(t.dataset.tab==="mensajes"){ cargarConversaciones(); cargarRemitente(); }
     if(t.dataset.tab==="constancias") cargarConstancias();
     if(t.dataset.tab==="afiliados") cargarAfiliados();
     if(t.dataset.tab==="preinscripcion") cargarPreinscripcion();
@@ -2293,6 +2302,17 @@
       CONVS=data||[]; renderConversaciones(); refrescarBadgeMensajes();
     }catch(e){ $("mensajes-msg").className="msg err"; $("mensajes-msg").textContent="Error: "+(e.message||e); console.error(e); }
   }
+  async function cargarRemitente(){
+    try{ const {data}=await sb.rpc("obtener_ajuste",{p_clave:"correo_remitente"});
+      const inp=$("remitente-from"); if(inp&&data&&data.from) inp.value=data.from;
+    }catch{}
+  }
+  window.guardarRemitente=async()=>{
+    const v=($("remitente-from").value||"").trim();
+    if(!v){ $("remitente-msg").textContent="Escribe un remitente."; return; }
+    const {error}=await sb.rpc("admin_guardar_ajuste",{p_clave:"correo_remitente",p_valor:{from:v}});
+    $("remitente-msg").textContent=error?("Error: "+error.message):"Guardado (redesplega las funciones de correo para aplicarlo).";
+  };
   function renderConversaciones(){
     if(!CONVS.length){ $("conv-lista").innerHTML='<p class="empty" style="padding:10px">Sin conversaciones.</p>'; return; }
     $("conv-lista").innerHTML=CONVS.map(c=>{
@@ -2314,16 +2334,18 @@
     const nombre=esc(((c?.nombre||"")+" "+(c?.apellido||"")).trim()||c?.email||"Usuario");
     $("conv-detalle").innerHTML='<p class="empty">Cargando…</p>';
     try{
-      const {data,error}=await sb.rpc("admin_ver_conversacion",{p_conv:convId});
+      const {data,error}=await sb.rpc("admin_ver_conversacion_v2",{p_conv:convId});
       if(error)throw error;
       const burbujas=(data||[]).map(m=>{
         const mine=m.remitente==="admin";
+        // Confirmación de lectura: en los mensajes que ENVÍA el admin, indica si el alumno ya lo leyó.
+        const recibo=mine ? `<span style="font-size:10px;margin-left:6px">${m.leido_usuario?'✓✓ Leído':'✓ Enviado'}</span>` : '';
         return `<div style="display:flex;justify-content:${mine?'flex-end':'flex-start'};margin-bottom:8px">
           <div style="max-width:75%;padding:9px 13px;border-radius:12px;font-size:14px;line-height:1.45;
             background:${mine?'linear-gradient(135deg,var(--gold-l),var(--gold))':'var(--card)'};
             color:${mine?'var(--bg)':'var(--ivory)'};border:1px solid ${mine?'transparent':'var(--border-d)'}">
             ${esc(m.cuerpo)}
-            <div style="font-size:10px;opacity:.7;margin-top:3px">${new Date(m.creado).toLocaleString("es-MX")}</div>
+            <div style="font-size:10px;opacity:.7;margin-top:3px">${new Date(m.creado).toLocaleString("es-MX")}${recibo}</div>
           </div></div>`;
       }).join("")||'<p class="empty">Sin mensajes.</p>';
       $("conv-detalle").innerHTML=`
