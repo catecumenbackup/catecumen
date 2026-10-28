@@ -75,7 +75,8 @@ async function enviarCorreo(to: string, subject: string, html: string) {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { "Authorization": `Bearer ${resendApiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: await remitenteFrom(), to: [to], subject, html }),
+      body: JSON.stringify({ from: await remitenteFrom(), to: [to], subject, html,
+        tags: [{ name: "categoria", value: "bienvenida" }] }),
     });
     if (!res.ok) console.error("[activar-pago] Resend error:", res.status, await res.text());
   } catch (e) { console.error("[activar-pago] Error enviando correo:", e); }

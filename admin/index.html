@@ -164,6 +164,7 @@
       <button class="tab" data-tab="etiquetas">🏷️ Etiquetas</button>
       <button class="tab" data-tab="usuarios">👤 Usuarios</button>
       <button class="tab" data-tab="mensajes">✉️ Mensajes <span id="msg-badge" class="pill bad" style="display:none"></span></button>
+      <button class="tab" data-tab="correos">📧 Correos</button>
       <button class="tab" data-tab="sesiones">📅 Sesiones</button>
       <button class="tab" data-tab="atencion">🆘 Atención <span id="aten-badge" class="pill bad" style="display:none"></span></button>
       <button class="tab" data-tab="precios">💰 Precios</button>
@@ -545,6 +546,29 @@
       </p>
       <div style="margin-bottom:12px"><button class="btn ghost" onclick="cargarClics()">↻ Recargar</button></div>
       <div id="clics-panel"></div>
+    </div>
+    <!-- TAB CORREOS -->
+    <div id="tab-correos" class="tabpane hidden">
+      <h2>📧 Correos enviados (acuses de Resend)</h2>
+      <p style="color:var(--ivory-m);font-size:13px;margin:0 0 12px">
+        Confirmación de <b>entrega</b> y <b>apertura</b> de los correos que la plataforma envía (bienvenida, avisos, recordatorios de plazo). Los eventos los reporta Resend por webhook. <i>enviado</i> = aceptado por Resend · <i>entregado</i> = llegó al buzón · <i>abierto</i> = el destinatario lo abrió · <i>rebotado/queja</i> = problema de entrega.
+      </p>
+      <div style="margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <button class="btn ghost" onclick="cargarCorreos()">↻ Recargar</button>
+        <input id="correo-q" placeholder="Buscar destinatario o asunto…" onkeydown="if(event.key==='Enter')cargarCorreos()" style="flex:1;min-width:180px;padding:7px 10px;border-radius:8px;border:1px solid #2a3b57;background:#0b1626;color:var(--ivory)">
+        <select id="correo-evento" onchange="cargarCorreos()" style="padding:7px 10px;border-radius:8px">
+          <option value="">Todos los eventos</option>
+          <option value="sent">enviado</option>
+          <option value="delivered">entregado</option>
+          <option value="opened">abierto</option>
+          <option value="clicked">clic en enlace</option>
+          <option value="bounced">rebotado</option>
+          <option value="complained">queja (spam)</option>
+          <option value="delivery_delayed">entrega retrasada</option>
+        </select>
+      </div>
+      <div id="correos-resumen" style="margin-bottom:12px"></div>
+      <div id="correos-lista"></div>
     </div>
     <!-- TAB ACCESOS -->
     <div id="tab-accesos" class="tabpane hidden">
@@ -1212,6 +1236,28 @@
     home_apoyar:"Apoya esta obra", home_ver_presentacion:"Ver presentación",
     home_tour_omitir:"Omitir presentación", home_tour_dot:"Puntito del carrusel",
   };
+  const CORREO_EV={sent:"✉️ enviado",delivered:"✅ entregado",opened:"👁️ abierto",clicked:"🔗 clic",bounced:"⛔ rebotado",complained:"🚫 queja",delivery_delayed:"⏳ retrasado"};
+  const CORREO_ETQ={bienvenida:"Bienvenida",aviso_admin:"Aviso admin",recordatorio_plazo:"Recordatorio de plazo"};
+  async function cargarCorreos(){
+    const box=$("correos-lista"), res=$("correos-resumen");
+    if(!box) return; box.innerHTML="Cargando…"; res.innerHTML="";
+    const {data:resumen}=await sb.rpc("admin_correos_resumen",{p_dias:30});
+    if(Array.isArray(resumen)&&resumen.length){
+      res.innerHTML='<div class="scroll"><table><thead><tr><th>Evento</th><th class="num">Total (30d)</th><th class="num">7 días</th></tr></thead><tbody>'+
+        resumen.map(r=>`<tr><td>${esc(CORREO_EV[r.evento]||r.evento)}</td><td class="num">${r.total}</td><td class="num">${r.ultimos_7}</td></tr>`).join("")+'</tbody></table></div>';
+    }
+    const {data,error}=await sb.rpc("admin_correos_listar",{p_q:$("correo-q").value||null,p_evento:$("correo-evento").value||null,p_etiqueta:null,p_limit:300});
+    if(error){ box.innerHTML="<p style='color:#f88'>Error: "+esc(error.message)+"</p>"; return; }
+    if(!data||!data.length){ box.innerHTML="<p style='color:var(--ivory-m)'>Sin eventos de correo todavía. (Requiere el webhook de Resend configurado.)</p>"; return; }
+    box.innerHTML='<div class="scroll"><table><thead><tr><th>Fecha</th><th>Evento</th><th>Destinatario</th><th>Asunto</th><th>Categoría</th></tr></thead><tbody>'+
+      data.map(e=>`<tr>
+        <td style="font-size:12px;white-space:nowrap">${_fechaCorta(e.creado)}</td>
+        <td>${esc(CORREO_EV[e.evento]||e.evento)}</td>
+        <td style="font-size:12px">${esc(e.destinatario||"—")}</td>
+        <td style="font-size:12px">${esc(e.asunto||"—")}</td>
+        <td style="font-size:12px">${esc(CORREO_ETQ[e.etiqueta]||e.etiqueta||"—")}</td>
+      </tr>`).join("")+'</tbody></table></div>';
+  }
   async function cargarClics(){
     const box=$("clics-panel"); box.innerHTML="Cargando…";
     const {data,error}=await sb.rpc("admin_eventos_ui_stats");
@@ -1372,6 +1418,7 @@
     if(t.dataset.tab==="scholas") cargarScholas();
     if(t.dataset.tab==="qr") cargarQR();
     if(t.dataset.tab==="clics") cargarClics();
+    if(t.dataset.tab==="correos") cargarCorreos();
     if(t.dataset.tab==="accesos"){ cargarSolicitudes(); cargarDescargas(); cargarProrrogas(); }
   }));
 

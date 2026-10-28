@@ -86,7 +86,8 @@ async function enviarCorreo(to: string, subject: string, html: string) {
         "Authorization": `Bearer ${resendApiKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ from: await remitenteFrom(), to: [to], subject, html }),
+      body: JSON.stringify({ from: await remitenteFrom(), to: [to], subject, html,
+        tags: [{ name: "categoria", value: "bienvenida" }] }),
     });
     if (!res.ok) console.error("[stripe-webhook] Resend error:", res.status, await res.text());
   } catch (e) {

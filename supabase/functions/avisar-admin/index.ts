@@ -48,7 +48,8 @@ export async function enviarCorreoAdmin(titulo: string, detalle: Record<string, 
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { "Authorization": `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: RESEND_FROM, to: [ADMIN_EMAIL], subject: `Catecumen · ${titulo}`, html }),
+      body: JSON.stringify({ from: RESEND_FROM, to: [ADMIN_EMAIL], subject: `Catecumen · ${titulo}`, html,
+        tags: [{ name: "categoria", value: "aviso_admin" }] }),
     });
     if (!res.ok) console.error("[avisar-admin] Resend:", res.status, await res.text());
   } catch (e) { console.error("[avisar-admin] Resend error:", e); }
