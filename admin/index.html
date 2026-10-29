@@ -605,6 +605,15 @@
             <button type="button" class="btn ghost sm" onclick="cuVig(365)">1 año</button>
           </div>
         </div>
+        <div id="cu-acc-box" style="display:none;border-top:1px solid #2a3b57;padding-top:12px;margin-top:2px">
+          <div style="font-size:13px;margin-bottom:6px">Acceso a videos</div>
+          <label style="display:inline-flex;gap:6px;margin-right:20px;font-weight:400"><input type="radio" name="cu-acc" value="total" checked onchange="cuToggle()"> Acceso total (todos los videos)</label>
+          <label style="display:inline-flex;gap:6px;font-weight:400"><input type="radio" name="cu-acc" value="sel" onchange="cuToggle()"> Solo videos seleccionados</label>
+          <div id="cu-videos-box" style="display:none;margin-top:10px">
+            <div style="margin-bottom:6px"><button type="button" class="btn ghost sm" onclick="cuCargarVideos()">↻ Cargar videos</button> <span id="cu-videos-msg" style="font-size:12px;color:var(--ivory-m)"></span></div>
+            <div id="cu-videos-lista" style="max-height:280px;overflow:auto;border:1px solid #2a3b57;border-radius:8px;padding:8px"></div>
+          </div>
+        </div>
         <div><button class="btn" id="cu-btn" onclick="crearUsuario()">Crear usuario</button></div>
         <div id="cu-msg"></div>
       </div>
@@ -1327,8 +1336,28 @@
     $("cu-sacs-box").style.display = tipo==="catecumeno" ? "block" : "none";
     const acceso=(document.querySelector('input[name="cu-acceso"]:checked')||{}).value;
     $("cu-vig-box").style.display = acceso==="cortesia" ? "block" : "none";
+    $("cu-acc-box").style.display = acceso==="cortesia" ? "block" : "none";
+    const acc=(document.querySelector('input[name="cu-acc"]:checked')||{}).value;
+    $("cu-videos-box").style.display = (acceso==="cortesia" && acc==="sel") ? "block" : "none";
   };
   window.cuVig=function(d){ $("cu-vig").value=d; };
+  window.cuVidAll=function(val){ document.querySelectorAll(".cu-vid").forEach(c=>c.checked=val); };
+  window.cuCargarVideos=async function(){
+    const box=$("cu-videos-lista"), m=$("cu-videos-msg"); m.textContent="Cargando…";
+    try{
+      const {data,error}=await sb.rpc("admin_listar_videos",{p_idioma:"es"});
+      if(error) throw error;
+      const vids=(data||[]).filter(v=>v.activo);
+      if(!vids.length){ box.innerHTML="<p style='color:var(--ivory-m)'>Sin videos.</p>"; m.textContent=""; return; }
+      const grp={}; vids.forEach(v=>{ (grp[v.sacramento||"—"]=grp[v.sacramento||"—"]||[]).push(v); });
+      box.innerHTML='<div style="margin-bottom:8px"><button type="button" class="btn ghost sm" onclick="cuVidAll(true)">Marcar todos</button> <button type="button" class="btn ghost sm" onclick="cuVidAll(false)">Ninguno</button></div>'+
+        Object.entries(grp).map(([sac,arr])=>
+          `<div style="margin-bottom:8px"><div style="font-weight:600;color:var(--gold);font-size:13px;margin:4px 0">${esc(sac)}</div>`+
+          arr.map(v=>`<label style="display:block;font-weight:400;font-size:13px;padding:2px 0"><input type="checkbox" class="cu-vid" value="${v.id}"> #${v.orden} · ${esc(v.titulo_es||"(sin título)")}</label>`).join("")+`</div>`
+        ).join("");
+      m.textContent=vids.length+" videos";
+    }catch(e){ m.textContent="Error: "+(e.message||e); }
+  };
   window.crearUsuario=async function(){
     const msg=$("cu-msg"); msg.className=""; msg.textContent="";
     const tipo=$("cu-tipo").value;
@@ -1337,6 +1366,9 @@
     const email=$("cu-email").value.trim();
     if(!email){ msg.className="msg err"; msg.textContent="Falta el correo."; return; }
     if(tipo==="catecumeno" && !sacs.length){ msg.className="msg err"; msg.textContent="Elige al menos un sacramento para el catecúmeno."; return; }
+    const accSel = acceso==="cortesia" && (document.querySelector('input[name="cu-acc"]:checked')||{}).value==="sel";
+    const vidsPerm = accSel ? Array.from(document.querySelectorAll(".cu-vid:checked")).map(c=>c.value) : [];
+    if(accSel && !vidsPerm.length){ msg.className="msg err"; msg.textContent="Elige al menos un video para el acceso restringido (o usa Acceso total)."; return; }
     const body={
       email, password:$("cu-pass").value.trim()||undefined,
       nombre:$("cu-nombre").value.trim(), apellido:$("cu-apellido").value.trim(),
@@ -1344,7 +1376,8 @@
       pais:$("cu-pais").value.trim()||null, estado:$("cu-estado").value.trim()||null,
       idioma:$("cu-idioma").value, tipo_acceso:acceso
     };
-    if(acceso==="cortesia") body.vigencia_dias=Number($("cu-vig").value)||90;
+    if(acceso==="cortesia"){ body.vigencia_dias=Number($("cu-vig").value)||90;
+      body.acceso_restringido=accSel; if(accSel) body.videos_permitidos=vidsPerm; }
     const btn=$("cu-btn"); btn.disabled=true; msg.className="msg"; msg.textContent="Creando…";
     try{
       const {data:{session}}=await sb.auth.getSession();
@@ -1361,7 +1394,7 @@
         `<span style="color:var(--ivory-m);font-size:12px">— cópiala y compártela con el usuario (no se vuelve a mostrar).</span>`;
       // limpiar campos clave para no recrear por error
       ["cu-nombre","cu-apellido","cu-email","cu-pass","cu-pais","cu-estado"].forEach(id=>$(id).value="");
-      document.querySelectorAll(".cu-sac:checked").forEach(c=>c.checked=false);
+      document.querySelectorAll(".cu-sac:checked,.cu-vid:checked").forEach(c=>c.checked=false);
     }catch(e){ msg.className="msg err"; msg.textContent="Error: "+(e.message||e); }
     finally{ btn.disabled=false; }
   };

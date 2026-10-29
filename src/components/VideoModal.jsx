@@ -240,6 +240,13 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
             <div style={{color:C.ivoryM,fontFamily:"'Crimson Text',serif",fontSize:14,padding:24}}>
               {T("Verificando acceso…","Checking access…","Vérification de l'accès…","Zugriff wird geprüft…","Verificando acesso…","Verifica accesso…")}
             </div>
+          ):acceso.puede_ver===false&&acceso.restringido?(
+            <div style={{textAlign:"center",padding:"26px 18px"}}>
+              <div style={{fontSize:40,marginBottom:10}} aria-hidden="true">🔒</div>
+              <p style={{color:C.ivory,fontFamily:"'Crimson Text',serif",fontSize:15,lineHeight:1.6,maxWidth:400,margin:"0 auto"}}>
+                {T("Tu acceso de cortesía no incluye este video. Si crees que debería incluirlo, contacta a tu catequista o al administrador.","Your courtesy access does not include this video. If you think it should, contact your catechist or the administrator.","Votre accès de courtoisie n'inclut pas cette vidéo. Si vous pensez qu'elle devrait l'être, contactez votre catéchiste ou l'administrateur.","Dein Kulanz-Zugang umfasst dieses Video nicht. Wenn du meinst, dass es enthalten sein sollte, wende dich an deinen Katecheten oder den Administrator.","Seu acesso de cortesia não inclui este vídeo. Se você acha que deveria incluir, contate seu catequista ou o administrador.","Il tuo accesso di cortesia non include questo video. Se pensi che dovrebbe, contatta il tuo catechista o l'amministratore.")}
+              </p>
+            </div>
           ):acceso.puede_ver===false?(
             <div style={{textAlign:"center",padding:"26px 18px"}}>
               <div style={{fontSize:40,marginBottom:10}} aria-hidden="true">🔒</div>

@@ -89,6 +89,13 @@ serve(async (req: Request) => {
       vigenciaLimite = new Date(Date.now() + dias * 86400000).toISOString();
     }
 
+    // Acceso restringido (solo cortesía): acceso total (default) o solo una lista.
+    const accesoRestringido = tipo_acceso === "cortesia" && !!body.acceso_restringido;
+    const videosPermitidos: string[] = accesoRestringido && Array.isArray(body.videos_permitidos)
+      ? body.videos_permitidos.filter((v: unknown) => typeof v === "string" && v) : [];
+    if (accesoRestringido && videosPermitidos.length === 0)
+      return json({ error: "elige al menos un video para el acceso restringido" }, 400);
+
     const password = String(body.password || "").trim() || genPassword();
     if (password.length < 6) return json({ error: "la contraseña debe tener al menos 6 caracteres" }, 400);
 
@@ -119,6 +126,7 @@ serve(async (req: Request) => {
       registro_id: registroId,
       estado_inscripcion: "activo",
       cortesia: tipo_acceso === "cortesia",
+      acceso_restringido: accesoRestringido,
       formacion_gratuita: tipo_acceso === "cortesia",
       pago_realizado: tipo_acceso === "pago",
     };
@@ -132,6 +140,13 @@ serve(async (req: Request) => {
       // Rollback: si falla el perfil, borra la cuenta de auth para no dejar huérfanos.
       await admin.auth.admin.deleteUser(uid).catch(() => {});
       return json({ error: "no se pudo crear el perfil: " + insErr.message }, 500);
+    }
+
+    // Acceso restringido: guarda la lista de videos permitidos.
+    if (accesoRestringido && videosPermitidos.length) {
+      const filas = videosPermitidos.map((v) => ({ usuario_id: uid, video_id: v }));
+      const { error: avErr } = await admin.from("acceso_videos_usuario").insert(filas);
+      if (avErr) console.error("[admin-crear-usuario] acceso_videos:", avErr);
     }
 
     // 6) Auditoría
