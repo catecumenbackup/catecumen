@@ -49,8 +49,11 @@ export function pick(lang, obj) {
 // Cuota completa en USD por nivel de país.
 export const PPP_TIER_USD = { 1: 130, 2: 66, 3: 30, 4: 10 };
 // Ratios internos entre tipos de cuota (derivados del patrón en producción):
-// sacramentos = cuota completa; presacramental/padrino ≈60%; catequista ≈77%.
-export const RATIO_PRE = 0.60, RATIO_CAT = 0.77, RATIO_PAD = 0.60;
+// sacramentos = cuota completa; catequista ≈77%.
+// papás (prebautismal) y padrinos: 30% de la cuota completa. Fijado en 0.30
+// (antes 0.60) para bajar su cuota a la mitad — México queda en $200 MXN vía la
+// tabla cuotasporpais (activo), y los demás países bajan proporcionalmente aquí.
+export const RATIO_PRE = 0.30, RATIO_CAT = 0.77, RATIO_PAD = 0.30;
 // Beca de Esperanza: 20% de descuento (pacientes en rehabilitación).
 export const BECA_ESPERANZA_PCT = 20;
 
