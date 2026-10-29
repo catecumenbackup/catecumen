@@ -161,6 +161,65 @@ async function completarDonativo(session: Stripe.Checkout.Session, donativoId: s
 }
 
 // ── Crea la cuenta + perfil a partir de un registro pendiente ya PAGADO ──────
+// ── Formación en pareja: crea (idempotente) la cuenta del acompañante ───────
+function genPassPareja(): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+  const b = new Uint8Array(14); crypto.getRandomValues(b);
+  return Array.from(b, (x) => chars[x % chars.length]).join("");
+}
+const emailPareja = (nombre: string, correo: string, pass: string, titular: string) => `
+  <div style="font-family:Georgia,serif;max-width:520px;margin:0 auto;padding:24px">
+    <h1 style="color:#9C7A28;font-size:20px">✅ Tu formación en Catecumen está lista</h1>
+    <p>Hola ${nombre || ""},</p>
+    <p>${titular ? titular + " te inscribió" : "Fuiste inscrito(a)"} en Catecumen como pareja de formación. Tienes tu <b>propia cuenta</b>: cada quien lleva su progreso y recibe su propia constancia al concluir.</p>
+    <div style="margin:20px 0;padding:14px 18px;background:#FBF6EA;border:1px solid #E5C97A;border-radius:8px">
+      <p style="margin:0;color:#5A5342;font-size:13px">Tu acceso</p>
+      <p style="margin:6px 0 0;color:#2A1E05;font-size:14px">Correo: <b>${correo}</b></p>
+      <p style="margin:4px 0 0;color:#2A1E05;font-size:14px">Contraseña temporal: <b style="font-family:monospace">${pass}</b></p>
+      <p style="margin:8px 0 0;color:#5A5342;font-size:12px">Cámbiala al entrar, en "Mi Cuenta".</p>
+    </div>
+    <p style="margin-top:20px"><a href="https://www.catecumen.com" style="background:#C8A951;color:#2A1E05;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold">Iniciar sesión →</a></p>
+  </div>`;
+
+// parejaId = uid del titular (determinista): re-ejecuciones no crean duplicados.
+async function crearPareja(parejaId: string, payload: any, session: Stripe.Checkout.Session) {
+  const p = payload?.pareja;
+  if (!p?.email) return;
+  const { formData, userType, selectedSacs } = payload;
+  const email = String(p.email).trim().toLowerCase();
+  const pass = genPassPareja();
+  let creado = true;
+  const { data: au, error: aErr } = await supabase.auth.admin.createUser({ email, password: pass, email_confirm: true });
+  let puid = au?.user?.id as string | undefined;
+  if (aErr || !puid) {
+    if (!/already|registered|exists/i.test(aErr?.message || "")) { console.error("[pareja] auth:", aErr); return; }
+    const { data: ex } = await supabase.rpc("uid_por_email", { p_email: email });
+    puid = (ex as string | null) || undefined; creado = false;
+    if (!puid) { console.error("[pareja] sin uid"); return; }
+  }
+  const iso = formData.codigo_iso_pais || "XX";
+  let regId: string | null = null;
+  try { const { data: rid } = await supabase.rpc("generar_registro_id", { p_tipo_usuario: userType, p_codigo_iso: iso }); if (rid) regId = rid as string; } catch (e) { console.error("[pareja] regid:", e); }
+  const currency = (session.currency || "").toUpperCase();
+  const fila = {
+    id: puid, tipo_usuario: userType,
+    nombre: p.nombre || "", apellido: p.apellido || "", email,
+    pais_residencia: formData.country || "", codigo_iso_pais: iso,
+    estado_residencia: formData.estado || null, idioma: formData.idioma || null,
+    parroquia_nombre: formData.parroquia || null, parroquia_no_segura: !!formData.noSure,
+    par_estado: formData.parEstado || null, par_municipio: formData.parMunicipio || null,
+    par_calle: formData.parCalle || null, par_numero: formData.parNumero || null,
+    afiliada_org: formData.afiliadaOrg || null, org_registro_id: formData.orgRegistroId || null,
+    sacramentos_elegidos: (selectedSacs && selectedSacs.length ? selectedSacs : null),
+    registro_id: regId, pareja_id: parejaId,
+    formacion_gratuita: false, pago_realizado: true, importe_pagado: 0, moneda_pago: currency,
+  };
+  const { error: insErr } = await supabase.from("usuarios").upsert(fila, { onConflict: "id", ignoreDuplicates: true });
+  if (insErr) { console.error("[pareja] perfil:", insErr); return; }
+  if (creado) await enviarCorreo(email, "✅ Tu formación en Catecumen está lista", emailPareja(p.nombre || "", email, pass, formData.nombre || ""));
+  console.log(`[pareja] cuenta creada uid=${puid} pareja=${parejaId}`);
+}
+
 async function activarRegistro(session: Stripe.Checkout.Session, pendienteId: string) {
   const { data: pendiente, error: pendErr } = await supabase
     .from("registros_pendientes")
@@ -286,6 +345,7 @@ async function activarRegistro(session: Stripe.Checkout.Session, pendienteId: st
     moneda_pago: currency,
     stripe_customer_id: (session.customer as string) || null,
     stripe_payment_id: (session.payment_intent as string) || null,
+    pareja_id: (payload as any)?.pareja?.email ? uid : null,
   };
 
   const { error: insErr } = await supabase
@@ -295,6 +355,9 @@ async function activarRegistro(session: Stripe.Checkout.Session, pendienteId: st
     console.error("[stripe-webhook] Error insertando usuarios:", insErr);
     return { ok: false, status: 500, error: insErr.message };
   }
+
+  // Formación en pareja: crear la 2ª cuenta enlazada (una cuota cubre a ambos).
+  try { await crearPareja(uid, payload, session); } catch (e) { console.error("[stripe-webhook] crearPareja:", e); }
 
   await supabase.from("registros_pendientes").delete().eq("id", pendienteId);
   await enviarCorreo(formData.email, "✅ Tu pago fue confirmado — Catecumen",

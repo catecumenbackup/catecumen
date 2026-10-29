@@ -1853,6 +1853,15 @@
       const u=data.usuario||{};
       const ins=(data.inscripciones||[]).map(i=>`<tr><td>${esc(i.sacramento||"—")}</td><td>${esc(i.estado||"—")}</td><td class="num">${i.puntaje_promedio??"—"}</td></tr>`).join("")||'<tr><td colspan="3" class="empty">Sin inscripciones.</td></tr>';
       const cons=(data.constancias||[]).map(c=>`<tr><td>${esc(c.nombre_sacramento_es||"—")}</td><td style="font-size:11px">${esc(c.serie||"—")}</td><td>${c.pdf_url?`<a href="${esc(c.pdf_url)}" target="_blank" style="color:var(--gold)">PDF</a>`:"—"}</td></tr>`).join("")||'<tr><td colspan="3" class="empty">Sin constancias.</td></tr>';
+      let parejaHtml="";
+      try{
+        const {data:par}=await sb.rpc("admin_pareja_de",{p_id:id});
+        if(Array.isArray(par)&&par.length){ const o=par[0];
+          parejaHtml=`<h2 style="font-size:14px">👫 Pareja de formación</h2>
+            <p style="font-size:13px;margin:0 0 10px">${esc(o.nombre||"—")} · <span style="color:var(--ivory-m)">${esc(o.email||"")}</span> — pago: <b>${o.pago_realizado?"sí":"no"}</b> · constancias: <b>${o.constancias}</b>
+            &nbsp;<button class="btn ghost sm" onclick="window.__fichaUsuario('${o.id}')">Ver su ficha</button></p>`;
+        }
+      }catch(e){}
       $("modal-mount").innerHTML=`<div class="overlay"><div class="modal">
         <h3>${esc((u.nombre||"")+" "+(u.apellido||""))}</h3>
         <p style="color:var(--ivory-m);font-size:13px;margin-bottom:10px">${esc(u.email||"")} · ${esc(u.tipo_usuario||"")} · ${esc(u.pais_residencia||"")}</p>
@@ -1866,6 +1875,7 @@
         <table><thead><tr><th>Sacramento</th><th>Estado</th><th class="num">Puntaje</th></tr></thead><tbody>${ins}</tbody></table>
         <h2 style="font-size:14px">Constancias</h2>
         <table><thead><tr><th>Sacramento</th><th>Serie</th><th>PDF</th></tr></thead><tbody>${cons}</tbody></table>
+        ${parejaHtml}
         <div class="modal-actions"><button class="btn ghost" onclick="window.__closeModal()">Cerrar</button></div>
       </div></div>`;
     }catch(e){ $("modal-mount").innerHTML=`<div class="overlay"><div class="modal"><p class="msg err">Error: ${esc(e.message||e)}</p><div class="modal-actions"><button class="btn ghost" onclick="window.__closeModal()">Cerrar</button></div></div></div>`; }

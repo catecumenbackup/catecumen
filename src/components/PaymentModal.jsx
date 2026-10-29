@@ -157,6 +157,8 @@ export default function PaymentModal({formData,userType,selectedSacs,onSuccess,o
         retorno:window.location.origin,
         // Conversión de preinscrito: activa la cuenta existente, no crea otra.
         conversion:!!conversion, usuario_id:usuarioId||null,
+        // Formación en pareja (papás/padrinos): datos del acompañante (null si no aplica).
+        pareja:formData.pareja||null,
       }});
       if(error||!data?.url){
         // supabase.functions.invoke no expone el mensaje personalizado del

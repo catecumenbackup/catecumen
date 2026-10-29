@@ -162,9 +162,16 @@ export default function RegisterForm({userType,sacraments,onNext,onBack}){
   // Confirmación de correo: ambos campos deben coincidir (sin distinguir
   // mayúsculas ni espacios) para evitar erratas que dejarían al usuario sin acceso.
   const emailsMatch=(d.email||"").trim().toLowerCase()===(d.emailConfirm||"").trim().toLowerCase();
+  // Formación en pareja (solo papás/padrinos): si está activa, exige los datos
+  // del acompañante y que su correo sea válido y distinto al del titular.
+  const enPareja=(userType==="prebautismal"||userType==="padrino")&&!!d.enPareja;
+  const parejaOk=!enPareja||(
+    d.parejaNombre&&d.parejaApellido&&
+    /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test((d.parejaEmail||"").trim())&&
+    (d.parejaEmail||"").trim().toLowerCase()!==(d.email||"").trim().toLowerCase());
   const canSubmit=d.nombre&&d.apellido&&d.email&&d.emailConfirm&&emailsMatch&&d.country&&d.estado&&d.dob&&d.phone&&d.docNum&&d.phoneCode&&
     (userType==="catequista" ? !!d.parroquia : (d.parroquia||d.noSure))&&d.terms&&ageOk&&maritalOk&&sacsBenefOk&&
-    catequistaAfilOk;
+    catequistaAfilOk&&parejaOk;
   const isFree=(userType==="catequista"&&d.afiliadaOrg==="si"&&orgVerif==="valido")||!!d.estaInternado;
   
   return(
@@ -275,6 +282,43 @@ export default function RegisterForm({userType,sacraments,onNext,onBack}){
           )}
         </FRow>
         
+        {/* ─── Formación en pareja (papás y padrinos) ─── */}
+        {(userType==="prebautismal"||userType==="padrino")&&(
+          <div style={{...CARD,marginBottom:16,padding:"16px 18px",
+            border:`1px solid ${C.gold}30`,background:"rgba(200,169,81,0.04)"}}>
+            <label onClick={()=>set("enPareja",!d.enPareja)}
+              style={{display:"flex",alignItems:"center",gap:12,cursor:"pointer"}}>
+              <input type="checkbox" checked={!!d.enPareja} readOnly style={checkStyle(!!d.enPareja,17)}/>
+              <span style={{fontFamily:"'Crimson Text',serif",fontSize:15,color:C.ivory}}>
+                {T("Nos inscribimos en pareja","We are registering as a couple","Nous nous inscrivons en couple","Wir melden uns als Paar an","Estamo-nos inscrevendo como casal","Ci iscriviamo come coppia")}
+              </span>
+            </label>
+            <p style={{color:C.ivoryM,fontFamily:"'Crimson Text',serif",fontSize:13,lineHeight:1.5,margin:"8px 0 0"}}>
+              {T("Con una sola cuota se inscriben los dos. Cada uno tendrá su propia cuenta, su propio avance y recibirá su propia constancia al concluir. Enviaremos su acceso a su correo.",
+                 "A single fee registers both of you. Each one gets their own account, their own progress, and their own certificate upon completion. We'll email their access.",
+                 "Un seul tarif inscrit les deux. Chacun aura son propre compte, sa progression et son attestation à la fin. Nous enverrons son accès par courriel.",
+                 "Mit einer einzigen Gebühr werden beide angemeldet. Jeder hat sein eigenes Konto, seinen Fortschritt und erhält am Ende seine eigene Bescheinigung. Wir senden den Zugang per E-Mail.",
+                 "Com uma única taxa inscrevem-se os dois. Cada um terá sua própria conta, seu progresso e sua constância ao concluir. Enviaremos o acesso por e-mail.",
+                 "Con un'unica quota si iscrivono entrambi. Ognuno avrà il proprio account, i propri progressi e il proprio attestato al termine. Invieremo l'accesso via email.")}
+            </p>
+            {d.enPareja&&(
+              <div style={{marginTop:14}}>
+                <FRow label={T("Nombre(s) del acompañante","Partner's first name(s)","Prénom(s) du partenaire","Vorname(n) des Partners","Nome(s) do acompanhante","Nome/i del partner")}>
+                  <Input value={d.parejaNombre} onChange={v=>set("parejaNombre",v)} placeholder={T("Nombre","Name","Prénom","Vorname","Nome","Nome")}/>
+                </FRow>
+                <FRow label={T("Apellido(s) del acompañante","Partner's last name(s)","Nom(s) du partenaire","Nachname(n) des Partners","Sobrenome(s) do acompanhante","Cognome/i del partner")}>
+                  <Input value={d.parejaApellido} onChange={v=>set("parejaApellido",v)} placeholder={T("Apellido","Last name","Nom","Nachname","Sobrenome","Cognome")}/>
+                </FRow>
+                <FRow label={T("Correo del acompañante","Partner's email","Courriel du partenaire","E-Mail des Partners","E-mail do acompanhante","Email del partner")}>
+                  <Input value={d.parejaEmail} onChange={v=>set("parejaEmail",v)} placeholder={T("correo@ejemplo.com","email@example.com","courriel@exemple.com","email@beispiel.com","email@exemplo.com","email@esempio.com")}/>
+                </FRow>
+                <p style={{color:C.ivoryM,fontFamily:"'Crimson Text',serif",fontSize:12,lineHeight:1.4,marginTop:4}}>
+                  {T("Debe ser un correo distinto al tuyo y que no tenga ya una cuenta.","It must be different from yours and not already have an account.","Il doit être différent du vôtre et ne pas déjà avoir de compte.","Sie muss sich von Ihrer unterscheiden und darf noch kein Konto haben.","Deve ser diferente do seu e ainda não ter uma conta.","Dev'essere diversa dalla tua e non avere già un account.")}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
         {/* ─── Sacramentos del beneficiario (prebautismal y padrino) ─── */}
         {(userType==="prebautismal"||userType==="padrino")&&(
           <div style={{...CARD,marginBottom:16,padding:"16px 18px",
@@ -811,7 +855,8 @@ export default function RegisterForm({userType,sacraments,onNext,onBack}){
           <button onClick={onBack} style={{...BTN("sec"),flex:1,justifyContent:"center"}}>
             ← {T("Regresar","Back","Retour","Zurück","Voltar","Indietro")}
           </button>
-          <button onClick={()=>canSubmit&&onNext({...d,age,isAdult,courseLabel:courseLabel(),hours:hoursDisplay(),priceBreakdown:pb,freeRegistration:isFree})}
+          <button onClick={()=>canSubmit&&onNext({...d,age,isAdult,courseLabel:courseLabel(),hours:hoursDisplay(),priceBreakdown:pb,freeRegistration:isFree,
+            pareja: enPareja ? {nombre:(d.parejaNombre||"").trim(),apellido:(d.parejaApellido||"").trim(),email:(d.parejaEmail||"").trim()} : null})}
             disabled={!canSubmit}
             style={{...BTN("pri"),flex:2,justifyContent:"center",
               opacity:canSubmit?1:0.4,cursor:canSubmit?"pointer":"not-allowed"}}>

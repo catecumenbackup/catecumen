@@ -73,6 +73,9 @@ serve(async (req: Request) => {
       // (un preinscrito que ahora paga). No se crea cuenta ni se pide contraseña,
       // y al confirmar el pago se ACTIVA la cuenta `usuario_id` (no se crea otra).
       conversion, usuario_id,
+      // Formación en pareja (papás/padrinos): datos del acompañante. Una sola
+      // cuota cubre a los dos; la 2ª cuenta se crea al confirmar el pago.
+      pareja,
     } = await req.json();
 
     // ── Validación de payload ──────────────────────────────────────────────
@@ -185,6 +188,25 @@ serve(async (req: Request) => {
       }
     }
 
+    // ── Formación en pareja: validar al acompañante (solo papás/padrinos) ─────
+    let parejaLimpia: { nombre: string; apellido: string; email: string } | null = null;
+    if (!conversion && pareja?.email && (userType === "prebautismal" || userType === "padrino")) {
+      const pe = String(pareja.email).trim().toLowerCase();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(pe))
+        return new Response(JSON.stringify({ error: "El correo del acompañante no es válido." }),
+          { status: 400, headers: { ...CORS, "Content-Type": "application/json" } });
+      if (pe === String(formData.email).trim().toLowerCase())
+        return new Response(JSON.stringify({ error: "El correo del acompañante debe ser distinto al tuyo." }),
+          { status: 400, headers: { ...CORS, "Content-Type": "application/json" } });
+      const { count: pc } = await supabase.from("usuarios")
+        .select("id", { count: "exact", head: true }).ilike("email", pe);
+      if ((pc ?? 0) > 0)
+        return new Response(JSON.stringify({ error: "Ya existe una cuenta con el correo del acompañante." }),
+          { status: 409, headers: { ...CORS, "Content-Type": "application/json" } });
+      parejaLimpia = { nombre: String(pareja.nombre || "").trim(),
+        apellido: String(pareja.apellido || "").trim(), email: pe };
+    }
+
     // ── Importe AUTORITATIVO (server-side) ─────────────────────────────────
     // Nunca confiar en el `importe` del cliente para el cobro: podía enviar
     // importe:1. Se recalcula/valida en el servidor.
@@ -248,6 +270,8 @@ serve(async (req: Request) => {
           importe: montoFinal, moneda: monedaFinal, descuento_pct: descuento_pct || 0,
           // Fase 2: marca de conversión de preinscrito (activar cuenta existente).
           conversion: !!conversion, usuario_id: usuario_id || null,
+          // Formación en pareja: datos del acompañante (null si no aplica).
+          pareja: parejaLimpia,
         },
       })
       .select("id")
