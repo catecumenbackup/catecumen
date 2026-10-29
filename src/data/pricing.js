@@ -9,6 +9,7 @@ const PPP_PAISES={
   "Estados Unidos":{tier:1,cur:"USD",fx:1},
   "Canadá":{tier:1,cur:"CAD",fx:1.377},
   "España":{tier:1,cur:"EUR",fx:0.923},
+  "Portugal":{tier:1,cur:"EUR",fx:0.923},
 
   // ── Nivel 2 — Ingreso medio-alto (~$66 USD) ─────────────────────────
   "México":{tier:2,cur:"MXN",fx:17.58},
@@ -40,8 +41,38 @@ const PPP_PAISES={
   "Haití":{tier:4,cur:"USD",fx:1,chargeInUSD:true},
 };
 
+// ── Cuota de PAPÁS (prebautismal) y PADRINOS por país, en MONEDA LOCAL ──────
+// Valor explícito, ajustado al poder adquisitivo de cada país (GNI per cápita
+// PPP, Banco Mundial) y anclado en dos puntos fijos: países de alto ingreso $20
+// y México $200 MXN (~$11.4). Referencia de mercado para cursos equivalentes en
+// línea de preparación bautismal/padrinos: ~$10–15 USD (Ascension "Belonging"
+// ~$11.95; Zoom parroquial ~$10). Solo afecta papás/padrinos — NO catecúmeno ni
+// catequista. México también va por la tabla cuotasporpais (activo); aquí queda
+// como respaldo con el mismo valor. Para cambiar un precio, edita su número aquí.
+const CUOTA_PRE_PAD = {
+  // Alto ingreso — $20 (Canadá = equivalente en CAD)
+  "Estados Unidos": 20, "Canadá": 28, "España": 20, "Portugal": 20,
+  // Alto LatAm — ~$18
+  "Panamá": 18, "Puerto Rico": 18,
+  // Medio-alto — ~$13–14
+  "Chile": 13300, "Uruguay": 520, "Costa Rica": 6560, "Trinidad y Tobago": 88,
+  // México — ancla ($11.4)
+  "México": 200,
+  // Medio — ~$8–11
+  "Rep. Dominicana": 660, "Colombia": 36900, "Brasil": 50,
+  "Perú": 30, "Paraguay": 60000, "Ecuador": 7, "Jamaica": 8,
+  // Medio-bajo — ~$5–6
+  "Guatemala": 47, "Bolivia": 41, "El Salvador": 6, "Honduras": 125, "Nicaragua": 5,
+  // Economías complejas / crisis — $3–5 (cobro en USD)
+  "Argentina": 5, "Venezuela": 3, "Cuba": 3, "Haití": 3,
+};
+
 const CUOTAS=Object.fromEntries(
   Object.entries(PPP_PAISES).map(([pais,info])=>[pais,calcularCuotaPais(info)])
 );
+// Aplica el override de papás/padrinos (pre y pad) sobre la cuota calculada.
+for (const [pais, monto] of Object.entries(CUOTA_PRE_PAD)) {
+  if (CUOTAS[pais]) { CUOTAS[pais].pre = monto; CUOTAS[pais].pad = monto; }
+}
 
-export { PPP_PAISES, CUOTAS };
+export { PPP_PAISES, CUOTAS, CUOTA_PRE_PAD };
