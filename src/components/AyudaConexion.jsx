@@ -31,8 +31,12 @@ export function AyudaConexionButton({ variant = "button", estilo = {}, track = n
         }}>{linkLabel}</button>
       ) : (
         <button onClick={abrir} style={{
-          ...BTN("sec"), fontSize: 12, width: estilo.width === "100%" ? "100%" : undefined,
-          justifyContent: "center", ...estilo,
+          background: "#F3E6A6", color: "#4A3A08", border: "1px solid #E3CE72",
+          borderRadius: 10, padding: "12px 14px", cursor: "pointer",
+          fontFamily: "'Cinzel',serif", fontWeight: 700, letterSpacing: "0.04em", fontSize: 13,
+          display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+          boxSizing: "border-box", width: estilo.width === "100%" ? "100%" : undefined,
+          boxShadow: "0 3px 12px rgba(227,206,114,0.30)", ...estilo,
         }}>📶 {label}</button>
       )}
 

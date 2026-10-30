@@ -652,6 +652,11 @@ function WelcomeModal({onContinue,onLogin}){
       )}
       <DirectorioButton estilo={{width:"100%"}} tono="green" track="home_buscar_parroquia"/>
       <AyudaConexionButton estilo={{width:"100%"}} track="home_ayuda_conexion"/>
+      <a href="/info/" style={{width:"100%",boxSizing:"border-box",justifyContent:"center",fontSize:14,cursor:"pointer",
+        display:"inline-flex",alignItems:"center",gap:8,fontFamily:"'Cinzel',serif",fontWeight:700,letterSpacing:"0.04em",
+        background:`${C.gold}14`,color:C.gold,border:`1px solid ${C.gold}`,borderRadius:10,padding:"12px 14px",textDecoration:"none"}}>
+        📖 {T("Conoce más sobre Catecumen","Learn more about Catecumen","En savoir plus sur Catecumen","Mehr über Catecumen erfahren","Saiba mais sobre a Catecumen","Scopri di più su Catecumen")} →
+      </a>
       <a href="/apoyar/" onClick={()=>track("home_apoyar")} style={{width:"100%",boxSizing:"border-box",justifyContent:"center",fontSize:14,cursor:"pointer",
         display:"inline-flex",alignItems:"center",gap:8,fontFamily:"'Cinzel',serif",fontWeight:700,letterSpacing:"0.04em",
         background:"#F4B183",color:"#3A2205",border:"1px solid #E89B63",borderRadius:10,padding:"12px 14px",
@@ -712,13 +717,6 @@ function WelcomeModal({onContinue,onLogin}){
     </>
   );
 
-  const conoceMas=(
-    <a href="/info/" style={{marginTop:6,width:"100%",boxSizing:"border-box",justifyContent:"center",fontSize:14,cursor:"pointer",
-      display:"inline-flex",alignItems:"center",gap:8,fontFamily:"'Cinzel',serif",fontWeight:700,letterSpacing:"0.04em",
-      background:`${C.gold}14`,color:C.gold,border:`1px solid ${C.gold}`,borderRadius:10,padding:"12px 14px",textDecoration:"none"}}>
-      📖 {T("Conoce más sobre Catecumen","Learn more about Catecumen","En savoir plus sur Catecumen","Mehr über Catecumen erfahren","Saiba mais sobre a Catecumen","Scopri di più su Catecumen")} →
-    </a>
-  );
 
   return(
     <div style={OVERLAY}>
@@ -731,7 +729,6 @@ function WelcomeModal({onContinue,onLogin}){
               padding:"28px 26px",borderRight:`1px solid ${C.gold}22`,background:"rgba(200,169,81,0.05)"}}>
               {branding}
               {botones}
-              {conoceMas}
             </div>
             {/* Derecha: presentación (tour), alineada arriba a la altura del logo */}
             <div style={{flex:1,minWidth:0,display:"flex",flexDirection:"column",padding:"24px 28px",overflowY:"auto"}}>
@@ -745,7 +742,6 @@ function WelcomeModal({onContinue,onLogin}){
             <div style={{height:12}}/>
             {tour}
             {navegacion}
-            {conoceMas}
             <div style={{marginTop:14}}>{botones}</div>
           </div>
         )}
