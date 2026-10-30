@@ -809,6 +809,14 @@
 
   const $=id=>document.getElementById(id);
   const esc=s=>String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  // Teléfono como enlace a WhatsApp (wa.me requiere solo dígitos con código de país).
+  function waHtml(cod,tel){
+    const disp=((cod?cod+" ":"")+(tel||"")).trim();
+    if(!tel) return "—";
+    const num=((cod||"")+(tel||"")).replace(/[^0-9]/g,"");
+    if(!num) return esc(disp)||"—";
+    return `<a href="https://wa.me/${num}" target="_blank" rel="noopener" title="Abrir WhatsApp" style="color:#25D366;text-decoration:none;white-space:nowrap">🟢 ${esc(disp)}</a>`;
+  }
   const fmt=n=>(n===null||n===undefined)?"—":Number(n).toFixed(2);
   let DATA=null, VIDEOS=[], SACS=[], sortKey="general", sortDir=1, videoLang="es";
 
@@ -1793,7 +1801,7 @@
         <td>${nombre}</td>
         <td style="font-family:monospace;font-size:11.5px;color:var(--gold-l)">${esc(u.registro_id||"—")}</td>
         <td style="font-size:13px">${esc(u.email||"—")}${u.email_confirmado?'':' <span class="pill off">sin confirmar</span>'}</td>
-        <td style="font-size:12px;white-space:nowrap">${(`${esc(u.codigo_pais_tel||"")} ${esc(u.telefono||"")}`).trim()||"—"}</td>
+        <td style="font-size:12px;white-space:nowrap">${waHtml(u.codigo_pais_tel,u.telefono)}</td>
         <td style="font-size:12px">${esc(u.tipo_usuario||"—")}</td>
         <td style="font-size:12px">${esc(u.pais_residencia||"—")}</td>
         <td style="font-size:12px;text-transform:uppercase">${esc(u.idioma||"—")}</td>
@@ -1898,7 +1906,7 @@
       }catch(e){}
       $("modal-mount").innerHTML=`<div class="overlay"><div class="modal">
         <h3>${esc((u.nombre||"")+" "+(u.apellido||""))}</h3>
-        <p style="color:var(--ivory-m);font-size:13px;margin-bottom:10px">${esc(u.email||"")} · ${esc(u.tipo_usuario||"")} · ${esc(u.pais_residencia||"")}${u.telefono?` · 📞 ${esc((u.codigo_pais_tel? u.codigo_pais_tel+" ":"")+u.telefono)}`:""}</p>
+        <p style="color:var(--ivory-m);font-size:13px;margin-bottom:10px">${esc(u.email||"")} · ${esc(u.tipo_usuario||"")} · ${esc(u.pais_residencia||"")}${u.telefono?` · ${waHtml(u.codigo_pais_tel,u.telefono)}`:""}</p>
         <div class="cards" style="grid-template-columns:repeat(3,1fr)">
           <div class="stat"><div class="n" style="font-size:16px">${u.pago_realizado?"Sí":"No"}</div><div class="l">Pago realizado</div></div>
           <div class="stat"><div class="n" style="font-size:16px">${u.beca_solidaria?"Solidaria":u.beca_esperanza?"Esperanza":"—"}</div><div class="l">Beca</div></div>
