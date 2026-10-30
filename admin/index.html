@@ -261,7 +261,7 @@
       </div>
       <div class="scroll"><table><thead><tr>
         <th style="width:34px"><input type="checkbox" id="gsel-todos-head" title="Seleccionar todos"/></th>
-        <th>Nombre</th><th>N° ID</th><th>Correo</th><th>Teléfono</th><th>Tipo</th><th>País</th><th>Idioma</th><th class="num">Pago</th><th class="num">Insc.</th><th class="num">Const.</th><th class="num">Estado</th><th>Acciones</th>
+        <th>Nombre</th><th>N° ID</th><th>Correo</th><th>Teléfono</th><th>Tipo</th><th>Sacramento / Rol</th><th>País</th><th>Idioma</th><th class="num">Pago</th><th class="num">Insc.</th><th class="num">Const.</th><th>Inicio</th><th>Últ. sesión</th><th>Último video</th><th class="num">Avance</th><th class="num">Estado</th><th>Acciones</th>
       </tr></thead><tbody id="usuarios-body"></tbody></table></div>
       <p id="usuarios-msg" class="msg"></p>
     </div>
@@ -817,6 +817,21 @@
     if(!num) return esc(disp)||"—";
     return `<a href="https://wa.me/${num}" target="_blank" rel="noopener" title="Abrir WhatsApp" style="color:#25D366;text-decoration:none;white-space:nowrap">🟢 ${esc(disp)}</a>`;
   }
+  const _fechaCorta2=(x)=>{ if(!x) return "—"; try{ return new Date(x).toLocaleDateString(); }catch{ return "—"; } };
+  const SAC_LBL={bautismo:"Bautismo",confirmacion:"Confirmación",primera_comunion:"1ª Comunión",prebautismal:"Prebautismal",catequista:"Catequista"};
+  function sacList(j){ if(!j) return []; if(Array.isArray(j)) return j; if(typeof j==="object") return Object.keys(j);
+    try{ const p=JSON.parse(j); return Array.isArray(p)?p:Object.keys(p); }catch{ return [String(j)]; } }
+  function sacRolDisp(u){
+    if(u.tipo_usuario==="catequista") return "Catequista";
+    const benef=sacList(u.sacs_beneficiario).map(x=>SAC_LBL[x]||x);
+    if(u.tipo_usuario==="prebautismal") return "Papás"+(benef.length?" ("+benef.join(", ")+")":"");
+    if(u.tipo_usuario==="padrino") return "Padrino"+(benef.length?" ("+benef.join(", ")+")":"");
+    const s=sacList(u.sacramentos_elegidos).map(x=>SAC_LBL[x]||x);
+    return s.length?s.join(", "):"—";
+  }
+  function avanceHtml(p){ const n=p==null?null:Number(p); if(n==null||isNaN(n)) return "—";
+    const col=n>=80?"var(--ok)":n>=40?"var(--gold-l)":"var(--ivory-m)";
+    return `<span style="color:${col};font-weight:600">${n}%</span>`; }
   const fmt=n=>(n===null||n===undefined)?"—":Number(n).toFixed(2);
   let DATA=null, VIDEOS=[], SACS=[], sortKey="general", sortDir=1, videoLang="es";
 
@@ -1803,11 +1818,16 @@
         <td style="font-size:13px">${esc(u.email||"—")}${u.email_confirmado?'':' <span class="pill off">sin confirmar</span>'}</td>
         <td style="font-size:12px;white-space:nowrap">${waHtml(u.codigo_pais_tel,u.telefono)}</td>
         <td style="font-size:12px">${esc(u.tipo_usuario||"—")}</td>
+        <td style="font-size:12px">${esc(sacRolDisp(u))}</td>
         <td style="font-size:12px">${esc(u.pais_residencia||"—")}</td>
         <td style="font-size:12px;text-transform:uppercase">${esc(u.idioma||"—")}</td>
         <td class="num">${pago}</td>
         <td class="num">${u.num_inscripciones}</td>
         <td class="num">${u.num_constancias}</td>
+        <td style="font-size:12px;white-space:nowrap">${_fechaCorta2(u.formacion_inicio)}</td>
+        <td style="font-size:12px;white-space:nowrap">${_fechaCorta2(u.ultima_sesion)}</td>
+        <td style="font-size:12px">${esc(u.ultimo_video||"—")}</td>
+        <td class="num">${avanceHtml(u.avance_pct)}</td>
         <td class="num">${estado}</td>
         <td><div class="actions-cell">
           <button class="btn ghost sm" onclick="window.__fichaUsuario('${u.id}')">Ver</button>
@@ -1818,7 +1838,7 @@
             : `<button class="btn ghost sm" onclick="window.__suspender('${u.id}',true)">Suspender</button>`}
           <button class="btn danger sm" onclick="window.__eliminarMenu('${u.id}')">Eliminar</button>
         </div></td>
-      </tr>`;}).join(""):`<tr><td colspan="13" class="empty">Sin usuarios.</td></tr>`;
+      </tr>`;}).join(""):`<tr><td colspan="17" class="empty">Sin usuarios.</td></tr>`;
     // Reenganchar los listeners de las casillas de fila tras re-render.
     document.querySelectorAll(".gsel-row").forEach(cb=>cb.addEventListener("change",e=>{
       const uid=e.target.dataset.uid;
