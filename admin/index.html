@@ -261,7 +261,7 @@
       </div>
       <div class="scroll"><table><thead><tr>
         <th style="width:34px"><input type="checkbox" id="gsel-todos-head" title="Seleccionar todos"/></th>
-        <th>Nombre</th><th>N° ID</th><th>Correo</th><th>Tipo</th><th>País</th><th>Idioma</th><th class="num">Pago</th><th class="num">Insc.</th><th class="num">Const.</th><th class="num">Estado</th><th>Acciones</th>
+        <th>Nombre</th><th>N° ID</th><th>Correo</th><th>Teléfono</th><th>Tipo</th><th>País</th><th>Idioma</th><th class="num">Pago</th><th class="num">Insc.</th><th class="num">Const.</th><th class="num">Estado</th><th>Acciones</th>
       </tr></thead><tbody id="usuarios-body"></tbody></table></div>
       <p id="usuarios-msg" class="msg"></p>
     </div>
@@ -1793,6 +1793,7 @@
         <td>${nombre}</td>
         <td style="font-family:monospace;font-size:11.5px;color:var(--gold-l)">${esc(u.registro_id||"—")}</td>
         <td style="font-size:13px">${esc(u.email||"—")}${u.email_confirmado?'':' <span class="pill off">sin confirmar</span>'}</td>
+        <td style="font-size:12px;white-space:nowrap">${(`${esc(u.codigo_pais_tel||"")} ${esc(u.telefono||"")}`).trim()||"—"}</td>
         <td style="font-size:12px">${esc(u.tipo_usuario||"—")}</td>
         <td style="font-size:12px">${esc(u.pais_residencia||"—")}</td>
         <td style="font-size:12px;text-transform:uppercase">${esc(u.idioma||"—")}</td>
@@ -1809,7 +1810,7 @@
             : `<button class="btn ghost sm" onclick="window.__suspender('${u.id}',true)">Suspender</button>`}
           <button class="btn danger sm" onclick="window.__eliminarMenu('${u.id}')">Eliminar</button>
         </div></td>
-      </tr>`;}).join(""):`<tr><td colspan="12" class="empty">Sin usuarios.</td></tr>`;
+      </tr>`;}).join(""):`<tr><td colspan="13" class="empty">Sin usuarios.</td></tr>`;
     // Reenganchar los listeners de las casillas de fila tras re-render.
     document.querySelectorAll(".gsel-row").forEach(cb=>cb.addEventListener("change",e=>{
       const uid=e.target.dataset.uid;
@@ -1897,7 +1898,7 @@
       }catch(e){}
       $("modal-mount").innerHTML=`<div class="overlay"><div class="modal">
         <h3>${esc((u.nombre||"")+" "+(u.apellido||""))}</h3>
-        <p style="color:var(--ivory-m);font-size:13px;margin-bottom:10px">${esc(u.email||"")} · ${esc(u.tipo_usuario||"")} · ${esc(u.pais_residencia||"")}</p>
+        <p style="color:var(--ivory-m);font-size:13px;margin-bottom:10px">${esc(u.email||"")} · ${esc(u.tipo_usuario||"")} · ${esc(u.pais_residencia||"")}${u.telefono?` · 📞 ${esc((u.codigo_pais_tel? u.codigo_pais_tel+" ":"")+u.telefono)}`:""}</p>
         <div class="cards" style="grid-template-columns:repeat(3,1fr)">
           <div class="stat"><div class="n" style="font-size:16px">${u.pago_realizado?"Sí":"No"}</div><div class="l">Pago realizado</div></div>
           <div class="stat"><div class="n" style="font-size:16px">${u.beca_solidaria?"Solidaria":u.beca_esperanza?"Esperanza":"—"}</div><div class="l">Beca</div></div>
