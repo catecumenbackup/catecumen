@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { SEC_META } from "../data/course.js";
 import { supabase } from "../supabaseClient.js";
 import { SoporteLink } from "./support.jsx";
-import { ResumenContenido } from "./ResumenTemaModal.jsx";
 import { C, BTN, MODAL, OVERLAY } from "../ui.js";
 import { T, PICK, LANG } from "../i18n.js";
 import * as videoStore from "../videoStore.js";
@@ -51,14 +50,9 @@ async function resolverFuente(url, videoId){
   return null; // Bunny sin firma válida o acceso bloqueado: no reproducir crudo
 }
 
-export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=null,onProgress,onWatched,onClose,
-  resumenTitulo="",resumenPuntos=null,resumenBloques=[],resumenHojaPdf=null}){
+export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=null,onProgress,onWatched,onClose}){
   const [watching,setWatching]=useState(false);
   const [done,setDone]=useState(false);
-  const [verResumen,setVerResumen]=useState(false); // panel «Para tus apuntes» / pestaña Resumen
-  const hayResumen=(Array.isArray(resumenPuntos)&&resumenPuntos.length)||(Array.isArray(resumenBloques)&&resumenBloques.length);
-  // Al terminar el bloque, abre el panel de apuntes automáticamente.
-  useEffect(()=>{ if(done&&hayResumen) setVerResumen(true); },[done]); // eslint-disable-line
   const [secs,setSecs]=useState(0);
   const [videoError,setVideoError]=useState(false); // el archivo de video no cargó (404)
   // Descarga offline (copia cifrada en el dispositivo, atada a la cuenta).
@@ -425,22 +419,6 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
           <p style={{color:"#22C55E",fontFamily:"'Crimson Text',serif",fontSize:14.5,marginTop:-10,marginBottom:16}}>
             ✅ {T("Video completado","Video completed","Vidéo terminée","Video abgeschlossen","Vídeo concluído","Video completato")}
           </p>
-        )}
-        {hayResumen&&(
-          <div style={{marginBottom:14}}>
-            <button onClick={()=>setVerResumen(v=>!v)}
-              style={{...BTN("sec"),fontSize:12.5,width:"100%",justifyContent:"center"}}>
-              📝 {verResumen
-                ? T("Ocultar el resumen","Hide the summary","Masquer le résumé","Zusammenfassung ausblenden","Ocultar o resumo","Nascondi il riepilogo")
-                : T("Para tus apuntes · Resumen del tema","For your notes · Topic summary","Pour tes notes · Résumé du thème","Für deine Notizen · Themenzusammenfassung","Para as tuas notas · Resumo do tema","Per i tuoi appunti · Riepilogo del tema")}
-            </button>
-            {verResumen&&(
-              <div style={{marginTop:10,textAlign:"left",background:"rgba(0,0,0,0.12)",border:"1px solid rgba(200,169,81,0.18)",
-                borderRadius:12,padding:"14px 14px"}}>
-                <ResumenContenido titulo={resumenTitulo} puntos={resumenPuntos} bloques={resumenBloques} hojaPdfUrl={resumenHojaPdf} compacto/>
-              </div>
-            )}
-          </div>
         )}
         <div style={{display:"flex",gap:12}}>
           <button onClick={onClose} style={{...BTN("sec"),flex:1,justifyContent:"center"}}>

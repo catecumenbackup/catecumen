@@ -2343,10 +2343,6 @@ export default function App(){
               onProgress={(s)=>{ const sec=activeVideo.secId, vi=activeVideo.vid.id;
                 persistProgreso(sec,vi,{posicion_seg:s});
                 setProgress(p=>{ const sp=p[sec]||{}; return {...p,[sec]:{...sp,[vi]:{...sp[vi],pos:s}}}; }); }}
-              resumenTitulo={activeVideo.vid.modEs||PICK(SEC_META[activeVideo.secId])||""}
-              resumenPuntos={resumenDeTema(activeVideo.vid.mod,LANG).puntos}
-              resumenBloques={(SEC_META[activeVideo.secId]?.videos||[]).filter(v=>v.mod===activeVideo.vid.mod)}
-              resumenHojaPdf={resumenDeTema(activeVideo.vid.mod,LANG).hojaPdf}
               onWatched={handleVideoWatched} onClose={()=>setActiveVideo(null)}/>
           )}
           {activeEncuesta&&(
