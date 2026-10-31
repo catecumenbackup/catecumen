@@ -1290,9 +1290,14 @@ export default function App(){
   // ── Popup de bienvenida (primera vez en el área de videos) ──────────────────
   // Se decide una sola vez por cuenta (marca local por uid). Si aplica, se
   // muestra ANTES que la oración; la oración espera a que se cierre.
-  useEffect(()=>{ setBienvDecidido(false); },[uid]); // re-evaluar al cambiar de cuenta
+  // Se usa un ref (no un estado en deps) para evaluar UNA sola vez por cuenta y
+  // evitar que el efecto se auto-cancele al cambiar `bienvDecidido`.
+  const bienvEvalRef=useRef(null);
+  useEffect(()=>{ setBienvDecidido(false); bienvEvalRef.current=null; },[uid]); // re-evaluar al cambiar de cuenta
   useEffect(()=>{
-    if(phase!=="course"||!uid||bienvDecidido) return;
+    if(phase!=="course"||!uid) return;
+    if(bienvEvalRef.current===uid) return; // ya evaluado para esta cuenta
+    bienvEvalRef.current=uid;
     const k="cat_bienv_videos_"+uid;
     let visto=false; try{ visto=!!localStorage.getItem(k); }catch{}
     if(visto){ setBienvDecidido(true); return; }
@@ -1309,7 +1314,7 @@ export default function App(){
       if(!cancel) setBienvDecidido(true);
     })();
     return ()=>{ cancel=true; };
-  },[phase,uid,bienvDecidido]);
+  },[phase,uid]);
 
   useEffect(()=>{
     if(phase!=="course"||!currentSecId) return;
