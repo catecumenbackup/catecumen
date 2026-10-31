@@ -76,8 +76,34 @@ const TC2_UNCION=[
 // Confirmación y Primera Comunión (una sola vez, aunque cursen los 3). No
 // aplica a papás (prebautismal) ni padrinos. Por ahora 1 video con evaluación;
 // ampliable desde el panel admin.
+// Estructura real: 6 temas × 4 bloques (A/B/C/D). Cada bloque es un video; la
+// evaluación va UNA vez por tema, en el bloque D (evalua:true). A/B/C se completan
+// al verse (evalua:false). mod = código del tema; modEs = título del tema.
 const KERIGMA=[
-  {id:"kg1",o:1,es:"El Kerigma: el primer anuncio del Evangelio",en:"The Kerygma: the first proclamation of the Gospel",fr:"Le Kérygme : la première annonce de l'Évangile",de:"Das Kerygma: die erste Verkündigung des Evangeliums",pt:"O Querigma: o primeiro anúncio do Evangelho",it:"Il Kerygma: il primo annuncio del Vangelo",dur:"15 min"},
+  {id:"kg1a",o:1,es:"En voz de San Juan Apóstol",en:"En voz de San Juan Apóstol",dur:"2 min",mod:"KER-01",modEs:"DIOS TE AMA Y TE LLAMA",blk:"A",evalua:false},
+  {id:"kg1b",o:2,es:"La iniciativa es de Dios · La parábola del Padre · Dios bajó la escalera",en:"La iniciativa es de Dios · La parábola del Padre · Dios bajó la escalera",dur:"5 min",mod:"KER-01",modEs:"DIOS TE AMA Y TE LLAMA",blk:"B",evalua:false},
+  {id:"kg1c",o:3,es:"El abrazo · El anillo · El vestido · La puerta abierta",en:"El abrazo · El anillo · El vestido · La puerta abierta",dur:"3 min",mod:"KER-01",modEs:"DIOS TE AMA Y TE LLAMA",blk:"C",evalua:false},
+  {id:"kg1d",o:4,es:"Identificar la barrera · Un minuto de silencio · Orgullo, culpa o miedo",en:"Identificar la barrera · Un minuto de silencio · Orgullo, culpa o miedo",dur:"3 min",mod:"KER-01",modEs:"DIOS TE AMA Y TE LLAMA",blk:"D",evalua:true},
+  {id:"kg2a",o:5,es:"En voz del Rey David",en:"En voz del Rey David",dur:"2 min",mod:"KER-02",modEs:"EL PECADO Y LA NECESIDAD DE SALVACIÓN",blk:"A",evalua:false},
+  {id:"kg2b",o:6,es:"El pecado es una enfermedad · Las tres rupturas · Reconocerlo libera",en:"El pecado es una enfermedad · Las tres rupturas · Reconocerlo libera",dur:"5 min",mod:"KER-02",modEs:"EL PECADO Y LA NECESIDAD DE SALVACIÓN",blk:"B",evalua:false},
+  {id:"kg2c",o:7,es:"El barro · La mano extendida",en:"El barro · La mano extendida",dur:"3 min",mod:"KER-02",modEs:"EL PECADO Y LA NECESIDAD DE SALVACIÓN",blk:"C",evalua:false},
+  {id:"kg2d",o:8,es:"Diagnóstico sincero · Sin justificarte · Necesito que me rescates",en:"Diagnóstico sincero · Sin justificarte · Necesito que me rescates",dur:"2 min",mod:"KER-02",modEs:"EL PECADO Y LA NECESIDAD DE SALVACIÓN",blk:"D",evalua:true},
+  {id:"kg3a",o:9,es:"En voz de María Magdalena",en:"En voz de María Magdalena",dur:"2 min",mod:"KER-03",modEs:"JESUCRISTO MURIÓ Y RESUCITÓ POR TI",blk:"A",evalua:false},
+  {id:"kg3b",o:10,es:"El corazón del Kerygma · El pago del rescate · La Resurrección",en:"El corazón del Kerygma · El pago del rescate · La Resurrección",dur:"5 min",mod:"KER-03",modEs:"JESUCRISTO MURIÓ Y RESUCITÓ POR TI",blk:"B",evalua:false},
+  {id:"kg3c",o:11,es:"La Cruz · La piedra removida",en:"La Cruz · La piedra removida",dur:"3 min",mod:"KER-03",modEs:"JESUCRISTO MURIÓ Y RESUCITÓ POR TI",blk:"C",evalua:false},
+  {id:"kg3d",o:12,es:"Apropiación del sacrificio · Dos minutos de silencio · Lo hiciste por mí",en:"Apropiación del sacrificio · Dos minutos de silencio · Lo hiciste por mí",dur:"2 min",mod:"KER-03",modEs:"JESUCRISTO MURIÓ Y RESUCITÓ POR TI",blk:"D",evalua:true},
+  {id:"kg4a",o:13,es:"En voz de Zaqueo",en:"En voz de Zaqueo",dur:"2 min",mod:"KER-04",modEs:"RESPONDE CON FE Y CONVERSIÓN",blk:"A",evalua:false},
+  {id:"kg4b",o:14,es:"Qué es la fe · Qué es la conversión · Qué debo hacer",en:"Qué es la fe · Qué es la conversión · Qué debo hacer",dur:"5 min",mod:"KER-04",modEs:"RESPONDE CON FE Y CONVERSIÓN",blk:"B",evalua:false},
+  {id:"kg4c",o:15,es:"El giro",en:"El giro",dur:"3 min",mod:"KER-04",modEs:"RESPONDE CON FE Y CONVERSIÓN",blk:"C",evalua:false},
+  {id:"kg4d",o:16,es:"La primera acción · Hoy, concreta y que cueste · Que se note el giro",en:"La primera acción · Hoy, concreta y que cueste · Que se note el giro",dur:"3 min",mod:"KER-04",modEs:"RESPONDE CON FE Y CONVERSIÓN",blk:"D",evalua:true},
+  {id:"kg5a",o:17,es:"En voz de San Pablo Apóstol",en:"En voz de San Pablo Apóstol",dur:"2 min",mod:"KER-05",modEs:"EL ESPÍRITU SANTO ABRE UNA VIDA NUEVA",blk:"A",evalua:false},
+  {id:"kg5b",o:18,es:"No un código moral · Una vida animada por Alguien más",en:"No un código moral · Una vida animada por Alguien más",dur:"4 min",mod:"KER-05",modEs:"EL ESPÍRITU SANTO ABRE UNA VIDA NUEVA",blk:"B",evalua:false},
+  {id:"kg5c",o:19,es:"El aliento · El fuego",en:"El aliento · El fuego",dur:"3 min",mod:"KER-05",modEs:"EL ESPÍRITU SANTO ABRE UNA VIDA NUEVA",blk:"C",evalua:false},
+  {id:"kg5d",o:20,es:"Respiración espiritual · Tres exhalaciones · Toma el volante",en:"Respiración espiritual · Tres exhalaciones · Toma el volante",dur:"2 min",mod:"KER-05",modEs:"EL ESPÍRITU SANTO ABRE UNA VIDA NUEVA",blk:"D",evalua:true},
+  {id:"kg6a",o:21,es:"En voz de Madre Teresa",en:"En voz de Madre Teresa",dur:"2 min",mod:"KER-06",modEs:"LA NUEVA VIDA SE RECONOCE EN LA CARIDAD",blk:"A",evalua:false},
+  {id:"kg6b",o:22,es:"Caridad concreta · Reconciliación · Disponibilidad",en:"Caridad concreta · Reconciliación · Disponibilidad",dur:"4 min",mod:"KER-06",modEs:"LA NUEVA VIDA SE RECONOCE EN LA CARIDAD",blk:"B",evalua:false},
+  {id:"kg6c",o:23,es:"La palangana y la toalla",en:"La palangana y la toalla",dur:"3 min",mod:"KER-06",modEs:"LA NUEVA VIDA SE RECONOCE EN LA CARIDAD",blk:"C",evalua:false},
+  {id:"kg6d",o:24,es:"Caridad oculta · Por alguien difícil · Que no se entere nadie",en:"Caridad oculta · Por alguien difícil · Que no se entere nadie",dur:"3 min",mod:"KER-06",modEs:"LA NUEVA VIDA SE RECONOCE EN LA CARIDAD",blk:"D",evalua:true},
 ];
 const COURSES={
   bautismo:[
@@ -118,6 +144,49 @@ const COURSES={
 // ─── PREGUNTAS TC1 (5 por tema, escala 10 pts, necesita ≥8) ──────
 // Formato: {id, q, o:{a,b,c,d}, k:"letra_correcta"}
 const Q={
+  // ── KERIGMA — una evaluación por tema (en el bloque D) ──
+  kg1d:[
+    {id:1,q:"¿De quién es siempre la iniciativa en la relación con Dios?",o:{a:"Del ser humano, que busca a Dios primero",b:"De Dios, que ama y busca primero",c:"De la Iglesia como intermediaria",d:"Es simultánea"},k:"b"},
+    {id:2,q:"¿Por qué ama Dios al ser humano?",o:{a:"Porque se lo gana portándose bien",b:"Por su constancia en la oración",c:"Porque Él es Padre; la causa está en Él, no en nosotros",d:"Porque somos moralmente limpios"},k:"c"},
+    {id:3,q:"En la parábola mal llamada 'del hijo pródigo', ¿quién es el verdadero protagonista?",o:{a:"El hijo menor",b:"El hijo mayor",c:"El Padre misericordioso",d:"Los jornaleros"},k:"c"},
+    {id:4,q:"¿Qué significaba el anillo que el padre manda poner al hijo?",o:{a:"Un adorno de bienvenida",b:"El sello con autoridad para actuar en nombre de la casa",c:"Una señal de penitencia",d:"El pago de la herencia"},k:"b"},
+    {id:5,q:"La frase que resume el itinerario: 'El cristianismo no es un esfuerzo por alcanzar a Dios, sino…'",o:{a:"cumplir los mandamientos con rigor",b:"subir la escalera hacia lo divino",c:"dejarse alcanzar por Él",d:"demostrar méritos antes de ser aceptado"},k:"c"},
+  ],
+  kg2d:[
+    {id:1,q:"¿Qué es realmente el pecado, según el video?",o:{a:"Una infracción administrativa de las reglas",b:"Una enfermedad mortal que daña y se propaga",c:"Un error sin consecuencias",d:"Algo que solo afecta a Dios"},k:"b"},
+    {id:2,q:"El pecado rompe tres relaciones. ¿Cuáles?",o:{a:"Con Dios, con la Iglesia y con el Estado",b:"Con Dios, con los demás y con uno mismo",c:"Con el pasado, el presente y el futuro",d:"Con el cuerpo, la mente y el alma"},k:"b"},
+    {id:3,q:"El primer efecto del pecado en la historia humana fue…",o:{a:"Un castigo inmediato",b:"Que el hombre se escondió, por vergüenza",c:"La muerte física",d:"La expulsión de los demás"},k:"b"},
+    {id:4,q:"¿Qué le hace el pecado a la mirada sobre el prójimo?",o:{a:"Lo convierte en instrumento: algo que sirve o estorba",b:"Lo idealiza",c:"No afecta la relación",d:"Lo vuelve invisible"},k:"a"},
+    {id:5,q:"En el ejercicio 'diagnóstico sincero', ¿qué actitud se pide?",o:{a:"Justificar el error con el contexto",b:"Nombrar el hecho sin 'pero' y pedir ser rescatado",c:"Prometer que no volverá a pasar",d:"Compararse con quien hace cosas peores"},k:"b"},
+  ],
+  kg3d:[
+    {id:1,q:"La Pasión y Muerte de Cristo son, ante todo…",o:{a:"Una tragedia o injusticia sin más",b:"El pago de tu rescate",c:"Un mito",d:"Solo un ejemplo moral"},k:"b"},
+    {id:2,q:"¿Qué deformación de la Cruz se rechaza explícitamente?",o:{a:"Que Cristo resucitó",b:"Que Dios estaba furioso y descargó su ira en su Hijo",c:"Que el pecado existe",d:"Que hay rescate"},k:"b"},
+    {id:3,q:"¿Qué hace Cristo con nuestra lejanía?",o:{a:"La ignora",b:"La castiga",c:"La asume para devolvernos al Padre",d:"La aumenta"},k:"c"},
+    {id:4,q:"Un rescate, por definición…",o:{a:"Lo paga el propio retenido",b:"Lo paga un tercero desde fuera",c:"No cuesta nada",d:"Es solo simbólico"},k:"b"},
+    {id:5,q:"El ejercicio 'apropiación del sacrificio' busca pasar de…",o:{a:"Sentir mucho a sentir poco",b:"Saber que murió por todos a reconocer que murió por ti",c:"La teoría a la memoria",d:"La duda a la certeza emocional"},k:"b"},
+  ],
+  kg4d:[
+    {id:1,q:"¿Qué es la fe, según el video?",o:{a:"Estar de acuerdo con la doctrina",b:"Confiar tu vida a Cristo",c:"Memorizar el catecismo",d:"Saber responder objeciones"},k:"b"},
+    {id:2,q:"La diferencia entre información y fe se ilustra con…",o:{a:"Un maestro y un alumno",b:"Conocer al cirujano vs. acostarte en la camilla y dejar que te opere",c:"Un libro y una película",d:"Un mapa y una brújula"},k:"b"},
+    {id:3,q:"Si no hay nada en juego ni riesgo, la fe es en realidad…",o:{a:"Humildad",b:"Opinión",c:"Esperanza",d:"Caridad"},k:"b"},
+    {id:4,q:"La palabra griega del Evangelio para 'conversión' es…",o:{a:"Kerygma",b:"Metanoia",c:"Koinonía",d:"Ágape"},k:"b"},
+    {id:5,q:"La conversión (metanoia) NO es…",o:{a:"Un cambio de mente y de rumbo",b:"Una vida más gris llena de prohibiciones",c:"Volver al Padre",d:"Una respuesta al amor recibido"},k:"b"},
+  ],
+  kg5d:[
+    {id:1,q:"El Espíritu Santo es…",o:{a:"Una energía o fuerza impersonal",b:"El don de Cristo resucitado: Dios mismo y Persona",c:"Una técnica espiritual",d:"Un símbolo"},k:"b"},
+    {id:2,q:"¿Cómo se relaciona uno con el Espíritu Santo?",o:{a:"Se maneja y se usa",b:"Se acoge y se le obedece",c:"Se activa con métodos",d:"Se controla"},k:"b"},
+    {id:3,q:"Los tres verbos de su acción interior son…",o:{a:"Juzga, premia y castiga",b:"Despierta, fortalece y sostiene la fe",c:"Crea, ordena y destruye",d:"Enseña, examina y aprueba"},k:"b"},
+    {id:4,q:"El primer movimiento de fe de tu vida…",o:{a:"Fue mérito tuyo",b:"Ya era Él actuando; nadie se despierta solo",c:"No cuenta",d:"Fue casualidad"},k:"b"},
+    {id:5,q:"El problema real de la vida cristiana no es empezar, sino…",o:{a:"Sentir",b:"Durar: sostenerlo en el tiempo",c:"Saber",d:"Convencer"},k:"b"},
+  ],
+  kg6d:[
+    {id:1,q:"El anuncio de Jesús siempre produce…",o:{a:"Emociones privadas",b:"Comunidad y servicio",c:"Conocimiento teórico",d:"Descanso"},k:"b"},
+    {id:2,q:"La expresión 'cristianismo de sofá' se usa para afirmar que…",o:{a:"Es válido vivir la fe en privado y con comodidad",b:"NO existe una versión individual, cómoda y sin responsabilidad",c:"Hay que descansar del servicio",d:"La fe es un consumo legítimo"},k:"b"},
+    {id:3,q:"La pregunta que distingue la fe verdadera de la 'espiritualidad de consumo' es…",o:{a:"¿Cuánto sé?",b:"¿Mi fe le cuesta algo a alguien o solo me da algo a mí?",c:"¿Cuánto rezo?",d:"¿Me siento bien?"},k:"b"},
+    {id:4,q:"'Caridad concreta' significa…",o:{a:"Amar a la humanidad en general",b:"Una persona con nombre, esta semana, con algo medible",c:"Tener buenos deseos",d:"Donaciones anónimas grandes"},k:"b"},
+    {id:5,q:"¿Dónde se ve si la conversión fue real, según el video?",o:{a:"En el conocimiento",b:"En la reconciliación: perdonar como fui perdonado",c:"En las emociones",d:"En la asistencia a misa"},k:"b"},
+  ],
   t1:[
     {id:1,q:"¿Qué afirma San Agustín sobre el corazón humano?",o:{a:"Es naturalmente bueno",b:"Está inquieto hasta descansar en Dios",c:"Es autosuficiente",d:"Busca solo el placer"},k:"b"},
     {id:2,q:"¿Por qué puede el hombre conocer a Dios por la razón?",o:{a:"Por revelación especial únicamente",b:"Es imposible sin la fe",c:"Porque las obras visibles revelan al Creador invisible",d:"Solo mediante la filosofía moderna"},k:"c"},
@@ -375,19 +444,34 @@ if (TEST_MODE) {
   });
 }
 
+// ¿Este bloque requiere aprobar evaluación para completarse?
+//   - Bloques nuevos (A/B/C) → evalua:false → se completan al VERSE.
+//   - Bloque D (y videos antiguos sin `evalua`) → requieren evaluación aprobada.
+function requiereEval(vid){ return vid?.evalua===undefined ? true : !!vid.evalua; }
+
+// ¿Un bloque está COMPLETADO? (verlo basta si no evalúa; si evalúa, hay que aprobar)
+function videoDone(secId, vid, prog){
+  const p=prog?.[secId]?.[vid?.id];
+  return requiereEval(vid) ? !!p?.passed : !!p?.visto;
+}
+
 function isSectionDone(secId, prog){
   const vids=SEC_META[secId]?.videos||[];
-  return vids.length>0 && vids.every(v=>prog?.[secId]?.[v.id]?.passed);
+  return vids.length>0 && vids.every(v=>videoDone(secId,v,prog));
 }
 
 function videoState(secId, vid, prog, vids){
   const p=prog?.[secId]?.[vid.id];
-  if(p?.passed) return "passed";
-  if(p?.visto) return "watched";
+  if(requiereEval(vid)){
+    if(p?.passed) return "passed";
+    if(p?.visto) return "watched";      // visto pero falta la evaluación
+  } else {
+    if(p?.visto) return "done";         // bloque sin evaluación: verlo lo completa
+  }
   const idx=vids.findIndex(v=>v.id===vid.id);
   if(idx===0) return "available";
-  return prog?.[secId]?.[vids[idx-1].id]?.passed ? "available" : "locked";
+  return videoDone(secId,vids[idx-1],prog) ? "available" : "locked";
 }
 
 export { TC1_MODULES, TC1_ALL, TC2_CONFESION, TC2_UNCION, KERIGMA, COURSES, Q,
-         videoPruebaUrls, SEC_META, TEST_MODE, isSectionDone, videoState };
+         videoPruebaUrls, SEC_META, TEST_MODE, isSectionDone, videoState, requiereEval, videoDone };

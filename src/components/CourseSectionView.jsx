@@ -1,4 +1,4 @@
-import { SEC_META, videoState } from "../data/course.js";
+import { SEC_META, videoState, videoDone } from "../data/course.js";
 import SecIcon from "./SecIcon.jsx";
 import { LibraryButton, ConsultarDudasButton, ConsultarIAButton, SoporteFloat } from "./support.jsx";
 import { C, BTN, CARD } from "../ui.js";
@@ -11,10 +11,10 @@ export default function CourseSectionView({secId,progress,onVideoAction,onEvalAc
   if(!sec) return null;
   const vids=sec.videos;
   const prog=progress[secId]||{};
-  const stateColor={locked:C.tM,available:C.blue,watched:C.gold,passed:C.green};
-  const stateIcon={locked:"🔒",available:"▶",watched:"📋",passed:"✅"};
-  const stateLabelES={locked:"Bloqueado",available:"Disponible",watched:"Visto — Evaluación pendiente",passed:"Aprobado"};
-  const stateLabelEN={locked:"Locked",available:"Available",watched:"Watched — Evaluation pending",passed:"Passed"};
+  const stateColor={locked:C.tM,available:C.blue,watched:C.gold,passed:C.green,done:C.green};
+  const stateIcon={locked:"🔒",available:"▶",watched:"📋",passed:"✅",done:"✅"};
+  const stateLabelES={locked:"Bloqueado",available:"Disponible",watched:"Visto — Evaluación pendiente",passed:"Aprobado",done:"Visto"};
+  const stateLabelEN={locked:"Locked",available:"Available",watched:"Watched — Evaluation pending",passed:"Passed",done:"Watched"};
   return(
     <div style={{minHeight:"100vh",background:"rgba(250,247,240,0.82)",padding:"24px 16px",
       display:"flex",justifyContent:"center",alignItems:"flex-start"}}>
@@ -42,7 +42,7 @@ export default function CourseSectionView({secId,progress,onVideoAction,onEvalAc
             {PICK(sec)}
           </h1>
           <p style={{color:C.ivoryM,fontSize:13,marginTop:4}}>
-            {vids.filter(v=>prog[v.id]?.passed).length}/{vids.length} {T("completados","completed","terminés","abgeschlossen","concluídos","completati")}
+            {vids.filter(v=>videoDone(secId,v,progress)).length}/{vids.length} {T("completados","completed","terminés","abgeschlossen","concluídos","completati")}
           </p>
         </div>
         {/* Timeline */}
@@ -53,15 +53,27 @@ export default function CourseSectionView({secId,progress,onVideoAction,onEvalAc
           {vids.map((vid,idx)=>{
             const state=videoState(secId,vid,progress,vids);
             const vp=prog[vid.id]||{};
+            const nuevoTema=vid.mod && vid.mod!==(vids[idx-1]?.mod);
+            const done=state==="passed"||state==="done";
             return(
-              <div key={vid.id} style={{display:"flex",gap:16,marginBottom:16,position:"relative",zIndex:1}}>
+              <div key={vid.id}>
+              {nuevoTema&&(
+                <div style={{display:"flex",alignItems:"center",gap:10,margin:"18px 0 10px",paddingLeft:4}}>
+                  <span style={{color:C.gold,fontFamily:"'Cinzel',serif",fontSize:13,fontWeight:700,
+                    letterSpacing:"0.04em"}}>{vid.mod}</span>
+                  <span style={{color:C.ivory,fontFamily:"'Crimson Text',serif",fontSize:15,fontWeight:600}}>
+                    {vid.modEs||""}</span>
+                  <span style={{flex:1,height:1,background:`${C.gold}33`}}/>
+                </div>
+              )}
+              <div style={{display:"flex",gap:16,marginBottom:16,position:"relative",zIndex:1}}>
                 {/* Circle */}
                 <div style={{width:56,height:56,borderRadius:"50%",flexShrink:0,
-                  background:state==="passed"?C.green:state==="watched"?C.gold:state==="available"?C.blue:C.gray,
+                  background:done?C.green:state==="watched"?C.gold:state==="available"?C.blue:C.gray,
                   display:"flex",alignItems:"center",justifyContent:"center",
-                  fontSize:20,border:`2px solid ${state==="passed"?C.greenB:state==="available"?C.blueB:C.borderD}`,
+                  fontSize:20,border:`2px solid ${done?C.greenB:state==="available"?C.blueB:C.borderD}`,
                   boxShadow:state==="available"?`0 0 12px ${C.blue}60`:undefined}}>
-                  {stateIcon[state]}
+                  {vid.blk?<span style={{fontSize:16,fontWeight:700,fontFamily:"'Cinzel',serif",color:"#fff"}}>{vid.blk}</span>:stateIcon[state]}
                 </div>
                 {/* Card */}
                 <div style={{...CARD,flex:1,background:state==="locked"?C.surface:C.card,
@@ -96,7 +108,7 @@ export default function CourseSectionView({secId,progress,onVideoAction,onEvalAc
                         📝 {T("Evaluación","Evaluation","Évaluation","Bewertung","Avaliação","Valutazione")}
                       </button>
                     )}
-                    {state==="passed"&&(
+                    {(state==="passed"||state==="done")&&(
                       <button onClick={()=>onVideoAction(secId,vid)}
                         style={{...BTN("sec"),fontSize:12,padding:"8px 16px",opacity:.7}}>
                         ▶ {T("Rever","Rewatch","Revoir","Erneut ansehen","Rever","Rivedi")}
@@ -104,6 +116,7 @@ export default function CourseSectionView({secId,progress,onVideoAction,onEvalAc
                     )}
                   </div>
                 </div>
+              </div>
               </div>
             );
           })}

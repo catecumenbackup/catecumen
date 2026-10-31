@@ -28,7 +28,7 @@ import EstrellasInput from "./components/EstrellasInput.jsx";
 import { FlameIcon, CalizIcon, iconoBautismo, iconoConfirmacion } from "./components/icons.jsx";
 import SecIcon from "./components/SecIcon.jsx";
 import { SoporteLink, DirectorioButton, SoporteModal } from "./components/support.jsx";
-import { SEC_META, Q, TEST_MODE, isSectionDone, videoState } from "./data/course.js";
+import { SEC_META, Q, TEST_MODE, isSectionDone, videoState, requiereEval, videoDone } from "./data/course.js";
 import { appNav } from "./appNav.js";
 import { CUOTAS } from "./data/pricing.js";
 import { GoldenRain, StarRain } from "./components/effects.jsx";
@@ -1436,7 +1436,9 @@ export default function App(){
   const checkSectionComplete=(secId,updatedProgress)=>{
     const sec=SEC_META[secId];
     if(!sec) return false;
-    return sec.videos.every(v=>updatedProgress?.[secId]?.[v.id]?.passed);
+    // Completa = todos los bloques COMPLETADOS (ver basta si no evalúan; si evalúan,
+    // hay que aprobar). Usa el mismo criterio que videoDone/isSectionDone.
+    return sec.videos.every(v=>videoDone(secId,v,updatedProgress));
   };
 
   // Filter selection
@@ -1868,8 +1870,21 @@ export default function App(){
     const {secId,vid}=activeVideo;
     markVideoWatched(secId,vid);
     setActiveVideo(null);
-    // Encuesta obligatoria antes de la evaluación, SOLO si no se ha respondido ya
-    // para este video (evita re-preguntar cuando el usuario reintenta tras reprobar).
+    // Bloque SIN evaluación (A/B/C): verlo lo completa; no hay encuesta ni examen.
+    // Comprobar si con esto se completó la sección (por si fuera el último).
+    if(!requiereEval(vid)){
+      const newP={...progress};
+      if(!newP[secId]) newP[secId]={};
+      newP[secId]={...newP[secId],[vid.id]:{...newP[secId][vid.id],visto:true}};
+      if(checkSectionComplete(secId,newP)){
+        setCompletedSecId(secId);
+        setShowSecComplete(true);
+        setGoldRain(true); setTimeout(()=>setGoldRain(false),4000);
+      }
+      return;
+    }
+    // Bloque CON evaluación (D): encuesta obligatoria antes del examen, SOLO si no
+    // se ha respondido ya para este video (evita re-preguntar al reintentar).
     if(encuestasHechas.has(`${secId}:${vid.id}`)){
       setActiveEval({secId,vid});
     }else{
@@ -1913,8 +1928,9 @@ export default function App(){
     const done=checkSectionComplete(secId,newP);
     if(done){
       setCompletedSecId(secId);
-      const scores=SEC_META[secId].videos.map(v=>newP[secId]?.[v.id]?.score||0);
-      const avg=scores.reduce((a,b)=>a+b,0)/scores.length;
+      const evalVids=SEC_META[secId].videos.filter(requiereEval);
+      const scores=evalVids.map(v=>newP[secId]?.[v.id]?.score||0);
+      const avg=scores.length?scores.reduce((a,b)=>a+b,0)/scores.length:0;
       setLastResult(p=>({...p,avgScore:avg}));
       setShowSecComplete(true);
       setGoldRain(true);
@@ -1937,7 +1953,8 @@ export default function App(){
   const calcAvgScore=(secId)=>{
     const sec=SEC_META[secId];
     if(!sec) return 0;
-    const scores=sec.videos.map(v=>progress?.[secId]?.[v.id]?.score||0);
+    const evalVids=sec.videos.filter(requiereEval);
+    const scores=evalVids.map(v=>progress?.[secId]?.[v.id]?.score||0);
     return scores.reduce((a,b)=>a+b,0)/Math.max(scores.length,1);
   };
 
