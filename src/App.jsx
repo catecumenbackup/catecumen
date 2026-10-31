@@ -1064,6 +1064,7 @@ export default function App(){
   // 2.2 MB): era el recurso más lento del arranque.
   const [phase,setPhase]=useState("welcome");
   const [cuentaSuspendida,setCuentaSuspendida]=useState(null); // {motivo} si la cuenta está suspendida/eliminada
+  const [sesionCerrada,setSesionCerrada]=useState(false); // true si otro dispositivo tomó la sesión
   const [msgNoLeidos,setMsgNoLeidos]=useState(0); // contador para la campana flotante
   const [dashTab,setDashTab]=useState(null); // pestaña inicial al abrir el dashboard (p.ej. "mensajes")
   // video|welcome|filter|sacSelect|encuadre|register|password|payment|thankYou|course|orgThankYou
@@ -1303,6 +1304,33 @@ export default function App(){
     }catch(e){}
   },[currentSecId,phase,userType]);
 
+  // ── Una sola sesión por cuenta ──────────────────────────────────────────────
+  // Cada ~45 s (y al volver a la pestaña) valida el token de sesión contra la BD.
+  // Si otro dispositivo reclamó la cuenta, cierra la sesión local y avisa.
+  useEffect(()=>{
+    if(!uid) return;
+    let cancel=false;
+    const chequear=async()=>{
+      if(cancel||document.hidden) return;
+      let tk=null; try{ tk=localStorage.getItem("cat_sesion_token"); }catch{}
+      if(!tk){ tk=(crypto?.randomUUID?.()||String(Date.now())+Math.random()); try{localStorage.setItem("cat_sesion_token",tk);}catch{} }
+      try{
+        const {data,error}=await supabase.rpc("validar_sesion",{p_token:tk});
+        if(!cancel && !error && data==="conflicto"){
+          try{ await supabase.auth.signOut({scope:"local"}); }catch(e){ console.error("signOut(sesion):",e); }
+          setSequence([]); setSeqIdx(0); setProgress({}); setInsBySec({});
+          setShowDash(false); setShowCerts(false); setActiveVideo(null);
+          setSesionCerrada(true); setPhase("welcome");
+        }
+      }catch(e){ /* red intermitente: reintentar en el siguiente ciclo */ }
+    };
+    const id=setInterval(chequear,45000);
+    const onVis=()=>{ if(!document.hidden) chequear(); };
+    document.addEventListener("visibilitychange",onVis);
+    chequear();
+    return ()=>{ cancel=true; clearInterval(id); document.removeEventListener("visibilitychange",onVis); };
+  },[uid]);
+
   const markVideoWatched=(secId,vid)=>{
     setProgress(p=>{
       const sp=p[secId]||{};
@@ -1470,7 +1498,7 @@ export default function App(){
   };
   useEffect(()=>{ loadBridge(); },[]);
 
-  const handleLoginSuccess=async(authUser)=>{
+  const handleLoginSuccess=async(authUser,isRestore=false)=>{
     try{
       setUid(authUser?.id||null); // ligar las descargas offline a esta cuenta
       const {data:u,error}=await supabase.from("usuarios")
@@ -1498,6 +1526,18 @@ export default function App(){
         setCuentaSuspendida({motivo:u.suspendido_motivo||null, eliminada:!!u.eliminado});
         setPhase("welcome");
         return;
+      }
+      // Una sola sesión por cuenta: SOLO en un inicio de sesión EXPLÍCITO este
+      // dispositivo RECLAMA la sesión (token nuevo → expulsa a los demás). Al
+      // RESTAURAR la sesión (recarga de página) no se reclama: el efecto de
+      // validación periódica decide si sigue vigente o si otro la tomó (evita
+      // que dos dispositivos se expulsen en bucle al recargar).
+      if(!isRestore){
+        try{
+          const tk=(crypto?.randomUUID?.()||String(Date.now())+Math.random());
+          localStorage.setItem("cat_sesion_token",tk);
+          await supabase.rpc("reclamar_sesion",{p_token:tk});
+        }catch(e){ console.error("reclamar_sesion:",e); }
       }
       // Usuario PREINSCRITO. Si el modo preinscripción sigue activo → pantalla de
       // espera. Si ya se abrió la plataforma → conversión: gratuita (beca 100%)
@@ -1706,7 +1746,7 @@ export default function App(){
       try{
         const {data}=await supabase.auth.getSession();
         if(data?.session?.user){
-          handleLoginSuccess(data.session.user);
+          handleLoginSuccess(data.session.user,true); // restauración: no reclamar sesión
         }
       }catch(e){ console.error("getSession:",e); }
     })();
@@ -1992,6 +2032,27 @@ export default function App(){
                 {T("Volver al inicio","Back to start","Retour à l'accueil","Zurück zum Start","Voltar ao início","Torna all'inizio")}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {sesionCerrada&&(
+        <div style={OVERLAY}>
+          <div style={{...MODAL,maxWidth:460,textAlign:"center"}}>
+            <div style={{fontSize:40,marginBottom:10}}>🔒</div>
+            <h2 style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:19,marginBottom:10}}>
+              {T("Sesión cerrada","Session closed","Session fermée","Sitzung beendet","Sessão encerrada","Sessione chiusa")}
+            </h2>
+            <p style={{color:C.ivory,fontFamily:"'Crimson Text',serif",fontSize:15,lineHeight:1.6,marginBottom:14}}>
+              {T("Tu sesión se cerró porque se inició en otro dispositivo. Por seguridad, cada cuenta solo puede estar activa en un dispositivo a la vez. Vuelve a iniciar sesión para continuar.",
+                 "Your session was closed because it was started on another device. For security, each account can only be active on one device at a time. Please sign in again to continue.",
+                 "Votre session a été fermée car elle a été ouverte sur un autre appareil. Par sécurité, chaque compte ne peut être actif que sur un seul appareil à la fois. Veuillez vous reconnecter pour continuer.",
+                 "Ihre Sitzung wurde beendet, weil sie auf einem anderen Gerät gestartet wurde. Aus Sicherheitsgründen kann jedes Konto nur auf einem Gerät gleichzeitig aktiv sein. Bitte melden Sie sich erneut an.",
+                 "Sua sessão foi encerrada porque foi iniciada em outro dispositivo. Por segurança, cada conta só pode estar ativa em um dispositivo por vez. Entre novamente para continuar.",
+                 "La tua sessione è stata chiusa perché è stata avviata su un altro dispositivo. Per sicurezza, ogni account può essere attivo su un solo dispositivo alla volta. Accedi di nuovo per continuare.")}
+            </p>
+            <button onClick={()=>{setSesionCerrada(false);setPhase("login");}} style={{...BTN("sec"),cursor:"pointer"}}>
+              {T("Iniciar sesión","Sign in","Se connecter","Anmelden","Entrar","Accedi")}
+            </button>
           </div>
         </div>
       )}
