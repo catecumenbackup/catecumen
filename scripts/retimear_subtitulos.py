@@ -71,6 +71,33 @@ def parse_vtt(path):
         if text: out.append(text)
     return out
 
+def load_audio(path, sr=16000):
+    """Decodifica el audio a float32 mono 16 kHz con PyAV (evita la función
+    decode_audio de faster-whisper, incompatible con PyAV 19+ en Python 3.14)."""
+    import av, numpy as np
+    container = av.open(path)
+    try:
+        stream = next(s for s in container.streams if s.type == "audio")
+    except StopIteration:
+        container.close(); raise RuntimeError("el video no tiene pista de audio")
+    resampler = av.audio.resampler.AudioResampler(format="s16", layout="mono", rate=sr)
+    out = []
+    def _take(frames):
+        for fr in frames:
+            if fr is None: continue
+            out.append(fr.to_ndarray().reshape(-1))
+    for frame in container.decode(stream):
+        res = resampler.resample(frame)
+        _take(res if isinstance(res, (list, tuple)) else [res])
+    try:
+        res = resampler.resample(None)  # flush
+        _take(res if isinstance(res, (list, tuple)) else [res])
+    except Exception:
+        pass
+    container.close()
+    if not out: raise RuntimeError("no se pudo leer audio")
+    return np.concatenate(out).astype(np.float32) / 32768.0
+
 def ts(x):
     if x < 0: x = 0
     h = int(x // 3600); m = int((x % 3600) // 60); s = x % 60
@@ -120,8 +147,13 @@ def main():
         cues = parse_vtt(vp)
         if not cues: continue
 
-        # 1) transcripción con tiempos por palabra
-        segs, _ = model.transcribe(vid, language=args.lang, word_timestamps=True, vad_filter=True)
+        # 1) transcripción con tiempos por palabra (decodificamos el audio con
+        #    PyAV y lo pasamos como arreglo, para no depender de decode_audio).
+        try:
+            audio = load_audio(vid)
+        except Exception as e:
+            print(f"!! {code}: no se pudo decodificar el audio ({e}); lo salto"); continue
+        segs, _ = model.transcribe(audio, language=args.lang, word_timestamps=True, vad_filter=True)
         asr = []  # (norm, start, end)
         for s in segs:
             for w in (s.words or []):
