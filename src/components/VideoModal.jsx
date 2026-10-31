@@ -254,7 +254,9 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
             fontFamily:"'Cinzel',serif",fontSize:11,letterSpacing:"0.06em",fontWeight:700,
           }}>⚠ {T("VIDEO DE PRUEBA — contenido provisional","TEST VIDEO — placeholder content","VIDÉO DE TEST — contenu provisoire","TESTVIDEO — vorläufiger Inhalt","VÍDEO DE TESTE — conteúdo provisório","VIDEO DI PROVA — contenuto provvisorio")}</div>
         )}
-        <div style={{background:"#000",borderRadius:12,minHeight:200,display:"flex",flexDirection:"column",
+        <div style={{background:(acceso&&acceso.puede_ver===false)?"rgba(40,22,10,0.35)":"#000",
+          border:(acceso&&acceso.puede_ver===false)?"1px solid rgba(200,169,81,0.25)":"none",
+          borderRadius:12,minHeight:200,display:"flex",flexDirection:"column",
           alignItems:"center",justifyContent:"center",marginBottom:20,position:"relative",overflow:"hidden"}}>
           {acceso===null?(
             <div style={{color:C.ivoryM,fontFamily:"'Crimson Text',serif",fontSize:14,padding:24}}>
