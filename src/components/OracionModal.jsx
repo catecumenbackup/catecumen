@@ -8,10 +8,12 @@
 import { createPortal } from "react-dom";
 import { C } from "../ui.js";
 import { T } from "../i18n.js";
+import { useEscClose, BotonX } from "./modalUtils.jsx";
 
 const FONDO = "/oracion-fondo.jpg";
 
 export default function OracionModal({ ver = "C", onClose }) {
+  useEscClose(onClose);
   const larga = ver === "L";
 
   const titulo = larga
@@ -141,6 +143,7 @@ e tu, Maria, Madre della Chiesa, accompagnami.`);
           backgroundImage:
             "linear-gradient(90deg,rgba(14,8,2,0.95) 0%,rgba(14,8,2,0.9) 36%,rgba(14,8,2,0.5) 62%,rgba(14,8,2,0) 84%),url(" + FONDO + ")",
           backgroundSize: "cover", backgroundPosition: "right center" }}>
+        <BotonX onClose={onClose} />
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "center",
           width: "60%", minWidth: 280, padding: "clamp(26px,4.2vw,50px)", textAlign: "left" }}>
           <div style={{ fontFamily: "'Cinzel',serif", color: C.goldL, fontWeight: 700,

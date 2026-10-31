@@ -1,12 +1,15 @@
 import { C, BTN, CARD, MODAL, OVERLAY } from "../ui.js";
 import { T, PICK } from "../i18n.js";
+import { useEscClose, BotonX } from "./modalUtils.jsx";
 
 export default function ResultModal({result,vid,onClose}){
+  useEscClose(onClose);
   const {score,passed,correct,total}=result;
   const title=PICK(vid);
   return(
     <div style={OVERLAY}>
-      <div style={{...MODAL,maxWidth:460,textAlign:"center"}}>
+      <div style={{...MODAL,maxWidth:460,textAlign:"center",position:"relative"}}>
+        <BotonX onClose={onClose} />
         <div style={{fontSize:48,marginBottom:8}}>{passed?"🏆":"📚"}</div>
         <h2 style={{fontFamily:"'Cinzel',serif",color:passed?C.green:"#F87171",fontSize:20,marginBottom:8}}>
           {passed?T("¡Aprobado!","Passed!","Réussi !","Bestanden!","Aprovado!","Superato!"):T("No aprobado","Not passed","Non réussi","Nicht bestanden","Não aprovado","Non superato")}

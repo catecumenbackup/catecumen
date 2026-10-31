@@ -2,13 +2,16 @@ import { SEC_META } from "../data/course.js";
 import SecIcon from "./SecIcon.jsx";
 import { C, BTN, CARD, MODAL, OVERLAY } from "../ui.js";
 import { T, PICK } from "../i18n.js";
+import { useEscClose, BotonX } from "./modalUtils.jsx";
 
 export default function SectionCompleteModal({secId,avgScore,nextSecId,isLastBeforeCerts,isAllDone,onContinue}){
+  useEscClose(onContinue);
   const sec=SEC_META[secId];
   const next=nextSecId?SEC_META[nextSecId]:null;
   return(
     <div style={OVERLAY}>
-      <div style={{...MODAL,maxWidth:520,textAlign:"center"}}>
+      <div style={{...MODAL,maxWidth:520,textAlign:"center",position:"relative"}}>
+        <BotonX onClose={onContinue} />
         <div style={{fontSize:48,marginBottom:8}}><SecIcon id={secId} size={48}/></div>
         <h2 style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:20,marginBottom:8}}>
           🎉 {T("¡Sección completada!","Section completed!","Section terminée !","Abschnitt abgeschlossen!","Seção concluída!","Sezione completata!")}

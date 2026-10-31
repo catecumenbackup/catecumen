@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { SEC_META } from "../data/course.js";
 import { supabase } from "../supabaseClient.js";
 import { SoporteLink } from "./support.jsx";
+import { useEscClose, BotonX } from "./modalUtils.jsx";
 import { C, BTN, MODAL, OVERLAY } from "../ui.js";
 import { T, PICK, LANG } from "../i18n.js";
 import * as videoStore from "../videoStore.js";
@@ -51,6 +52,7 @@ async function resolverFuente(url, videoId){
 }
 
 export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=null,onProgress,onWatched,onClose}){
+  useEscClose(onClose);
   const [watching,setWatching]=useState(false);
   const [done,setDone]=useState(false);
   const [secs,setSecs]=useState(0);
@@ -62,6 +64,7 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
   const [descError,setDescError]=useState(false);
   // Control de acceso (bloqueo por aprobación ≥8 o tope de 72 h + reapertura admin).
   const [acceso,setAcceso]=useState(null);    // null = verificando; {puede_ver, restante_horas, ...}
+  const [vistasInfo,setVistasInfo]=useState(null); // {vistas,vistas_max,vistas_restantes} tras registrar una vista (NO toca `acceso` para no re-disparar la carga del video)
   const [solPend,setSolPend]=useState(false);  // solicitud de reapertura pendiente
   const [accBusy,setAccBusy]=useState(false);  // botón de acceso en curso
   const [limite,setLimite]=useState(null);     // {permitido, restantes, limite} de descargas
@@ -99,7 +102,9 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
     try{
       supabase.rpc("registrar_vista",{p_video_id:videoUuid}).then(({data})=>{
         if(data&&typeof data.vistas_restantes==="number"){
-          setAcceso(a=>a?{...a,vistas:data.vistas,vistas_restantes:data.vistas_restantes,vistas_max:data.vistas_max}:a);
+          // OJO: NO actualizar `acceso` aquí — cambiarlo re-dispara el efecto que
+          // asigna la fuente del <video> y corta la 1ª reproducción. Estado aparte.
+          setVistasInfo({vistas:data.vistas,vistas_restantes:data.vistas_restantes,vistas_max:data.vistas_max});
         }
       },()=>{});
     }catch{}
@@ -236,7 +241,8 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
   const title=PICK(vid);
   return(
     <div style={OVERLAY}>
-      <div className="catePanel" style={{...MODAL,maxWidth:580,textAlign:"center"}}>
+      <div className="catePanel" style={{...MODAL,maxWidth:580,textAlign:"center",position:"relative"}}>
+        <BotonX onClose={onClose} />
         <div style={{fontSize:28,marginBottom:8}}>🎬</div>
         <h2 style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:16,marginBottom:4}}>{title}</h2>
         <p style={{color:C.ivoryM,fontSize:13,marginBottom:12}}>⏱ {vid.dur}</p>
@@ -358,16 +364,17 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
                     "Este vídeo fica disponível no máximo 72 horas após abri-lo. Aprovar a avaliação encerra o acesso.",
                     "Questo video resta disponibile al massimo 72 ore dall'apertura. Superare la valutazione chiude l'accesso.")}
             </p>
-            {typeof acceso.vistas_restantes==="number"&&(
+            {(()=>{ const vr=vistasInfo?vistasInfo.vistas_restantes:acceso.vistas_restantes;
+              const vm=(vistasInfo?vistasInfo.vistas_max:acceso.vistas_max)||3;
+              return typeof vr==="number"?(
               <p style={{color:C.gold,fontFamily:"'Crimson Text',serif",fontSize:12,lineHeight:1.5,margin:"6px 0 0"}}>
-                ▶ {T(`Reproducciones restantes: ${acceso.vistas_restantes} de ${acceso.vistas_max||3}.`,
-                     `Plays remaining: ${acceso.vistas_restantes} of ${acceso.vistas_max||3}.`,
-                     `Lectures restantes : ${acceso.vistas_restantes} sur ${acceso.vistas_max||3}.`,
-                     `Verbleibende Wiedergaben: ${acceso.vistas_restantes} von ${acceso.vistas_max||3}.`,
-                     `Reproduções restantes: ${acceso.vistas_restantes} de ${acceso.vistas_max||3}.`,
-                     `Riproduzioni rimanenti: ${acceso.vistas_restantes} di ${acceso.vistas_max||3}.`)}
-              </p>
-            )}
+                ▶ {T(`Reproducciones restantes: ${vr} de ${vm}.`,
+                     `Plays remaining: ${vr} of ${vm}.`,
+                     `Lectures restantes : ${vr} sur ${vm}.`,
+                     `Verbleibende Wiedergaben: ${vr} von ${vm}.`,
+                     `Reproduções restantes: ${vr} de ${vm}.`,
+                     `Riproduzioni rimanenti: ${vr} di ${vm}.`)}
+              </p>):null; })()}
             <p style={{color:C.ivoryM,fontFamily:"'Crimson Text',serif",fontSize:11.5,lineHeight:1.5,margin:"6px 0 0"}}>
               ⚖️ {T("Aviso legal: este contenido es propiedad de Catecumen. Queda PROHIBIDA su descarga, copia, grabación o redistribución por medios no autorizados. El acceso es personal e intransferible y queda registrado.",
                     "Legal notice: this content is property of Catecumen. Downloading, copying, recording or redistributing it by unauthorized means is PROHIBITED. Access is personal, non-transferable and is logged.",

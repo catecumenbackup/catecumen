@@ -2,8 +2,10 @@ import { useState } from "react";
 import { Q } from "../data/course.js";
 import { C, BTN, CARD, MODAL, OVERLAY } from "../ui.js";
 import { T, PICK } from "../i18n.js";
+import { useEscClose, BotonX } from "./modalUtils.jsx";
 
 export default function EvalModal({secId,vid,onResult,onClose}){
+  useEscClose(onClose);
   const qs=Q[vid.id]||(()=>{const keys=Object.keys(Q);return Q[keys[vid.o%keys.length]];})();
   const [ans,setAns]=useState({});
   const [submitted,setSubmitted]=useState(false);
@@ -18,7 +20,8 @@ export default function EvalModal({secId,vid,onResult,onClose}){
   const title=PICK(vid);
   return(
     <div style={OVERLAY}>
-      <div style={{...MODAL,maxWidth:640}}>
+      <div style={{...MODAL,maxWidth:640,position:"relative"}}>
+        <BotonX onClose={onClose} />
         <div style={{textAlign:"center",marginBottom:20}}>
           <div style={{fontSize:28,marginBottom:8}}>📝</div>
           <h2 style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:16}}>{T("Evaluación","Evaluation","Évaluation","Bewertung","Avaliação","Valutazione")}</h2>

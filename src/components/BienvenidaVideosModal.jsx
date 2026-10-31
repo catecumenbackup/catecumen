@@ -6,8 +6,10 @@
 import { createPortal } from "react-dom";
 import { C } from "../ui.js";
 import { T } from "../i18n.js";
+import { useEscClose, BotonX } from "./modalUtils.jsx";
 
 export default function BienvenidaVideosModal({ titulo, cuerpo, onClose, dark = false }) {
+  useEscClose(onClose);
   const boton = T("Comenzar", "Begin", "Commencer", "Beginnen", "Começar", "Inizia");
   // Colores según tema (claro / oscuro) para que respete la preferencia del usuario.
   const cardBg = dark
@@ -25,6 +27,7 @@ export default function BienvenidaVideosModal({ titulo, cuerpo, onClose, dark = 
           borderRadius: 16, padding: "clamp(24px,4vw,40px)",
           background: cardBg,
           boxShadow: "0 24px 70px rgba(0,0,0,0.5)", border: borde }}>
+        <BotonX onClose={onClose} style={{ color: dark ? "#E5C97A" : "#9A7A2A" }} />
         <div style={{ fontSize: 34, textAlign: "center", marginBottom: 6 }}>🕊️</div>
         <h2 style={{ fontFamily: "'Cinzel',serif", color: colTitulo, fontWeight: 700, textAlign: "center",
           fontSize: "clamp(19px,2.6vw,25px)", lineHeight: 1.25, margin: "0 0 16px" }}>{titulo}</h2>

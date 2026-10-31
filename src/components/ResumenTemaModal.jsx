@@ -10,6 +10,7 @@
 import { createPortal } from "react-dom";
 import { C, BTN } from "../ui.js";
 import { T } from "../i18n.js";
+import { useEscClose, BotonX } from "./modalUtils.jsx";
 
 const BLOQUE_NOMBRE = {
   A: ["Gancho", "Hook", "Accroche", "Einstieg", "Gancho", "Aggancio"],
@@ -84,6 +85,7 @@ export function ResumenContenido({ titulo = null, bloques = [], puntos = null, h
 }
 
 export default function ResumenTemaModal({ titulo, bloques = [], puntos = null, hojaPdfUrl = null, onClose, ctaEval = true }) {
+  useEscClose(onClose);
   return createPortal(
     <div style={{ position: "fixed", inset: 0, zIndex: 2970, background: "rgba(8,5,2,0.74)",
       display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
@@ -93,6 +95,7 @@ export default function ResumenTemaModal({ titulo, bloques = [], puntos = null, 
           borderRadius: 16, padding: "clamp(22px,4vw,36px)",
           background: `linear-gradient(160deg,var(--c-modalStart) 0%,${C.surface} 55%,var(--c-modalEnd) 100%)`,
           border: "1px solid rgba(200,169,81,0.3)", boxShadow: "0 24px 70px rgba(0,0,0,0.55)" }}>
+        <BotonX onClose={onClose} />
         <div style={{ textAlign: "center", marginBottom: 6, fontSize: 28 }}>📝</div>
         <ResumenContenido titulo={titulo} bloques={bloques} puntos={puntos} hojaPdfUrl={hojaPdfUrl} />
         <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 20 }}>
