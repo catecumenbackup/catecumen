@@ -2056,7 +2056,7 @@ export default function App(){
           </div>
         </div>
       )}
-      {phase==="welcome"&&<WelcomeModal
+      {phase==="welcome"&&!sesionCerrada&&<WelcomeModal
         onContinue={()=>setPhase("filter")}
         onLogin={()=>setPhase("login")}
       />}
