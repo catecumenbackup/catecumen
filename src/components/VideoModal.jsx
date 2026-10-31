@@ -398,7 +398,7 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
           </button>
           {done&&(
             <button onClick={onWatched} style={{...BTN("pri"),flex:2,justifyContent:"center"}}>
-              {T("Realizar evaluación","Take evaluation","Passer l'évaluation","Bewertung durchführen","Realizar avaliação","Esegui la valutazione")} →
+              {T("Continuar","Continue","Continuer","Weiter","Continuar","Continua")} →
             </button>
           )}
         </div>

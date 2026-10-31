@@ -1866,25 +1866,39 @@ export default function App(){
     setActiveVideo({secId,vid});
   };
 
+  // Tras la ENCUESTA de un bloque: si el bloque EVALÚA (D), pasar al examen; si no
+  // (A/B/C), el bloque queda completado (visto) → comprobar fin de sección.
+  const afterEncuesta=(secId,vid)=>{
+    if(requiereEval(vid)){
+      setActiveEval({secId,vid});
+      return;
+    }
+    const newP={...progress};
+    if(!newP[secId]) newP[secId]={};
+    newP[secId]={...newP[secId],[vid.id]:{...newP[secId][vid.id],visto:true}};
+    if(checkSectionComplete(secId,newP)){
+      setCompletedSecId(secId);
+      setShowSecComplete(true);
+      setGoldRain(true); setTimeout(()=>setGoldRain(false),4000);
+    }
+  };
+
   const handleVideoWatched=()=>{
     const {secId,vid}=activeVideo;
     markVideoWatched(secId,vid);
     setActiveVideo(null);
-    // Bloque SIN evaluación (A/B/C): verlo lo completa; no hay encuesta ni examen.
-    // Comprobar si con esto se completó la sección (por si fuera el último).
-    if(!requiereEval(vid)){
-      const newP={...progress};
-      if(!newP[secId]) newP[secId]={};
-      newP[secId]={...newP[secId],[vid.id]:{...newP[secId][vid.id],visto:true}};
-      if(checkSectionComplete(secId,newP)){
-        setCompletedSecId(secId);
-        setShowSecComplete(true);
-        setGoldRain(true); setTimeout(()=>setGoldRain(false),4000);
-      }
-      return;
+    // Encuesta de calidad al terminar CADA bloque (una por video → 4 por tema),
+    // SOLO si no se respondió ya para este video (evita re-preguntar al reintentar).
+    if(encuestasHechas.has(`${secId}:${vid.id}`)){
+      afterEncuesta(secId,vid);
+    }else{
+      setActiveEncuesta({secId,vid});
     }
-    // Bloque CON evaluación (D): encuesta obligatoria antes del examen, SOLO si no
-    // se ha respondido ya para este video (evita re-preguntar al reintentar).
+  };
+
+  const handleEvalAction=(secId,vid)=>{
+    // Botón "Evaluación" del índice (solo en bloques que evalúan). Encuesta primero
+    // si aún no se respondió; si ya, directo al examen.
     if(encuestasHechas.has(`${secId}:${vid.id}`)){
       setActiveEval({secId,vid});
     }else{
@@ -1892,21 +1906,11 @@ export default function App(){
     }
   };
 
-  const handleEvalAction=(secId,vid)=>{
-    // Si el usuario ya respondió la encuesta de este video, ir directo a la
-    // evaluación (no repetir la encuesta al reintentar tras no aprobar).
-    if(encuestasHechas.has(`${secId}:${vid.id}`)){
-      setActiveEval({secId,vid});
-    }else{
-      setActiveEncuesta({secId,vid}); // encuesta obligatoria antes de la evaluación
-    }
-  };
-
   const handleEncuestaDone=()=>{
     const {secId,vid}=activeEncuesta;
     setEncuestasHechas(prev=>{ const n=new Set(prev); n.add(`${secId}:${vid.id}`); return n; });
     setActiveEncuesta(null);
-    setActiveEval({secId,vid});
+    afterEncuesta(secId,vid);
   };
 
   const handleEvalResult=(result)=>{
