@@ -1066,6 +1066,7 @@ export default function App(){
   const [phase,setPhase]=useState("welcome");
   const [cuentaSuspendida,setCuentaSuspendida]=useState(null); // {motivo} si la cuenta está suspendida/eliminada
   const [sesionCerrada,setSesionCerrada]=useState(false); // true si otro dispositivo tomó la sesión
+  const [sesionInactiva,setSesionInactiva]=useState(false); // true si se cerró por inactividad
   const [msgNoLeidos,setMsgNoLeidos]=useState(0); // contador para la campana flotante
   const [dashTab,setDashTab]=useState(null); // pestaña inicial al abrir el dashboard (p.ej. "mensajes")
   // video|welcome|filter|sacSelect|encuadre|register|password|payment|thankYou|course|orgThankYou
@@ -1363,6 +1364,26 @@ export default function App(){
     document.addEventListener("visibilitychange",onVis);
     chequear();
     return ()=>{ cancel=true; clearInterval(id); document.removeEventListener("visibilitychange",onVis); };
+  },[uid]);
+
+  // ── Cierre por inactividad (sesión abandonada) ──────────────────────────────
+  // Tras 60 min sin actividad del usuario, cierra la sesión local y avisa. Se
+  // reinicia el contador con cualquier interacción (ratón, teclado, toque, scroll).
+  useEffect(()=>{
+    if(!uid) return;
+    const LIMITE=60*60*1000; // 1 hora
+    let t=null;
+    const cerrar=async()=>{
+      try{ await supabase.auth.signOut({scope:"local"}); }catch(e){ console.error("signOut(inactividad):",e); }
+      setSequence([]); setSeqIdx(0); setProgress({}); setInsBySec({});
+      setShowDash(false); setShowCerts(false); setActiveVideo(null);
+      setSesionInactiva(true); setPhase("welcome");
+    };
+    const reset=()=>{ if(t) clearTimeout(t); t=setTimeout(cerrar,LIMITE); };
+    const evs=["mousemove","mousedown","keydown","touchstart","scroll","click"];
+    evs.forEach(e=>window.addEventListener(e,reset,{passive:true}));
+    reset();
+    return ()=>{ if(t) clearTimeout(t); evs.forEach(e=>window.removeEventListener(e,reset)); };
   },[uid]);
 
   const markVideoWatched=(secId,vid)=>{
@@ -2090,7 +2111,28 @@ export default function App(){
           </div>
         </div>
       )}
-      {phase==="welcome"&&!sesionCerrada&&<WelcomeModal
+      {sesionInactiva&&(
+        <div style={OVERLAY}>
+          <div style={{...MODAL,maxWidth:460,textAlign:"center"}}>
+            <div style={{fontSize:40,marginBottom:10}}>⏱️</div>
+            <h2 style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:19,marginBottom:10}}>
+              {T("Sesión cerrada por inactividad","Session closed due to inactivity","Session fermée pour inactivité","Sitzung wegen Inaktivität beendet","Sessão encerrada por inatividade","Sessione chiusa per inattività")}
+            </h2>
+            <p style={{color:C.ivory,fontFamily:"'Crimson Text',serif",fontSize:15,lineHeight:1.6,marginBottom:14}}>
+              {T("Por tu seguridad cerramos la sesión tras un tiempo sin actividad. Tu progreso quedó guardado; vuelve a iniciar sesión para continuar.",
+                 "For your security we closed the session after a period of inactivity. Your progress was saved; sign in again to continue.",
+                 "Pour votre sécurité, nous avons fermé la session après une période d'inactivité. Votre progression a été enregistrée ; reconnectez-vous pour continuer.",
+                 "Zu Ihrer Sicherheit haben wir die Sitzung nach einer Zeit der Inaktivität beendet. Ihr Fortschritt wurde gespeichert; melden Sie sich erneut an, um fortzufahren.",
+                 "Por sua segurança, encerramos a sessão após um período de inatividade. Seu progresso foi salvo; entre novamente para continuar.",
+                 "Per la tua sicurezza abbiamo chiuso la sessione dopo un periodo di inattività. I tuoi progressi sono stati salvati; accedi di nuovo per continuare.")}
+            </p>
+            <button onClick={()=>{setSesionInactiva(false);setPhase("login");}} style={{...BTN("sec"),cursor:"pointer"}}>
+              {T("Iniciar sesión","Sign in","Se connecter","Anmelden","Entrar","Accedi")}
+            </button>
+          </div>
+        </div>
+      )}
+      {phase==="welcome"&&!sesionCerrada&&!sesionInactiva&&<WelcomeModal
         onContinue={()=>setPhase("filter")}
         onLogin={()=>setPhase("login")}
       />}
