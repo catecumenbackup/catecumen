@@ -141,6 +141,46 @@ const COURSES={
   ],
 };
 
+// ─── RESÚMENES POR TEMA (repaso antes de la evaluación) ──────────
+// Clave = código del tema (mod). Cada punto: {tipo:'doctrina'|'practica', texto}.
+// Al menos 1 doctrina y 1 práctica por tema, tono individual ("tú"), sin preguntas.
+// Por idioma (es por ahora; el equipo de contenido añade/afina el resto y otros
+// idiomas desde el panel en el futuro). Si un tema no tiene resumen, el modal cae
+// al repaso por bloques.
+const RESUMENES={
+  "KER-01":{es:[
+    {tipo:"doctrina",texto:"Dios no es un vigilante que anota tus errores: es un Padre que toma la iniciativa y sale a buscarte primero."},
+    {tipo:"doctrina",texto:"Él te ama porque es Padre, no porque te lo ganes; no puedes hacer que te ame más ni menos."},
+    {tipo:"doctrina",texto:"El cristianismo no es subir una escalera hasta Dios, sino dejarte alcanzar por Él, que bajó la escalera."},
+    {tipo:"practica",texto:"Antes de seguir, nombra en silencio qué te impide dejarte amar hoy: orgullo, culpa o miedo."},
+  ]},
+  "KER-02":{es:[
+    {tipo:"doctrina",texto:"El pecado no es romper una regla: es una enfermedad que daña tres relaciones —con Dios, con los demás y contigo mismo."},
+    {tipo:"doctrina",texto:"El primer efecto del pecado no fue un castigo, sino esconderte por vergüenza; reconocerlo libera."},
+    {tipo:"practica",texto:"Nombra una debilidad recurrente, sin justificarte, y dísela a Dios: «Aquí necesito que me rescates»."},
+  ]},
+  "KER-03":{es:[
+    {tipo:"doctrina",texto:"La Cruz no es una tragedia ni la ira de Dios descargada en su Hijo: es el pago de tu rescate."},
+    {tipo:"doctrina",texto:"Cristo asume tu lejanía —hasta la muerte— para devolverte al Padre, y resucita."},
+    {tipo:"practica",texto:"Ante un crucifijo, en silencio, repite y hazla tuya una sola frase: «Lo hiciste por mí»."},
+  ]},
+  "KER-04":{es:[
+    {tipo:"doctrina",texto:"La fe no es saber doctrina: es confiarle tu vida a Cristo. Si no hay nada en juego, es solo opinión."},
+    {tipo:"doctrina",texto:"Conversión (metanoia) no es una vida más gris: es un cambio de rumbo que responde al amor recibido."},
+    {tipo:"practica",texto:"Da hoy un primer paso concreto, que se note y que te cueste algo."},
+  ]},
+  "KER-05":{es:[
+    {tipo:"doctrina",texto:"El Espíritu Santo no es una energía: es Dios mismo, Persona, don de Cristo resucitado."},
+    {tipo:"doctrina",texto:"Él despierta, fortalece y sostiene tu fe; el reto no es empezar, es durar."},
+    {tipo:"practica",texto:"Antes de empezar tu día, pídele que tome el control: «Ven, toma el volante»."},
+  ]},
+  "KER-06":{es:[
+    {tipo:"doctrina",texto:"El encuentro con Cristo siempre crea comunidad y servicio: no existe un «cristianismo de sofá»."},
+    {tipo:"doctrina",texto:"La prueba de una conversión real es la reconciliación: perdonar como fuiste perdonado."},
+    {tipo:"practica",texto:"Haz esta semana una caridad concreta por una persona con nombre, y que no se entere nadie."},
+  ]},
+};
+
 // ─── PREGUNTAS TC1 (5 por tema, escala 10 pts, necesita ≥8) ──────
 // Formato: {id, q, o:{a,b,c,d}, k:"letra_correcta"}
 const Q={
@@ -473,5 +513,5 @@ function videoState(secId, vid, prog, vids){
   return videoDone(secId,vids[idx-1],prog) ? "available" : "locked";
 }
 
-export { TC1_MODULES, TC1_ALL, TC2_CONFESION, TC2_UNCION, KERIGMA, COURSES, Q,
+export { TC1_MODULES, TC1_ALL, TC2_CONFESION, TC2_UNCION, KERIGMA, COURSES, Q, RESUMENES,
          videoPruebaUrls, SEC_META, TEST_MODE, isSectionDone, videoState, requiereEval, videoDone };

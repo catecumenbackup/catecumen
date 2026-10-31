@@ -28,7 +28,7 @@ import EstrellasInput from "./components/EstrellasInput.jsx";
 import { FlameIcon, CalizIcon, iconoBautismo, iconoConfirmacion } from "./components/icons.jsx";
 import SecIcon from "./components/SecIcon.jsx";
 import { SoporteLink, DirectorioButton, SoporteModal } from "./components/support.jsx";
-import { SEC_META, Q, TEST_MODE, isSectionDone, videoState, requiereEval, videoDone } from "./data/course.js";
+import { SEC_META, Q, RESUMENES, TEST_MODE, isSectionDone, videoState, requiereEval, videoDone } from "./data/course.js";
 import { appNav } from "./appNav.js";
 import { CUOTAS } from "./data/pricing.js";
 import { GoldenRain, StarRain } from "./components/effects.jsx";
@@ -2385,6 +2385,7 @@ export default function App(){
           <ResumenTemaModal
             titulo={activeResumen.vid.modEs||PICK(SEC_META[activeResumen.secId])||""}
             bloques={(SEC_META[activeResumen.secId]?.videos||[]).filter(v=>v.mod===activeResumen.vid.mod)}
+            puntos={(()=>{ const r=RESUMENES[activeResumen.vid.mod]; return r?(r[LANG]||r.es||null):null; })()}
             onClose={()=>{ const {secId,vid}=activeResumen; setActiveResumen(null); setActiveEval({secId,vid}); }}/>
         </Suspense>
       )}
