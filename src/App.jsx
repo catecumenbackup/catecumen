@@ -1141,6 +1141,7 @@ export default function App(){
   };
   const [insBySec,setInsBySec]=useState({}); // {secId: inscripcion_id} (Parte B)
   const [activeVideo,setActiveVideo]=useState(null); // {secId,vid}
+  const [limiteTema,setLimiteTema]=useState(null); // aviso de cupo de temas/día alcanzado
   const [activeEval,setActiveEval]=useState(null);
   const [encuestasHechas,setEncuestasHechas]=useState(()=>new Set()); // claves "secId:vidId" ya encuestadas
   const [activeEncuesta,setActiveEncuesta]=useState(null); // {secId,vid} — encuesta previa a la evaluación
@@ -1872,7 +1873,17 @@ export default function App(){
   };
 
   // Video actions
-  const handleVideoAction=(secId,vid)=>{
+  const handleVideoAction=async(secId,vid)=>{
+    // Cupo de temas nuevos por día: bloquea abrir un tema nuevo si ya llegó al tope.
+    // Continuar/rever un tema ya abierto no gasta cupo (lo decide la RPC). Ante
+    // error o sin puente, no bloquea.
+    const uuid=bridge?.frontToUuid?.[secId]?.[vid?.id];
+    if(uuid){
+      try{
+        const {data}=await supabase.rpc("puedo_abrir_tema",{p_video_id:uuid});
+        if(data&&data.permitido===false){ setLimiteTema(data); return; }
+      }catch{/* no bloquear por fallo transitorio */}
+    }
     setActiveVideo({secId,vid});
   };
 
@@ -2339,6 +2350,28 @@ export default function App(){
         </Suspense>
       )}
 
+      {/* Aviso: cupo de temas nuevos por día alcanzado. */}
+      {limiteTema&&(
+        <div style={OVERLAY} onClick={()=>setLimiteTema(null)}>
+          <div className="catePanel" style={{...MODAL,maxWidth:440,textAlign:"center",position:"relative"}} onClick={e=>e.stopPropagation()}>
+            <div style={{fontSize:34,marginBottom:10}} aria-hidden="true">🌙</div>
+            <h2 style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:17,marginBottom:10}}>
+              {T("Cupo de hoy completado","Today's limit reached","Quota du jour atteint","Tageslimit erreicht","Cota de hoje concluída","Quota di oggi raggiunta")}
+            </h2>
+            <p style={{color:C.ivory,fontFamily:"'Crimson Text',serif",fontSize:15,lineHeight:1.6,marginBottom:16}}>
+              {T(`Para cuidar tu ritmo de formación, puedes abrir ${limiteTema.limite||2} temas nuevos por día. Ya alcanzaste ese límite hoy; podrás continuar mañana. Mientras tanto, puedes repasar los temas que ya abriste.`,
+                 `To keep a healthy pace, you can start ${limiteTema.limite||2} new topics per day. You've reached today's limit; you can continue tomorrow. Meanwhile, you can review topics you already opened.`,
+                 `Pour préserver ton rythme, tu peux ouvrir ${limiteTema.limite||2} nouveaux thèmes par jour. Tu as atteint la limite du jour ; tu pourras continuer demain. En attendant, tu peux revoir les thèmes déjà ouverts.`,
+                 `Um dein Lerntempo zu schützen, kannst du ${limiteTema.limite||2} neue Themen pro Tag beginnen. Du hast das heutige Limit erreicht; morgen geht es weiter. Bereits geöffnete Themen kannst du wiederholen.`,
+                 `Para cuidar o teu ritmo, podes abrir ${limiteTema.limite||2} temas novos por dia. Já atingiste o limite de hoje; podes continuar amanhã. Enquanto isso, podes rever os temas já abertos.`,
+                 `Per mantenere un buon ritmo, puoi aprire ${limiteTema.limite||2} nuovi temi al giorno. Hai raggiunto il limite di oggi; potrai continuare domani. Nel frattempo puoi ripassare i temi già aperti.`)}
+            </p>
+            <button onClick={()=>setLimiteTema(null)} style={{...BTN("pri"),width:"100%",justifyContent:"center"}}>
+              {T("Entendido","Got it","Compris","Verstanden","Entendi","Ho capito")}
+            </button>
+          </div>
+        </div>
+      )}
       {/* OVERLAY MODALS — flujo de video/evaluación (chunks diferidos; solo uno
           se muestra a la vez, por eso comparten un único Suspense). */}
       {(activeVideo||activeEncuesta||activeEval||(showResult&&lastResult)||(showSecComplete&&completedSecId))&&(
