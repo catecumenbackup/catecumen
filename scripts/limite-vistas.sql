@@ -31,12 +31,12 @@ begin
     r.primer_acceso := now();
   end if;
 
-  if r.aprobado then
+  if r.reabierto_hasta is not null and r.reabierto_hasta > now() then
+    v_puede := true;  v_deadline := r.reabierto_hasta;                      -- ventana del admin: GANA sobre todo
+  elsif r.aprobado then
     v_puede := false; v_deadline := null;                                   -- aprobó → bloqueado
   elsif coalesce(r.vistas,0) >= c_max then
     v_puede := false; v_deadline := null; v_motivo := 'limite_vistas';      -- 3 vistas → bloqueado
-  elsif r.reabierto_hasta is not null and r.reabierto_hasta > now() then
-    v_puede := true;  v_deadline := r.reabierto_hasta;                      -- ventana concedida por admin
   elsif r.primer_acceso is not null and now() > r.primer_acceso + interval '72 hours' then
     v_puede := false; v_deadline := r.primer_acceso + interval '72 hours';  -- tope de 72 h vencido
   else
