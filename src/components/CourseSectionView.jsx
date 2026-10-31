@@ -1,12 +1,15 @@
-import { SEC_META, videoState, videoDone } from "../data/course.js";
+import { useState, lazy, Suspense } from "react";
+import { SEC_META, videoState, videoDone, resumenDeTema } from "../data/course.js";
 import SecIcon from "./SecIcon.jsx";
+const ResumenTemaModal = lazy(() => import("./ResumenTemaModal.jsx"));
 import { LibraryButton, ConsultarDudasButton, ConsultarIAButton, SoporteFloat } from "./support.jsx";
 import { C, BTN, CARD } from "../ui.js";
-import { T, PICK } from "../i18n.js";
+import { T, PICK, LANG } from "../i18n.js";
 
 // Área de estudio de una sección: línea de tiempo de videos con su estado
 // (bloqueado/disponible/visto/aprobado) y botones de ver/evaluar/rever.
 export default function CourseSectionView({secId,progress,onVideoAction,onEvalAction,onBack,onDash,canBack=true}){
+  const [resumenTema,setResumenTema]=useState(null); // {mod,titulo,bloques} del tema cuyo resumen se ve desde el índice
   const sec=SEC_META[secId];
   if(!sec) return null;
   const vids=sec.videos;
@@ -64,6 +67,12 @@ export default function CourseSectionView({secId,progress,onVideoAction,onEvalAc
                   <span style={{color:C.ivory,fontFamily:"'Crimson Text',serif",fontSize:15,fontWeight:600}}>
                     {vid.modEs||""}</span>
                   <span style={{flex:1,height:1,background:`${C.gold}33`}}/>
+                  <button onClick={()=>setResumenTema({mod:vid.mod,titulo:vid.modEs||"",
+                      bloques:vids.filter(v=>v.mod===vid.mod)})}
+                    style={{background:"none",border:`1px solid ${C.gold}55`,color:C.gold,borderRadius:8,
+                      padding:"3px 9px",fontSize:11.5,fontFamily:"'Cinzel',serif",cursor:"pointer",whiteSpace:"nowrap"}}>
+                    📝 {T("Resumen","Summary","Résumé","Zusammenfassung","Resumo","Riepilogo")}
+                  </button>
                 </div>
               )}
               <div style={{display:"flex",gap:16,marginBottom:16,position:"relative",zIndex:1}}>
@@ -123,6 +132,14 @@ export default function CourseSectionView({secId,progress,onVideoAction,onEvalAc
         </div>
       </div>
       <SoporteFloat contexto={T("Área de formación — ","Formation area — ","Espace de formation — ","Ausbildungsbereich — ","Área de formação — ","Area di formazione — ")+PICK(sec)}/>
+      {resumenTema&&(
+        <Suspense fallback={null}>
+          <ResumenTemaModal titulo={resumenTema.titulo} bloques={resumenTema.bloques}
+            puntos={resumenDeTema(resumenTema.mod,LANG).puntos}
+            hojaPdfUrl={resumenDeTema(resumenTema.mod,LANG).hojaPdf}
+            ctaEval={false} onClose={()=>setResumenTema(null)}/>
+        </Suspense>
+      )}
     </div>
   );
 }

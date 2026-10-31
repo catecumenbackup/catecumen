@@ -2343,6 +2343,10 @@ export default function App(){
               onProgress={(s)=>{ const sec=activeVideo.secId, vi=activeVideo.vid.id;
                 persistProgreso(sec,vi,{posicion_seg:s});
                 setProgress(p=>{ const sp=p[sec]||{}; return {...p,[sec]:{...sp,[vi]:{...sp[vi],pos:s}}}; }); }}
+              resumenTitulo={activeVideo.vid.modEs||PICK(SEC_META[activeVideo.secId])||""}
+              resumenPuntos={resumenDeTema(activeVideo.vid.mod,LANG).puntos}
+              resumenBloques={(SEC_META[activeVideo.secId]?.videos||[]).filter(v=>v.mod===activeVideo.vid.mod)}
+              resumenHojaPdf={resumenDeTema(activeVideo.vid.mod,LANG).hojaPdf}
               onWatched={handleVideoWatched} onClose={()=>setActiveVideo(null)}/>
           )}
           {activeEncuesta&&(
@@ -2385,7 +2389,8 @@ export default function App(){
           <ResumenTemaModal
             titulo={activeResumen.vid.modEs||PICK(SEC_META[activeResumen.secId])||""}
             bloques={(SEC_META[activeResumen.secId]?.videos||[]).filter(v=>v.mod===activeResumen.vid.mod)}
-            puntos={(()=>{ const r=RESUMENES[activeResumen.vid.mod]; return r?(r[LANG]||r.es||null):null; })()}
+            puntos={resumenDeTema(activeResumen.vid.mod,LANG).puntos}
+            hojaPdfUrl={resumenDeTema(activeResumen.vid.mod,LANG).hojaPdf}
             onClose={()=>{ const {secId,vid}=activeResumen; setActiveResumen(null); setActiveEval({secId,vid}); }}/>
         </Suspense>
       )}

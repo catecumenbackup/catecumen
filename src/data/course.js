@@ -181,6 +181,18 @@ const RESUMENES={
   ]},
 };
 
+// Hoja PDF de repaso por TEMA (clave = mod). Vacío por ahora; cuando se suban las
+// hojas, poner la URL por tema aquí (o moverlo a BD con el panel). Si no hay URL,
+// el botón "Descargar la hoja" no se pinta.
+const HOJAS_PDF={
+  // "KER-01": "/hojas/KER-01.pdf",
+};
+// Helper: resumen (puntos por idioma) + hoja PDF de un tema (mod).
+function resumenDeTema(mod, lang="es"){
+  const r=RESUMENES[mod];
+  return { puntos: r?(r[lang]||r.es||null):null, hojaPdf: HOJAS_PDF[mod]||null };
+}
+
 // ─── PREGUNTAS TC1 (5 por tema, escala 10 pts, necesita ≥8) ──────
 // Formato: {id, q, o:{a,b,c,d}, k:"letra_correcta"}
 const Q={
@@ -513,5 +525,5 @@ function videoState(secId, vid, prog, vids){
   return videoDone(secId,vids[idx-1],prog) ? "available" : "locked";
 }
 
-export { TC1_MODULES, TC1_ALL, TC2_CONFESION, TC2_UNCION, KERIGMA, COURSES, Q, RESUMENES,
+export { TC1_MODULES, TC1_ALL, TC2_CONFESION, TC2_UNCION, KERIGMA, COURSES, Q, RESUMENES, HOJAS_PDF, resumenDeTema,
          videoPruebaUrls, SEC_META, TEST_MODE, isSectionDone, videoState, requiereEval, videoDone };
