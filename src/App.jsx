@@ -1322,7 +1322,7 @@ export default function App(){
     if(!bienvDecidido||bienvVideos) return; // esperar a que se resuelva/cierre la bienvenida
     try{
       const hoy=new Date().toISOString().slice(0,10);
-      const SAC=new Set(["bautismo","confirmacion","primera_comunion"]);
+      const SAC=new Set(["bautismo","confirmacion","primera_comunion","tc2_confesion","tc2_uncion"]);
       let blk=null;
       if(userType==="catecumeno"){ if(SAC.has(currentSecId)) blk="sac_"+currentSecId; }
       else { blk="inicio_"+(userType||"x"); }
