@@ -47,6 +47,7 @@ const EncuadreModal = lazy(() => import("./components/EncuadreModal.jsx"));
 const LoginModal = lazy(() => import("./components/LoginModal.jsx"));
 const ValidarConstanciaModal = lazy(() => import("./components/ValidarConstanciaModal.jsx"));
 const CourseSectionView = lazy(() => import("./components/CourseSectionView.jsx"));
+const OracionModal = lazy(() => import("./components/OracionModal.jsx"));
 const SectionCompleteModal = lazy(() => import("./components/SectionCompleteModal.jsx"));
 const VideoModal = lazy(() => import("./components/VideoModal.jsx"));
 const EncuestaVideoModal = lazy(() => import("./components/EncuestaVideoModal.jsx"));
@@ -1277,6 +1278,31 @@ export default function App(){
   // Helpers
   const currentSecId=sequence[seqIdx]||null;
 
+  // ── Oración de inicio de sesión ─────────────────────────────────────────────
+  // Larga: al empezar la formación de cada sacramento (catecúmeno) o de papás/
+  // padrinos/catequista. Breve: una vez al día al iniciar la sesión diaria.
+  const [oracion,setOracion]=useState(null); // {ver:"L"|"C"} | null
+  useEffect(()=>{
+    if(phase!=="course"||!currentSecId) return;
+    try{
+      const hoy=new Date().toISOString().slice(0,10);
+      const SAC=new Set(["bautismo","confirmacion","primera_comunion"]);
+      let blk=null;
+      if(userType==="catecumeno"){ if(SAC.has(currentSecId)) blk="sac_"+currentSecId; }
+      else { blk="inicio_"+(userType||"x"); }
+      let vistos=[]; try{ vistos=JSON.parse(localStorage.getItem("cat_ora_blk")||"[]")||[]; }catch{}
+      if(blk && !vistos.includes(blk)){
+        vistos.push(blk); localStorage.setItem("cat_ora_blk",JSON.stringify(vistos));
+        localStorage.setItem("cat_ora_dia",hoy);
+        setOracion({ver:"L"}); return;
+      }
+      if(localStorage.getItem("cat_ora_dia")!==hoy){
+        localStorage.setItem("cat_ora_dia",hoy);
+        setOracion({ver:"C"});
+      }
+    }catch(e){}
+  },[currentSecId,phase,userType]);
+
   const markVideoWatched=(secId,vid)=>{
     setProgress(p=>{
       const sp=p[secId]||{};
@@ -2178,6 +2204,12 @@ export default function App(){
               isAllDone={seqIdx+1>=sequence.length}
               onContinue={handleSecCompleteNext}/>
           )}
+        </Suspense>
+      )}
+
+      {oracion&&(
+        <Suspense fallback={null}>
+          <OracionModal ver={oracion.ver} onClose={()=>setOracion(null)}/>
         </Suspense>
       )}
 

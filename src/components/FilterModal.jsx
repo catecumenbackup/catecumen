@@ -151,6 +151,14 @@ export default function FilterModal({onSelect,onBack}){
                 </p>
               </div>
             </div>
+            {/* Dónde se pide: la casilla está en el formulario de registro */}
+            <p style={{color:C.ivory,fontFamily:"'Crimson Text',serif",fontSize:13.5,
+              lineHeight:1.6,margin:"12px 0 0",textAlign:"center",opacity:0.9}}>
+              <strong style={{color:C.gold}}>
+                {T("Se aplican solas.","They apply automatically.","Elles s'appliquent automatiquement.","Sie werden automatisch angewendet.","Aplicam-se automaticamente.","Si applicano automaticamente.")}
+              </strong>{" "}
+              {T("Al llenar el formulario de registro marca la casilla que te corresponde y el descuento se aplica solo. No hay que solicitarlas aparte ni enviar nada.","When you fill out the registration form, check the box that applies to you and the discount is applied automatically. There is no separate application and nothing to send.","En remplissant le formulaire d'inscription, cochez la case qui vous correspond et la réduction s'applique automatiquement. Aucune demande séparée, rien à envoyer.","Kreuzen Sie beim Ausfüllen des Anmeldeformulars das zutreffende Kästchen an, und der Rabatt wird automatisch angewendet. Kein gesonderter Antrag, nichts einzusenden.","Ao preencher o formulário de registro, marque a caixa que corresponde a você e o desconto é aplicado automaticamente. Não é preciso solicitar à parte nem enviar nada.","Compilando il modulo di registrazione, spunta la casella che ti riguarda e lo sconto viene applicato automaticamente. Non serve fare domanda a parte né inviare nulla.")}
+            </p>
           </div>
         )}
 
