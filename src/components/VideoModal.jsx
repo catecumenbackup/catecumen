@@ -90,6 +90,20 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
 
   // UUID real del video en la BD (para acceso/descargas); null en secciones sin puente.
   const videoUuid=bridge?.frontToUuid?.[secId]?.[vid?.id]||null;
+  // Tope de 3 reproducciones: registra UNA vista por apertura del modal al iniciar
+  // la reproducción. Actualiza el estado de acceso con las vistas restantes.
+  const vistaRef=useRef(false);
+  const registrarVista=()=>{
+    if(vistaRef.current||!videoUuid) return;
+    vistaRef.current=true;
+    try{
+      supabase.rpc("registrar_vista",{p_video_id:videoUuid}).then(({data})=>{
+        if(data&&typeof data.vistas_restantes==="number"){
+          setAcceso(a=>a?{...a,vistas:data.vistas,vistas_restantes:data.vistas_restantes,vistas_max:data.vistas_max}:a);
+        }
+      },()=>{});
+    }catch{}
+  };
   // ── Descarga offline (solo mp4 progresivo; HLS aún no) ──────────────────────
   const claveOffline=`${secId}|${vid?.id}|${LANG}`;
   const esDescargable=!!videoPrueba && !esHls(videoPrueba) && !!userId;
@@ -251,7 +265,9 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
             <div style={{textAlign:"center",padding:"26px 18px"}}>
               <div style={{fontSize:40,marginBottom:10}} aria-hidden="true">🔒</div>
               <p style={{color:C.ivory,fontFamily:"'Crimson Text',serif",fontSize:15,lineHeight:1.6,maxWidth:380,margin:"0 auto 14px"}}>
-                {T("El acceso a este video está cerrado. Para volver a verlo, solicita una nueva apertura por 72 horas; un administrador la revisará.","Access to this video is closed. To watch it again, request a new 72-hour opening; an administrator will review it.","L'accès à cette vidéo est fermé. Pour la revoir, demandez une nouvelle ouverture de 72 heures ; un administrateur l'examinera.","Der Zugriff auf dieses Video ist geschlossen. Um es erneut anzusehen, fordere eine neue 72-Stunden-Öffnung an; ein Administrator prüft sie.","O acesso a este vídeo está fechado. Para vê-lo novamente, solicite uma nova abertura de 72 horas; um administrador irá avaliá-la.","L'accesso a questo video è chiuso. Per rivederlo, richiedi una nuova apertura di 72 ore; un amministratore la esaminerà.")}
+                {acceso.motivo==="limite_vistas"
+                  ? T("Alcanzaste el máximo de 3 reproducciones de este video. Para volver a verlo, solicita una nueva apertura; un administrador la revisará.","You reached the maximum of 3 plays for this video. To watch it again, request a new opening; an administrator will review it.","Tu as atteint le maximum de 3 lectures pour cette vidéo. Pour la revoir, demande une nouvelle ouverture ; un administrateur l'examinera.","Du hast das Maximum von 3 Wiedergaben für dieses Video erreicht. Um es erneut anzusehen, fordere eine neue Öffnung an; ein Administrator prüft sie.","Você atingiu o máximo de 3 reproduções deste vídeo. Para vê-lo novamente, solicite uma nova abertura; um administrador irá avaliá-la.","Hai raggiunto il massimo di 3 riproduzioni per questo video. Per rivederlo, richiedi una nuova apertura; un amministratore la esaminerà.")
+                  : T("El acceso a este video está cerrado. Para volver a verlo, solicita una nueva apertura por 72 horas; un administrador la revisará.","Access to this video is closed. To watch it again, request a new 72-hour opening; an administrator will review it.","L'accès à cette vidéo est fermé. Pour la revoir, demandez une nouvelle ouverture de 72 heures ; un administrateur l'examinera.","Der Zugriff auf dieses Video ist geschlossen. Um es erneut anzusehen, fordere eine neue 72-Stunden-Öffnung an; ein Administrator prüft sie.","O acesso a este vídeo está fechado. Para vê-lo novamente, solicite uma nova abertura de 72 horas; um administrador irá avaliá-la.","L'accesso a questo video è chiuso. Per rivederlo, richiedi una nuova apertura di 72 ore; un amministratore la esaminerà.")}
               </p>
               {solPend?(
                 <p style={{color:C.gold,fontFamily:"'Cinzel',serif",fontSize:13}}>
@@ -276,7 +292,7 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
               playsInline
               style={{width:"100%",maxHeight:320,display:"block",borderRadius:12}}
               onLoadedMetadata={seekInicial}
-              onPlay={()=>setWatching(true)}
+              onPlay={()=>{setWatching(true);registrarVista();}}
               onTimeUpdate={reportar}
               onPause={reportar}
               onEnded={()=>{ setDone(true); if(onProgress) onProgress(0); }}
@@ -340,6 +356,16 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
                     "Este vídeo fica disponível no máximo 72 horas após abri-lo. Aprovar a avaliação encerra o acesso.",
                     "Questo video resta disponibile al massimo 72 ore dall'apertura. Superare la valutazione chiude l'accesso.")}
             </p>
+            {typeof acceso.vistas_restantes==="number"&&(
+              <p style={{color:C.gold,fontFamily:"'Crimson Text',serif",fontSize:12,lineHeight:1.5,margin:"6px 0 0"}}>
+                ▶ {T(`Reproducciones restantes: ${acceso.vistas_restantes} de ${acceso.vistas_max||3}.`,
+                     `Plays remaining: ${acceso.vistas_restantes} of ${acceso.vistas_max||3}.`,
+                     `Lectures restantes : ${acceso.vistas_restantes} sur ${acceso.vistas_max||3}.`,
+                     `Verbleibende Wiedergaben: ${acceso.vistas_restantes} von ${acceso.vistas_max||3}.`,
+                     `Reproduções restantes: ${acceso.vistas_restantes} de ${acceso.vistas_max||3}.`,
+                     `Riproduzioni rimanenti: ${acceso.vistas_restantes} di ${acceso.vistas_max||3}.`)}
+              </p>
+            )}
             <p style={{color:C.ivoryM,fontFamily:"'Crimson Text',serif",fontSize:11.5,lineHeight:1.5,margin:"6px 0 0"}}>
               ⚖️ {T("Aviso legal: este contenido es propiedad de Catecumen. Queda PROHIBIDA su descarga, copia, grabación o redistribución por medios no autorizados. El acceso es personal e intransferible y queda registrado.",
                     "Legal notice: this content is property of Catecumen. Downloading, copying, recording or redistributing it by unauthorized means is PROHIBITED. Access is personal, non-transferable and is logged.",
