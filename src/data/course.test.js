@@ -20,8 +20,8 @@ describe("course data", () => {
     expect(SEC_META.bautismo.cert).toBe(true);
   });
 
-  it("TC1_ALL aplana los 22 temas de los módulos", () => {
-    expect(TC1_ALL.length).toBe(22);
+  it("TC1_ALL aplana los 16 temas (64 bloques)", () => {
+    expect(TC1_ALL.length).toBe(64);
     expect(SEC_META.tc1.videos).toBe(TC1_ALL);
   });
 
