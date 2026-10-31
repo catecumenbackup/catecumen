@@ -28,7 +28,7 @@ import EstrellasInput from "./components/EstrellasInput.jsx";
 import { FlameIcon, CalizIcon, iconoBautismo, iconoConfirmacion } from "./components/icons.jsx";
 import SecIcon from "./components/SecIcon.jsx";
 import { SoporteLink, DirectorioButton, SoporteModal } from "./components/support.jsx";
-import { SEC_META, Q, RESUMENES, TEST_MODE, isSectionDone, videoState, requiereEval, videoDone } from "./data/course.js";
+import { SEC_META, Q, RESUMENES, resumenDeTema, TEST_MODE, isSectionDone, videoState, requiereEval, videoDone } from "./data/course.js";
 import { appNav } from "./appNav.js";
 import { CUOTAS } from "./data/pricing.js";
 import { GoldenRain, StarRain } from "./components/effects.jsx";
