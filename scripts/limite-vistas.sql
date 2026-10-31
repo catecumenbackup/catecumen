@@ -31,12 +31,15 @@ begin
     r.primer_acceso := now();
   end if;
 
-  if r.reabierto_hasta is not null and r.reabierto_hasta > now() then
-    v_puede := true;  v_deadline := r.reabierto_hasta;                      -- ventana del admin: GANA sobre todo
+  -- ORDEN: el tope de 3 vistas aplica SIEMPRE (la reapertura reinicia el contador,
+  -- así que da 3 vistas nuevas por ventana). La reapertura del admin gana sobre el
+  -- bloqueo por aprobación y sobre el tope de 72 h, pero NO sobre el tope de vistas.
+  if coalesce(r.vistas,0) >= c_max then
+    v_puede := false; v_deadline := null; v_motivo := 'limite_vistas';      -- 3 vistas → bloqueado (aunque la ventana siga abierta)
+  elsif r.reabierto_hasta is not null and r.reabierto_hasta > now() then
+    v_puede := true;  v_deadline := r.reabierto_hasta;                      -- ventana del admin (gana sobre aprobado y 72 h)
   elsif r.aprobado then
     v_puede := false; v_deadline := null;                                   -- aprobó → bloqueado
-  elsif coalesce(r.vistas,0) >= c_max then
-    v_puede := false; v_deadline := null; v_motivo := 'limite_vistas';      -- 3 vistas → bloqueado
   elsif r.primer_acceso is not null and now() > r.primer_acceso + interval '72 hours' then
     v_puede := false; v_deadline := r.primer_acceso + interval '72 hours';  -- tope de 72 h vencido
   else
