@@ -89,6 +89,31 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
   // Prioridad: URL real del video en la BD (idioma del usuario) → video de prueba local.
   const urlReal=bridge?.frontToUrl?.[secId]?.[vid?.id]||null;
   const videoPrueba=urlReal||PICK(SEC_META[secId]?.videoPrueba)||null; // real o prueba, en el idioma activo
+  // ── Subtítulos (accesibilidad) ──────────────────────────────────────────────
+  // URL del .vtt para este video (idioma activo), desde el puente. Lo descargamos
+  // a un blob same-origin para pintarlo como <track> sin problemas de CORS, venga
+  // de Supabase Storage o de donde sea. Preferencia "subtítulos siempre" en
+  // localStorage, para que una persona sorda los active una vez y salgan por defecto.
+  const urlSub=bridge?.frontToSub?.[secId]?.[vid?.id]||null;
+  const [subBlob,setSubBlob]=useState(null);
+  const [subOn,setSubOn]=useState(()=>{ try{ return localStorage.getItem("catecumen_cc")==="1"; }catch{ return false; } });
+  useEffect(()=>{
+    if(!urlSub){ setSubBlob(null); return; }
+    let url=null, vivo=true;
+    (async()=>{
+      try{ const r=await fetch(urlSub); if(!r.ok||!vivo) return;
+        const b=await r.blob(); if(!vivo) return; url=URL.createObjectURL(b); setSubBlob(url);
+      }catch{/* subtítulo no disponible: el video funciona igual */}
+    })();
+    return()=>{ vivo=false; if(url) URL.revokeObjectURL(url); };
+  },[urlSub]);
+  // Aplica el estado on/off a la pista de texto del <video> (y lo recuerda).
+  const aplicarCC=(on)=>{
+    const v=videoRef.current; if(v&&v.textTracks&&v.textTracks[0]) v.textTracks[0].mode=on?"showing":"hidden";
+    try{ localStorage.setItem("catecumen_cc", on?"1":"0"); }catch{}
+  };
+  useEffect(()=>{ if(subBlob) aplicarCC(subOn); },[subBlob]);
+  const toggleCC=()=>{ setSubOn(o=>{ const n=!o; aplicarCC(n); return n; }); };
   const SIM_DUR=5; // seconds to simulate watching (usado solo si no hay video de prueba)
 
   // UUID real del video en la BD (para acceso/descargas); null en secciones sin puente.
@@ -305,7 +330,24 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
               onPause={reportar}
               onEnded={()=>{ setDone(true); if(onProgress) onProgress(0); }}
               onError={()=>setVideoError(true)}
-            />
+            >
+              {subBlob&&(
+                <track kind="subtitles" src={subBlob} srcLang={LANG} default={subOn}
+                  label={T("Español","Spanish","Espagnol","Spanisch","Espanhol","Spagnolo")}/>
+              )}
+            </video>
+            {subBlob&&(
+              <button onClick={toggleCC}
+                title={T("Subtítulos","Subtitles","Sous-titres","Untertitel","Legendas","Sottotitoli")}
+                aria-pressed={subOn}
+                style={{position:"absolute",top:8,left:8,zIndex:3,
+                  background:subOn?C.gold:"rgba(0,0,0,0.55)",color:subOn?"#1a1206":"#fff",
+                  border:"1px solid rgba(255,255,255,0.35)",borderRadius:6,
+                  fontFamily:"Arial,sans-serif",fontWeight:800,fontSize:12,letterSpacing:"0.04em",
+                  padding:"3px 8px",cursor:"pointer"}}>
+                {T("CC","CC","CC","CC","CC","CC")}
+              </button>
+            )}
             {marca&&(
               <div aria-hidden="true" style={{position:"absolute",...wmPos,pointerEvents:"none",
                 color:"rgba(255,255,255,0.30)",fontFamily:"Arial,sans-serif",fontSize:12,fontWeight:700,

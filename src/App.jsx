@@ -1522,7 +1522,7 @@ export default function App(){
         // para restaurar el progreso aunque se haya guardado en otro idioma (p.ej.
         // el usuario avanzó en español y ahora entra con el navegador en inglés).
         // Para GUARDAR y REPRODUCIR se usa solo el idioma activo (ver abajo).
-        supabase.from("videos").select("id,sacramento_id,orden,idioma,url_video"),
+        supabase.from("videos").select("id,sacramento_id,orden,idioma,url_video,url_subtitulos"),
       ]);
       const sacs=sacRes.data, vids=vidRes.data;
       if(!sacs||!vids) return null;
@@ -1533,24 +1533,28 @@ export default function App(){
         frontByOrden[secId]={};
         (SEC_META[secId].videos||[]).forEach(v=>{frontByOrden[secId][v.o]=v.id;});
       });
-      const frontToUuid={}, uuidToFront={}, frontToUrl={};
+      const frontToUuid={}, uuidToFront={}, frontToUrl={}, frontToSub={};
       vids.forEach(vr=>{
         const slug=sacIdToSlug[vr.sacramento_id];
         const vidId=frontByOrden[slug]?.[vr.orden];
         if(!slug||!vidId) return;
         // uuidToFront: TODOS los idiomas → restaura el progreso guardado en cualquier idioma.
         uuidToFront[vr.id]={secId:slug,vidId};
-        // frontToUuid / frontToUrl: solo el idioma activo → a dónde se GUARDA el
-        // progreso nuevo y qué video se REPRODUCE.
+        // frontToUuid / frontToUrl / frontToSub: solo el idioma activo → a dónde se
+        // GUARDA el progreso nuevo y qué video/subtítulo se REPRODUCE.
         if(vr.idioma===LANG){
           (frontToUuid[slug]??={})[vidId]=vr.id;
           // Guardar la URL real solo si es válida (no 'PENDIENTE' ni vacía).
           if(vr.url_video && vr.url_video!=="PENDIENTE" && /^https?:\/\//i.test(vr.url_video)){
             (frontToUrl[slug]??={})[vidId]=vr.url_video;
           }
+          // Subtítulos (VTT): URL pública válida por (sacramento, lección) en el idioma activo.
+          if(vr.url_subtitulos && /^https?:\/\//i.test(vr.url_subtitulos)){
+            (frontToSub[slug]??={})[vidId]=vr.url_subtitulos;
+          }
         }
       });
-      const b={frontToUuid,uuidToFront,slugToSacId,frontToUrl};
+      const b={frontToUuid,uuidToFront,slugToSacId,frontToUrl,frontToSub};
       setBridge(b);
       return b;
     }catch(e){ console.error("loadBridge:",e); return null; }
@@ -2326,7 +2330,7 @@ export default function App(){
       {/* CURSO */}
       {phase==="course"&&currentSecId&&!showResult&&!showSecComplete&&!showCerts&&!showDash&&(
         <Suspense fallback={<div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(250,247,240,0.82)"}}><div style={{color:C.gold,fontFamily:"'Cinzel',serif"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div></div>}>
-          <CourseSectionView secId={currentSecId} progress={progress}
+          <CourseSectionView secId={currentSecId} progress={progress} bridge={bridge}
             onVideoAction={handleVideoAction}
             onEvalAction={handleEvalAction}
             canBack={seqIdx>0}

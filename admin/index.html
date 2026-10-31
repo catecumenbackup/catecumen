@@ -1869,6 +1869,7 @@
         <div><label class="fld">Título (inglés)</label><input id="m-ten" type="text" value="${isEdit?esc(v.titulo_en):''}"/></div>
       </div>
       <label class="fld">URL del video</label><input id="m-url" type="url" value="${isEdit?esc(v.url_video):''}" placeholder="https://…"/>
+      ${isEdit?`<label class="fld">URL de subtítulos (.vtt) · accesibilidad</label><input id="m-sub" type="url" placeholder="https://…/subtitulo.vtt (opcional)"/><p class="hint" style="font-size:11px;opacity:.7;margin:2px 0 0">Déjalo vacío si el video no tiene subtítulos. Debe ser un archivo WebVTT público (Supabase Storage o /public).</p>`:''}
       <label class="fld">Descripción (español)</label><textarea id="m-desc" rows="2">${isEdit?esc(v.descripcion_es||''):''}</textarea>
       <div class="row2">
         <div><label class="fld">Orden</label><input id="m-orden" type="number" value="${isEdit?v.orden:1}"/></div>
@@ -1881,6 +1882,8 @@
         <button class="btn" onclick="window.__saveVideo(${isEdit?`'${v.id}'`:'null'})">${isEdit?'Guardar cambios':'Crear video'}</button>
       </div>
     </div></div>`;
+    // Precarga del subtítulo actual (campo aparte, no viene en admin_listar_videos).
+    if(isEdit){ sb.rpc("admin_get_subtitulos",{p_id:v.id}).then(({data})=>{ const el=$("m-sub"); if(el&&data) el.value=data; }).catch(()=>{}); }
   }
   window.__closeModal=()=>{$("modal-mount").innerHTML="";};
   window.__editVideo=id=>{const v=VIDEOS.find(x=>x.id===id);if(v)videoModal(v);};
@@ -1894,6 +1897,8 @@
       if(id){({error:err}=await sb.rpc("admin_editar_video",{p_id:id,p_sacramento_id:p_sac,p_titulo_es:p_tes,p_titulo_en:p_ten,p_url_video:p_url,p_descripcion:p_desc,p_duracion:p_dur,p_orden:p_orden,p_es_repaso:p_rep}));}
       else{({error:err}=await sb.rpc("admin_crear_video",{p_sacramento_id:p_sac,p_titulo_es:p_tes,p_titulo_en:p_ten,p_url_video:p_url,p_descripcion:p_desc,p_duracion:p_dur,p_orden:p_orden,p_es_repaso:p_rep,p_idioma:videoLang}));}
       if(err)throw err;
+      // Subtítulos (.vtt): solo en edición (necesita el id del video). Campo aparte.
+      if(id){ const subEl=$("m-sub"); if(subEl){ try{ await sb.rpc("admin_set_subtitulos",{p_id:id,p_url:subEl.value.trim()}); }catch(e2){ console.warn("subtitulos:",e2); } } }
       window.__closeModal(); await cargarVideos();
       $("videos-msg").className="msg ok";$("videos-msg").textContent=id?"Video actualizado.":"Video creado.";
     }catch(e){$("m-msg").className="msg err";$("m-msg").textContent="Error: "+(e.message||e);console.error(e);}

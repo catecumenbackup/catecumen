@@ -8,7 +8,7 @@ import { T, PICK, LANG } from "../i18n.js";
 
 // Área de estudio de una sección: línea de tiempo de videos con su estado
 // (bloqueado/disponible/visto/aprobado) y botones de ver/evaluar/rever.
-export default function CourseSectionView({secId,progress,onVideoAction,onEvalAction,onBack,onDash,canBack=true}){
+export default function CourseSectionView({secId,progress,bridge,onVideoAction,onEvalAction,onBack,onDash,canBack=true}){
   const [resumenTema,setResumenTema]=useState(null); // {mod,titulo,bloques} del tema cuyo resumen se ve desde el índice
   const sec=SEC_META[secId];
   if(!sec) return null;
@@ -92,7 +92,14 @@ export default function CourseSectionView({secId,progress,onVideoAction,onEvalAc
                       <p style={{color:C.ivory,fontFamily:"'Crimson Text',serif",fontSize:16,fontWeight:600}}>
                         {idx+1}. {PICK(vid)}
                       </p>
-                      <p style={{color:C.ivoryM,fontSize:12,marginTop:2}}>⏱ {vid.dur}</p>
+                      <p style={{color:C.ivoryM,fontSize:12,marginTop:2}}>⏱ {vid.dur}
+                        {bridge?.frontToSub?.[secId]?.[vid.id]&&(
+                          <span title={T("Disponible con subtítulos","Available with subtitles","Disponible avec sous-titres","Mit Untertiteln verfügbar","Disponível com legendas","Disponibile con sottotitoli")}
+                            style={{marginLeft:8,display:"inline-block",background:`${C.gold}22`,color:C.gold,
+                              border:`1px solid ${C.gold}66`,borderRadius:5,fontSize:10,fontWeight:800,
+                              fontFamily:"Arial,sans-serif",letterSpacing:"0.05em",padding:"1px 5px",verticalAlign:"middle"}}>CC</span>
+                        )}
+                      </p>
                     </div>
                     <span style={{color:stateColor[state],fontSize:11,fontFamily:"'Cinzel',serif",
                       letterSpacing:"0.05em",whiteSpace:"nowrap",marginLeft:8}}>
