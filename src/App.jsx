@@ -49,6 +49,7 @@ const ValidarConstanciaModal = lazy(() => import("./components/ValidarConstancia
 const CourseSectionView = lazy(() => import("./components/CourseSectionView.jsx"));
 const OracionModal = lazy(() => import("./components/OracionModal.jsx"));
 const BienvenidaVideosModal = lazy(() => import("./components/BienvenidaVideosModal.jsx"));
+const ResumenTemaModal = lazy(() => import("./components/ResumenTemaModal.jsx"));
 const SectionCompleteModal = lazy(() => import("./components/SectionCompleteModal.jsx"));
 const VideoModal = lazy(() => import("./components/VideoModal.jsx"));
 const EncuestaVideoModal = lazy(() => import("./components/EncuestaVideoModal.jsx"));
@@ -1143,6 +1144,7 @@ export default function App(){
   const [activeEval,setActiveEval]=useState(null);
   const [encuestasHechas,setEncuestasHechas]=useState(()=>new Set()); // claves "secId:vidId" ya encuestadas
   const [activeEncuesta,setActiveEncuesta]=useState(null); // {secId,vid} — encuesta previa a la evaluación
+  const [activeResumen,setActiveResumen]=useState(null); // {secId,vid} — resumen del tema antes de la evaluación
   const [lastResult,setLastResult]=useState(null);
   const [showResult,setShowResult]=useState(false);
   const [showSecComplete,setShowSecComplete]=useState(false);
@@ -1870,7 +1872,8 @@ export default function App(){
   // (A/B/C), el bloque queda completado (visto) → comprobar fin de sección.
   const afterEncuesta=(secId,vid)=>{
     if(requiereEval(vid)){
-      setActiveEval({secId,vid});
+      // Bloque D: antes del examen, mostrar el RESUMEN del tema (repaso de A/B/C/D).
+      setActiveResumen({secId,vid});
       return;
     }
     const newP={...progress};
@@ -1897,10 +1900,10 @@ export default function App(){
   };
 
   const handleEvalAction=(secId,vid)=>{
-    // Botón "Evaluación" del índice (solo en bloques que evalúan). Encuesta primero
-    // si aún no se respondió; si ya, directo al examen.
+    // Botón "Evaluación" del índice (solo en bloques que evalúan). Si ya hizo la
+    // encuesta, pasa por el RESUMEN del tema y luego el examen; si no, la encuesta.
     if(encuestasHechas.has(`${secId}:${vid.id}`)){
-      setActiveEval({secId,vid});
+      setActiveResumen({secId,vid});
     }else{
       setActiveEncuesta({secId,vid});
     }
@@ -2375,6 +2378,14 @@ export default function App(){
       {oracion&&!bienvVideos&&(
         <Suspense fallback={null}>
           <OracionModal ver={oracion.ver} onClose={()=>setOracion(null)}/>
+        </Suspense>
+      )}
+      {activeResumen&&(
+        <Suspense fallback={null}>
+          <ResumenTemaModal
+            titulo={activeResumen.vid.modEs||PICK(SEC_META[activeResumen.secId])||""}
+            bloques={(SEC_META[activeResumen.secId]?.videos||[]).filter(v=>v.mod===activeResumen.vid.mod)}
+            onClose={()=>{ const {secId,vid}=activeResumen; setActiveResumen(null); setActiveEval({secId,vid}); }}/>
         </Suspense>
       )}
 
