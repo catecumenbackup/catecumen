@@ -7,8 +7,15 @@ import { createPortal } from "react-dom";
 import { C } from "../ui.js";
 import { T } from "../i18n.js";
 
-export default function BienvenidaVideosModal({ titulo, cuerpo, onClose }) {
+export default function BienvenidaVideosModal({ titulo, cuerpo, onClose, dark = false }) {
   const boton = T("Comenzar", "Begin", "Commencer", "Beginnen", "Começar", "Inizia");
+  // Colores según tema (claro / oscuro) para que respete la preferencia del usuario.
+  const cardBg = dark
+    ? "linear-gradient(160deg,#122441 0%,#0B1526 100%)"
+    : "linear-gradient(160deg,#FBF7EC 0%,#F4ECD6 100%)";
+  const borde = dark ? "1px solid rgba(200,169,81,0.45)" : "1px solid rgba(200,169,81,0.5)";
+  const colTitulo = dark ? "#E5C97A" : "#9A7A2A";
+  const colCuerpo = dark ? "#F0EAD6" : "#3A2E14";
   return createPortal(
     <div style={{ position: "fixed", inset: 0, zIndex: 2950, background: "rgba(8,5,2,0.72)",
       display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
@@ -16,12 +23,12 @@ export default function BienvenidaVideosModal({ titulo, cuerpo, onClose }) {
       <div onClick={(e) => e.stopPropagation()}
         style={{ position: "relative", width: "min(640px,96vw)", maxHeight: "90vh", overflowY: "auto",
           borderRadius: 16, padding: "clamp(24px,4vw,40px)",
-          background: "linear-gradient(160deg,#FBF7EC 0%,#F4ECD6 100%)",
-          boxShadow: "0 24px 70px rgba(0,0,0,0.5)", border: "1px solid rgba(200,169,81,0.5)" }}>
+          background: cardBg,
+          boxShadow: "0 24px 70px rgba(0,0,0,0.5)", border: borde }}>
         <div style={{ fontSize: 34, textAlign: "center", marginBottom: 6 }}>🕊️</div>
-        <h2 style={{ fontFamily: "'Cinzel',serif", color: "#9A7A2A", fontWeight: 700, textAlign: "center",
+        <h2 style={{ fontFamily: "'Cinzel',serif", color: colTitulo, fontWeight: 700, textAlign: "center",
           fontSize: "clamp(19px,2.6vw,25px)", lineHeight: 1.25, margin: "0 0 16px" }}>{titulo}</h2>
-        <div style={{ color: "#3A2E14", fontFamily: "'Crimson Text',serif", whiteSpace: "pre-line",
+        <div style={{ color: colCuerpo, fontFamily: "'Crimson Text',serif", whiteSpace: "pre-line",
           fontSize: "clamp(14px,1.6vw,17px)", lineHeight: 1.7 }}>{cuerpo}</div>
         <div style={{ textAlign: "center", marginTop: 24 }}>
           <button onClick={onClose}

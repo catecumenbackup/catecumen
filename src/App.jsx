@@ -1290,30 +1290,30 @@ export default function App(){
   // ── Popup de bienvenida (primera vez en el área de videos) ──────────────────
   // Se decide una sola vez por cuenta (marca local por uid). Si aplica, se
   // muestra ANTES que la oración; la oración espera a que se cierre.
-  // Se usa un ref (no un estado en deps) para evaluar UNA sola vez por cuenta y
-  // evitar que el efecto se auto-cancele al cambiar `bienvDecidido`.
+  // Se usa un ref para evaluar UNA sola vez por cuenta. `bienvDecidido` se marca
+  // SIEMPRE (haya o no popup, falle o no la red) para que la oración nunca quede
+  // bloqueada. Sin función de limpieza: así nada puede cancelar ese marcado.
   const bienvEvalRef=useRef(null);
-  useEffect(()=>{ setBienvDecidido(false); bienvEvalRef.current=null; },[uid]); // re-evaluar al cambiar de cuenta
+  useEffect(()=>{ setBienvDecidido(false); setBienvVideos(null); bienvEvalRef.current=null; },[uid]); // re-evaluar al cambiar de cuenta
   useEffect(()=>{
     if(phase!=="course"||!uid) return;
     if(bienvEvalRef.current===uid) return; // ya evaluado para esta cuenta
     bienvEvalRef.current=uid;
-    const k="cat_bienv_videos_"+uid;
-    let visto=false; try{ visto=!!localStorage.getItem(k); }catch{}
-    if(visto){ setBienvDecidido(true); return; }
-    let cancel=false;
     (async()=>{
       try{
-        const {data}=await supabase.rpc("obtener_ajuste",{p_clave:"bienvenida_videos"});
-        if(!cancel && data && data.activa!==false && (data.titulo||data.cuerpo)){
-          setBienvVideos({titulo:PICK(data.titulo||{}), cuerpo:PICK(data.cuerpo||{})});
-        }else if(!cancel){
-          try{ localStorage.setItem(k,"1"); }catch{} // sin contenido → no reintentar
+        const k="cat_bienv_videos_"+uid;
+        let visto=false; try{ visto=!!localStorage.getItem(k); }catch{}
+        if(!visto){
+          const {data}=await supabase.rpc("obtener_ajuste",{p_clave:"bienvenida_videos"});
+          if(data && data.activa!==false && (data.titulo||data.cuerpo)){
+            setBienvVideos({titulo:PICK(data.titulo||{}), cuerpo:PICK(data.cuerpo||{})});
+          }else{
+            try{ localStorage.setItem(k,"1"); }catch{} // sin contenido → no reintentar
+          }
         }
       }catch(e){ /* red: no bloquear la entrada ni la oración */ }
-      if(!cancel) setBienvDecidido(true);
+      setBienvDecidido(true); // SIEMPRE: desbloquea la oración pase lo que pase
     })();
-    return ()=>{ cancel=true; };
   },[phase,uid]);
 
   useEffect(()=>{
@@ -2305,6 +2305,7 @@ export default function App(){
       {bienvVideos&&(
         <Suspense fallback={null}>
           <BienvenidaVideosModal titulo={bienvVideos.titulo} cuerpo={bienvVideos.cuerpo}
+            dark={effectiveTheme==="dark"}
             onClose={()=>{ try{localStorage.setItem("cat_bienv_videos_"+uid,"1");}catch{} setBienvVideos(null); }}/>
         </Suspense>
       )}
