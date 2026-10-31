@@ -1142,6 +1142,13 @@ export default function App(){
   const [insBySec,setInsBySec]=useState({}); // {secId: inscripcion_id} (Parte B)
   const [activeVideo,setActiveVideo]=useState(null); // {secId,vid}
   const [limiteTema,setLimiteTema]=useState(null); // aviso de cupo de temas/día alcanzado
+  const [cupoSol,setCupoSol]=useState(null); // estado de la solicitud de cupo extra: null|'enviando'|'pendiente'|'error'
+  const pedirCupoExtra=async()=>{
+    setCupoSol("enviando");
+    try{ const {data}=await supabase.rpc("solicitar_cupo_extra");
+      setCupoSol(data&&data.ok?(data.estado||"pendiente"):"error"); }
+    catch{ setCupoSol("error"); }
+  };
   const [activeEval,setActiveEval]=useState(null);
   const [encuestasHechas,setEncuestasHechas]=useState(()=>new Set()); // claves "secId:vidId" ya encuestadas
   const [activeEncuesta,setActiveEncuesta]=useState(null); // {secId,vid} — encuesta previa a la evaluación
@@ -2366,7 +2373,24 @@ export default function App(){
                  `Para cuidar o teu ritmo, podes abrir ${limiteTema.limite||2} temas novos por dia. Já atingiste o limite de hoje; podes continuar amanhã. Enquanto isso, podes rever os temas já abertos.`,
                  `Per mantenere un buon ritmo, puoi aprire ${limiteTema.limite||2} nuovi temi al giorno. Hai raggiunto il limite di oggi; potrai continuare domani. Nel frattempo puoi ripassare i temi già aperti.`)}
             </p>
-            <button onClick={()=>setLimiteTema(null)} style={{...BTN("pri"),width:"100%",justifyContent:"center"}}>
+            {(cupoSol==="pendiente"||limiteTema.solicitud_pendiente)?(
+              <p style={{color:C.gold,fontFamily:"'Cinzel',serif",fontSize:13,marginBottom:14}}>
+                ⏳ {T("Solicitud enviada. Un administrador la revisará; si la aprueba, podrás abrir otro tema hoy.","Request sent. An administrator will review it; if approved, you'll be able to open another topic today.","Demande envoyée. Un administrateur l'examinera ; en cas d'approbation, tu pourras ouvrir un autre thème aujourd'hui.","Anfrage gesendet. Ein Administrator prüft sie; bei Genehmigung kannst du heute ein weiteres Thema öffnen.","Solicitação enviada. Um administrador irá avaliá-la; se aprovar, poderás abrir outro tema hoje.","Richiesta inviata. Un amministratore la esaminerà; se approvata, potrai aprire un altro tema oggi.")}
+              </p>
+            ):(
+              <button onClick={pedirCupoExtra} disabled={cupoSol==="enviando"}
+                style={{...BTN("sec"),width:"100%",justifyContent:"center",marginBottom:10,opacity:cupoSol==="enviando"?0.6:1}}>
+                🙋 {cupoSol==="enviando"
+                  ? T("Enviando…","Sending…","Envoi…","Senden…","Enviando…","Invio…")
+                  : T("Solicitar un tema extra para hoy","Request one extra topic for today","Demander un thème supplémentaire pour aujourd'hui","Ein zusätzliches Thema für heute anfordern","Solicitar um tema extra para hoje","Richiedi un tema extra per oggi")}
+              </button>
+            )}
+            {cupoSol==="error"&&(
+              <p style={{color:"#F87171",fontSize:12.5,marginBottom:10}}>
+                {T("No se pudo enviar la solicitud. Inténtalo de nuevo.","Couldn't send the request. Try again.","Impossible d'envoyer la demande. Réessaie.","Anfrage konnte nicht gesendet werden. Versuche es erneut.","Não foi possível enviar a solicitação. Tente de novo.","Impossibile inviare la richiesta. Riprova.")}
+              </p>
+            )}
+            <button onClick={()=>{setLimiteTema(null);setCupoSol(null);}} style={{...BTN("pri"),width:"100%",justifyContent:"center"}}>
               {T("Entendido","Got it","Compris","Verstanden","Entendi","Ho capito")}
             </button>
           </div>

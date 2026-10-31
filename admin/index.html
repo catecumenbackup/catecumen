@@ -721,6 +721,19 @@
       </div>
       <div id="sol-lista" class="scroll"></div>
       <hr style="border-color:rgba(200,169,81,.2);margin:18px 0">
+      <h3 style="color:var(--gold);font-family:'Cinzel',serif;margin:6px 0 8px">Solicitudes de cupo diario (temas extra)</h3>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+        <label>Estado:
+          <select id="cupo-estado" onchange="cargarCupos()" style="width:auto;display:inline-block">
+            <option value="pendiente">Pendientes</option>
+            <option value="todas">Todas</option>
+          </select>
+        </label>
+        <label>Temas extra: <input id="cupo-extra" type="number" value="1" min="1" max="4" style="width:60px;display:inline-block"></label>
+        <button class="btn ghost" onclick="cargarCupos()">↻ Recargar</button>
+      </div>
+      <div id="cupo-lista" class="scroll"></div>
+      <hr style="border-color:rgba(200,169,81,.2);margin:18px 0">
       <h3 style="color:var(--gold);font-family:'Cinzel',serif;margin:6px 0 8px">Descargas registradas</h3>
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
         <input id="desc-q" placeholder="Buscar por correo o nombre" style="width:240px">
@@ -1611,6 +1624,30 @@
     if(error){ alert("Error: "+error.message); return; }
     cargarSolicitudes(); refrescarBadgeAccesos();
   };
+  async function cargarCupos(){
+    const box=$("cupo-lista"); if(!box) return; box.innerHTML="Cargando…";
+    const est=$("cupo-estado")?$("cupo-estado").value:"pendiente";
+    const {data,error}=await sb.rpc("admin_cupos_listar",{p_estado:est==="todas"?"":est});
+    if(error){ box.innerHTML="<p style='color:#f88'>Error: "+esc(error.message)+"</p>"; return; }
+    if(!data||!data.length){ box.innerHTML="<p style='color:var(--ivory-m)'>Sin solicitudes de cupo.</p>"; return; }
+    box.innerHTML=`<table><thead><tr><th>Usuario</th><th>Día</th><th class="num">Estado</th><th>Solicitado</th><th>Acciones</th></tr></thead><tbody>`+
+      data.map(s=>`<tr>
+        <td>${esc(s.nombre||"—")}<br><span style="font-size:11px;color:var(--ivory-m)">${esc(s.email||"")}</span></td>
+        <td style="font-size:12px">${esc(s.fecha||"")}</td>
+        <td class="num">${_pillEstado(s.estado)}${s.estado==='aprobada'&&s.extra?` <span style="font-size:11px">(+${s.extra})</span>`:''}</td>
+        <td style="font-size:12px">${_fechaCorta(s.creado)}</td>
+        <td>${s.estado==='pendiente'
+          ? `<button class="btn sm" onclick="window.cupoResolver(${s.id},true)">Aprobar</button> <button class="btn danger sm" onclick="window.cupoResolver(${s.id},false)">Rechazar</button>`
+          : '—'}</td>
+      </tr>`).join("")+`</tbody></table>`;
+  }
+  window.cupoResolver=async(id,ap)=>{
+    const extra=parseInt(($("cupo-extra")||{}).value)||1;
+    if(!confirm(ap?`¿Aprobar ${extra} tema(s) extra para ese día?`:"¿Rechazar la solicitud de cupo?")) return;
+    const {error}=await sb.rpc("admin_resolver_cupo",{p_id:id,p_aprobar:ap,p_extra:extra});
+    if(error){ alert("Error: "+error.message); return; }
+    cargarCupos(); if(typeof refrescarBadgeAccesos==="function") refrescarBadgeAccesos();
+  };
   async function cargarDescargas(){
     const box=$("desc-lista"); if(!box) return; box.innerHTML="Cargando…";
     const {data,error}=await sb.rpc("admin_descargas_listar",{p_q:$("desc-q").value||null,p_limite:300});
@@ -1731,7 +1768,7 @@
     if(t.dataset.tab==="clics") cargarClics();
     if(t.dataset.tab==="correos") cargarCorreos();
     if(t.dataset.tab==="crear") cuToggle();
-    if(t.dataset.tab==="accesos"){ cargarSolicitudes(); cargarDescargas(); cargarProrrogas(); }
+    if(t.dataset.tab==="accesos"){ cargarSolicitudes(); cargarCupos(); cargarDescargas(); cargarProrrogas(); }
   }));
 
   // ---------- ESTADÍSTICAS ----------
