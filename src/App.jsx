@@ -48,6 +48,7 @@ const LoginModal = lazy(() => import("./components/LoginModal.jsx"));
 const ValidarConstanciaModal = lazy(() => import("./components/ValidarConstanciaModal.jsx"));
 const CourseSectionView = lazy(() => import("./components/CourseSectionView.jsx"));
 const OracionModal = lazy(() => import("./components/OracionModal.jsx"));
+const BienvenidaVideosModal = lazy(() => import("./components/BienvenidaVideosModal.jsx"));
 const SectionCompleteModal = lazy(() => import("./components/SectionCompleteModal.jsx"));
 const VideoModal = lazy(() => import("./components/VideoModal.jsx"));
 const EncuestaVideoModal = lazy(() => import("./components/EncuestaVideoModal.jsx"));
@@ -1283,8 +1284,36 @@ export default function App(){
   // Larga: al empezar la formación de cada sacramento (catecúmeno) o de papás/
   // padrinos/catequista. Breve: una vez al día al iniciar la sesión diaria.
   const [oracion,setOracion]=useState(null); // {ver:"L"|"C"} | null
+  const [bienvVideos,setBienvVideos]=useState(null); // {titulo,cuerpo} del popup de 1ª vez | null
+  const [bienvDecidido,setBienvDecidido]=useState(false); // ¿ya se decidió si mostrar la bienvenida?
+
+  // ── Popup de bienvenida (primera vez en el área de videos) ──────────────────
+  // Se decide una sola vez por cuenta (marca local por uid). Si aplica, se
+  // muestra ANTES que la oración; la oración espera a que se cierre.
+  useEffect(()=>{ setBienvDecidido(false); },[uid]); // re-evaluar al cambiar de cuenta
+  useEffect(()=>{
+    if(phase!=="course"||!uid||bienvDecidido) return;
+    const k="cat_bienv_videos_"+uid;
+    let visto=false; try{ visto=!!localStorage.getItem(k); }catch{}
+    if(visto){ setBienvDecidido(true); return; }
+    let cancel=false;
+    (async()=>{
+      try{
+        const {data}=await supabase.rpc("obtener_ajuste",{p_clave:"bienvenida_videos"});
+        if(!cancel && data && data.activa!==false && (data.titulo||data.cuerpo)){
+          setBienvVideos({titulo:PICK(data.titulo||{}), cuerpo:PICK(data.cuerpo||{})});
+        }else if(!cancel){
+          try{ localStorage.setItem(k,"1"); }catch{} // sin contenido → no reintentar
+        }
+      }catch(e){ /* red: no bloquear la entrada ni la oración */ }
+      if(!cancel) setBienvDecidido(true);
+    })();
+    return ()=>{ cancel=true; };
+  },[phase,uid,bienvDecidido]);
+
   useEffect(()=>{
     if(phase!=="course"||!currentSecId) return;
+    if(!bienvDecidido||bienvVideos) return; // esperar a que se resuelva/cierre la bienvenida
     try{
       const hoy=new Date().toISOString().slice(0,10);
       const SAC=new Set(["bautismo","confirmacion","primera_comunion"]);
@@ -1302,7 +1331,7 @@ export default function App(){
         setOracion({ver:"C"});
       }
     }catch(e){}
-  },[currentSecId,phase,userType]);
+  },[currentSecId,phase,userType,bienvDecidido,bienvVideos]);
 
   // ── Una sola sesión por cuenta ──────────────────────────────────────────────
   // Cada ~45 s (y al volver a la pestaña) valida el token de sesión contra la BD.
@@ -2268,7 +2297,13 @@ export default function App(){
         </Suspense>
       )}
 
-      {oracion&&(
+      {bienvVideos&&(
+        <Suspense fallback={null}>
+          <BienvenidaVideosModal titulo={bienvVideos.titulo} cuerpo={bienvVideos.cuerpo}
+            onClose={()=>{ try{localStorage.setItem("cat_bienv_videos_"+uid,"1");}catch{} setBienvVideos(null); }}/>
+        </Suspense>
+      )}
+      {oracion&&!bienvVideos&&(
         <Suspense fallback={null}>
           <OracionModal ver={oracion.ver} onClose={()=>setOracion(null)}/>
         </Suspense>

@@ -172,6 +172,7 @@
       <button class="tab" data-tab="constancias">🏆 Constancias</button>
       <button class="tab" data-tab="afiliados">⛪ Afiliados</button>
       <button class="tab" data-tab="preinscripcion">📝 Preinscripción</button>
+      <button class="tab" data-tab="bienvenida">👋 Bienvenida</button>
       <button class="tab" data-tab="donativos">💛 Donativos</button>
       <button class="tab" data-tab="scholas">📖 Scholas</button>
       <button class="tab" data-tab="qr">🔗 QR</button>
@@ -507,6 +508,24 @@
         <button class="btn" onclick="window.preDifundir()">📢 Mensaje a todos</button>
       </div>
       <div id="preinscritos-lista" class="scroll"></div>
+    </div>
+
+    <!-- TAB BIENVENIDA (popup de 1ª vez en el área de videos) -->
+    <div id="tab-bienvenida" class="tabpane hidden">
+      <h2>👋 Popup de bienvenida — primera vez en el área de videos</h2>
+      <p style="color:var(--ivory-m);font-size:13px;margin:0 0 14px;max-width:760px">
+        Lo ve el alumno <b>una sola vez</b>, al entrar por primera vez a sus videos (saludo pastoral + guía breve). Al cerrarlo aparece la oración de inicio. Edita el texto en los 6 idiomas; los cambios se aplican sin recompilar.
+      </p>
+      <label style="display:flex;align-items:center;gap:8px;margin:0 0 14px;font-size:14px">
+        <input type="checkbox" id="bv-activa" style="width:18px;height:18px"> <b>Mostrar el popup de bienvenida</b>
+        <span id="bv-estado" style="color:var(--ivory-m);font-size:12.5px"></span>
+      </label>
+      <p style="margin:0 0 6px;font-size:14px"><b>Título</b> (por idioma):</p>
+      <div id="bv-titulo" style="margin:0 0 16px"></div>
+      <p style="margin:0 0 6px;font-size:14px"><b>Cuerpo</b> (por idioma; usa saltos de línea; «• » para viñetas):</p>
+      <div id="bv-cuerpo" style="margin:0 0 16px"></div>
+      <button class="btn" onclick="window.bvGuardar()">💾 Guardar</button>
+      <span id="bv-msg" style="margin-left:10px;font-size:13px;color:var(--ivory-m)"></span>
     </div>
 
     <!-- TAB DONATIVOS -->
@@ -1224,6 +1243,31 @@
     const nom={bautismo:"Bautismo",confirmacion:"Confirmación",primera_comunion:"Primera Comunión",prebautismal:"Formación Pre-Sacramental (papás)",padrino:"Padrinos",catequista:"Catequista"}[abrir]||abrir;
     alert("Listo. Se abrió únicamente «"+nom+"». Verifica que el interruptor maestro de pagos esté ABIERTO para que esos preinscritos pasen a pago/inicio al entrar.");
   };
+  // ---------- BIENVENIDA (popup 1ª vez en videos) ----------
+  const BV_LANGS=["es","en","fr","de","pt","it"];
+  function _bvBuild(){
+    for(const [id,rows] of [["bv-titulo",1],["bv-cuerpo",6]]){
+      const c=$(id); if(!c||c.dataset.built) continue;
+      c.dataset.built="1"; c.style.display="grid"; c.style.gridTemplateColumns="repeat(2,1fr)"; c.style.gap="6px";
+      BV_LANGS.forEach(l=>{ const t=document.createElement("textarea"); t.dataset.lang=l; t.placeholder=l.toUpperCase(); t.rows=rows; c.appendChild(t); });
+    }
+  }
+  function _bvGet(id){ const o={}; let any=false; $(id).querySelectorAll("[data-lang]").forEach(e=>{ if(e.value.trim()){o[e.dataset.lang]=e.value.replace(/\r/g,""); any=true;} }); return any?o:null; }
+  function _bvSet(id,obj){ $(id).querySelectorAll("[data-lang]").forEach(e=>e.value=(obj&&obj[e.dataset.lang])||""); }
+  function _bvEstado(on){ const e=$("bv-estado"); if(e) e.textContent = on ? "● Visible para los alumnos" : "○ Oculto"; }
+  async function cargarBienvenida(){
+    _bvBuild();
+    const {data,error}=await sb.rpc("obtener_ajuste",{p_clave:"bienvenida_videos"});
+    if(!error && data){ $("bv-activa").checked=data.activa!==false; _bvSet("bv-titulo",data.titulo||{}); _bvSet("bv-cuerpo",data.cuerpo||{}); _bvEstado(data.activa!==false); }
+    else { $("bv-activa").checked=true; _bvEstado(true); }
+  }
+  window.bvGuardar=async()=>{
+    const valor={activa:$("bv-activa").checked}; const ti=_bvGet("bv-titulo"); const cu=_bvGet("bv-cuerpo");
+    if(ti) valor.titulo=ti; if(cu) valor.cuerpo=cu;
+    const {error}=await sb.rpc("admin_guardar_ajuste",{p_clave:"bienvenida_videos",p_valor:valor});
+    const m=$("bv-msg"); if(error){ if(m){m.textContent="Error: "+error.message;m.style.color="#D64545";} return; }
+    _bvEstado(valor.activa); if(m){ m.textContent="✓ Guardado"; m.style.color="#3BA55D"; setTimeout(()=>{m.textContent="";},2500); }
+  };
   function _pagosEstado(on){ const e=$("pagos-estado"); if(e) e.textContent = on ? "✅ Pagos ABIERTOS" : "🔒 Pagos cerrados (solo preinscripción)"; }
   window.pagosGuardar=async()=>{
     const on=$("pagos-hab").checked;
@@ -1595,6 +1639,7 @@
     if(t.dataset.tab==="constancias") cargarConstancias();
     if(t.dataset.tab==="afiliados") cargarAfiliados();
     if(t.dataset.tab==="preinscripcion") cargarPreinscripcion();
+    if(t.dataset.tab==="bienvenida") cargarBienvenida();
     if(t.dataset.tab==="donativos") cargarDonativos();
     if(t.dataset.tab==="avisos") cargarAvisos();
     if(t.dataset.tab==="sesiones") cargarSesiones();
