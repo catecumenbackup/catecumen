@@ -235,8 +235,16 @@ const RESUMENES={
 const HOJAS_PDF={
   // "KER-01": "/hojas/KER-01.pdf",
 };
-// Helper: resumen (puntos por idioma) + hoja PDF de un tema (mod).
+// Resúmenes cargados desde la BD (panel admin). Objeto MUTABLE compartido: App lo
+// rellena al arrancar con `obtener_resumenes`. Si un tema está aquí, prevalece
+// sobre el de course.js. Forma: { "TC1-01": { resumen:{es:[...]}, hoja_pdf_url } }.
+const RESUMENES_DB={};
+// Helper: resumen (puntos por idioma) + hoja PDF de un tema (mod). BD > course.js.
 function resumenDeTema(mod, lang="es"){
+  const db=RESUMENES_DB[mod];
+  if(db && db.resumen){
+    return { puntos: db.resumen[lang]||db.resumen.es||null, hojaPdf: db.hoja_pdf_url||null };
+  }
   const r=RESUMENES[mod];
   return { puntos: r?(r[lang]||r.es||null):null, hojaPdf: HOJAS_PDF[mod]||null };
 }
@@ -573,5 +581,5 @@ function videoState(secId, vid, prog, vids){
   return videoDone(secId,vids[idx-1],prog) ? "available" : "locked";
 }
 
-export { TC1_MODULES, TC1_ALL, TC2_CONFESION, TC2_UNCION, KERIGMA, COURSES, Q, RESUMENES, HOJAS_PDF, resumenDeTema,
+export { TC1_MODULES, TC1_ALL, TC2_CONFESION, TC2_UNCION, KERIGMA, COURSES, Q, RESUMENES, HOJAS_PDF, RESUMENES_DB, resumenDeTema,
          videoPruebaUrls, SEC_META, TEST_MODE, isSectionDone, videoState, requiereEval, videoDone };

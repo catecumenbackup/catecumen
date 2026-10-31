@@ -28,7 +28,7 @@ import EstrellasInput from "./components/EstrellasInput.jsx";
 import { FlameIcon, CalizIcon, iconoBautismo, iconoConfirmacion } from "./components/icons.jsx";
 import SecIcon from "./components/SecIcon.jsx";
 import { SoporteLink, DirectorioButton, SoporteModal } from "./components/support.jsx";
-import { SEC_META, Q, RESUMENES, resumenDeTema, TEST_MODE, isSectionDone, videoState, requiereEval, videoDone } from "./data/course.js";
+import { SEC_META, Q, RESUMENES, RESUMENES_DB, resumenDeTema, TEST_MODE, isSectionDone, videoState, requiereEval, videoDone } from "./data/course.js";
 import { appNav } from "./appNav.js";
 import { CUOTAS } from "./data/pricing.js";
 import { GoldenRain, StarRain } from "./components/effects.jsx";
@@ -1556,6 +1556,10 @@ export default function App(){
     }catch(e){ console.error("loadBridge:",e); return null; }
   };
   useEffect(()=>{ loadBridge(); },[]);
+  // Resúmenes por tema cargados desde el panel (BD). Rellenan RESUMENES_DB, que
+  // prevalece sobre los de course.js. Se usan al abrir un resumen (tras el arranque).
+  useEffect(()=>{ (async()=>{ try{ const {data}=await supabase.rpc("obtener_resumenes");
+    if(data&&typeof data==="object"){ Object.assign(RESUMENES_DB,data); } }catch(e){} })(); },[]);
 
   const handleLoginSuccess=async(authUser,isRestore=false)=>{
     try{
