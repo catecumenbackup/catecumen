@@ -162,6 +162,10 @@ export default function RegisterForm({userType,sacraments,onNext,onBack}){
   // Confirmación de correo: ambos campos deben coincidir (sin distinguir
   // mayúsculas ni espacios) para evitar erratas que dejarían al usuario sin acceso.
   const emailsMatch=(d.email||"").trim().toLowerCase()===(d.emailConfirm||"").trim().toLowerCase();
+  // Confirmación de teléfono: se comparan solo los dígitos (ignora espacios,
+  // guiones y paréntesis) para atrapar erratas al teclear el número.
+  const soloDig=(s)=>(s||"").replace(/\D+/g,"");
+  const phonesMatch=soloDig(d.phone)===soloDig(d.phoneConfirm);
   // Formación en pareja (solo papás/padrinos): si está activa, exige los datos
   // del acompañante y que su correo sea válido y distinto al del titular.
   const enPareja=(userType==="prebautismal"||userType==="padrino")&&!!d.enPareja;
@@ -169,7 +173,7 @@ export default function RegisterForm({userType,sacraments,onNext,onBack}){
     d.parejaNombre&&d.parejaApellido&&
     /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test((d.parejaEmail||"").trim())&&
     (d.parejaEmail||"").trim().toLowerCase()!==(d.email||"").trim().toLowerCase());
-  const canSubmit=d.nombre&&d.apellido&&d.email&&d.emailConfirm&&emailsMatch&&d.country&&d.estado&&d.dob&&d.phone&&d.docNum&&d.phoneCode&&
+  const canSubmit=d.nombre&&d.apellido&&d.email&&d.emailConfirm&&emailsMatch&&d.country&&d.estado&&d.dob&&d.phone&&d.phoneConfirm&&phonesMatch&&d.docNum&&d.phoneCode&&
     (userType==="catequista" ? !!d.parroquia : (d.parroquia||d.noSure))&&d.terms&&ageOk&&maritalOk&&sacsBenefOk&&
     catequistaAfilOk&&parejaOk;
   const isFree=(userType==="catequista"&&d.afiliadaOrg==="si"&&orgVerif==="valido")||!!d.estaInternado;
@@ -246,7 +250,21 @@ export default function RegisterForm({userType,sacraments,onNext,onBack}){
         <FRow label={T("Número telefónico","Phone number","Numéro de téléphone","Telefonnummer","Número de telefone","Numero di telefono")}>
           <PhoneField phoneCode={d.phoneCode} phone={d.phone} onChange={set}/>
         </FRow>
-        
+
+        <FRow label={T("Confirmar número telefónico","Confirm phone number","Confirmer le numéro de téléphone","Telefonnummer bestätigen","Confirmar número de telefone","Conferma numero di telefono")}>
+          {/* Reescribir (no pegar) el número para atrapar erratas; se comparan solo los dígitos. */}
+          <input type="tel" inputMode="tel" value={d.phoneConfirm||""} onChange={e=>set("phoneConfirm",e.target.value)}
+            onPaste={e=>e.preventDefault()} onDrop={e=>e.preventDefault()}
+            autoComplete="off" spellCheck={false}
+            placeholder={T("Vuelve a escribir tu número","Re-enter your number","Ressaisissez votre numéro","Nummer erneut eingeben","Digite novamente seu número","Reinserisci il tuo numero")}
+            style={{...INP, ...(d.phoneConfirm&&!phonesMatch?{borderColor:"#F87171"}:{})}}/>
+          {d.phoneConfirm&&!phonesMatch&&(
+            <p style={{color:"#F87171",fontSize:12.5,margin:"6px 0 0",fontFamily:"'Crimson Text',serif"}}>
+              ⚠️ {T("Los números no coinciden","The numbers do not match","Les numéros ne correspondent pas","Die Nummern stimmen nicht überein","Os números não coincidem","I numeri non corrispondono")}
+            </p>
+          )}
+        </FRow>
+
         <FRow label={`${docInfo.l} — ${docInfo.f}`}>
           <Input value={d.docNum} onChange={v=>set("docNum",v)} placeholder={docInfo.ph||""}/>
           <p style={{color:C.ivoryM,fontSize:12,marginTop:5,lineHeight:1.4}}>
@@ -842,6 +860,7 @@ export default function RegisterForm({userType,sacraments,onNext,onBack}){
               {!d.dob&&<span>• {T("Fecha de nacimiento","Date of birth","Date de naissance","Geburtsdatum","Data de nascimento","Data di nascita")}<br/></span>}
               {!d.phoneCode&&<span>• {T("Código de país (teléfono)","Phone country code","Indicatif du pays (téléphone)","Ländervorwahl (Telefon)","Código do país (telefone)","Prefisso internazionale (telefono)")}<br/></span>}
               {!d.phone&&<span>• {T("Teléfono","Phone number","Numéro de téléphone","Telefonnummer","Número de telefone","Numero di telefono")}<br/></span>}
+              {d.phone&&(!d.phoneConfirm||!phonesMatch)&&<span>• {T("Confirmar teléfono (debe coincidir)","Confirm phone (must match)","Confirmer le téléphone (doit correspondre)","Telefon bestätigen (muss übereinstimmen)","Confirmar telefone (deve coincidir)","Conferma telefono (deve corrispondere)")}<br/></span>}
               {!d.docNum&&<span>• {T("Número de documento","Document number","Numéro de document","Dokumentennummer","Número do documento","Numero di documento")}<br/></span>}
               {!(d.parroquia||d.noSure)&&userType!=="catequista"&&<span>• {T("Parroquia (o marcar 'no estoy seguro')","Parish (or check 'not sure')","Paroisse (ou cocher « pas sûr(e) »)","Pfarrei (oder „nicht sicher“ ankreuzen)","Paróquia (ou marcar 'não tenho certeza')","Parrocchia (o seleziona 'non sono sicuro/a')")}<br/></span>}
               {!d.parroquia&&userType==="catequista"&&<span>• {T("Parroquia donde presta catequesis","Parish where you serve","Paroisse où vous exercez la catéchèse","Pfarrei, in der Sie Katechese unterrichten","Paróquia onde exerce catequese","Parrocchia dove svolgi la catechesi")}<br/></span>}

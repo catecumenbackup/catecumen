@@ -150,12 +150,14 @@ serve(async (req: Request) => {
     }
 
     // 6) Auditoría
-    await admin.from("admin_log").insert({
-      admin_id: callerId, admin_email: callerEmail,
-      accion: "usuario.creado_" + tipo_acceso,
-      entidad: "usuarios", entidad_id: uid,
-      detalle: { email, tipo_usuario, tipo_acceso, vigencia_limite: vigenciaLimite, sacramentos },
-    }).catch(() => {});
+    try {
+      await admin.from("admin_log").insert({
+        admin_id: callerId, admin_email: callerEmail,
+        accion: "usuario.creado_" + tipo_acceso,
+        entidad: "usuarios", entidad_id: uid,
+        detalle: { email, tipo_usuario, tipo_acceso, vigencia_limite: vigenciaLimite, sacramentos },
+      });
+    } catch (_) { /* la auditoría no debe tumbar la creación */ }
 
     return json({ ok: true, user_id: uid, email, password,
       vigencia_limite: vigenciaLimite, tipo_acceso });

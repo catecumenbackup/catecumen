@@ -477,6 +477,20 @@
           <label style="display:flex;align-items:center;gap:6px;font-size:14px"><input type="checkbox" data-curso="padrino" onchange="window.preGuardar()" style="width:16px;height:16px"> Padrinos</label>
           <label style="display:flex;align-items:center;gap:6px;font-size:14px"><input type="checkbox" data-curso="catequista" onchange="window.preGuardar()" style="width:16px;height:16px"> Catequista (Neuropedagogía)</label>
         </div>
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(240,234,214,0.14);display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span style="font-size:13px">Atajo — <b>abrir un solo curso</b> (el resto queda en preinscripción):</span>
+          <select id="pre-abrir-solo" style="min-width:200px">
+            <option value="">— elige un curso —</option>
+            <option value="bautismo">Bautismo</option>
+            <option value="confirmacion">Confirmación</option>
+            <option value="primera_comunion">Primera Comunión</option>
+            <option value="prebautismal">Formación Pre-Sacramental (papás)</option>
+            <option value="padrino">Padrinos</option>
+            <option value="catequista">Catequista (Neuropedagogía)</option>
+          </select>
+          <button class="btn" type="button" onclick="window.preAbrirSolo()">Abrir solo este</button>
+        </div>
+        <p style="color:var(--ivory-m);font-size:12px;margin:8px 0 0">El atajo marca como “aún no abren” todos los cursos <b>menos</b> el elegido y guarda. Para que los preinscritos de ese curso pasen a pago/inicio automáticamente, el <b>interruptor maestro de pagos</b> debe estar ABIERTO.</p>
       </div>
       <p style="color:var(--ivory-m);font-size:12px;margin:0 0 6px">Mensaje que verá el preinscrito en la pantalla de espera (por idioma; opcional, hay un texto por defecto):</p>
       <div id="pre-mensaje"></div>
@@ -1198,6 +1212,17 @@
     const {error}=await sb.rpc("admin_guardar_ajuste",{p_clave:"preinscripcion",p_valor:valor});
     if(error){ alert("Error: "+error.message); return; }
     _preEstado(valor.activa);
+  };
+  // Atajo: abrir UN curso = marcar como "aún no abren" todos los demás y guardar.
+  window.preAbrirSolo=async()=>{
+    const abrir=$("pre-abrir-solo").value;
+    if(!abrir){ alert("Elige el curso que quieres abrir."); return; }
+    const todos=["bautismo","confirmacion","primera_comunion","prebautismal","padrino","catequista"];
+    _preSetCursos(todos.filter(c=>c!==abrir)); // todos menos el que se abre
+    if(!$("pre-activa").checked) $("pre-activa").checked=true; // el modo debe seguir activo para los demás
+    await window.preGuardar();
+    const nom={bautismo:"Bautismo",confirmacion:"Confirmación",primera_comunion:"Primera Comunión",prebautismal:"Formación Pre-Sacramental (papás)",padrino:"Padrinos",catequista:"Catequista"}[abrir]||abrir;
+    alert("Listo. Se abrió únicamente «"+nom+"». Verifica que el interruptor maestro de pagos esté ABIERTO para que esos preinscritos pasen a pago/inicio al entrar.");
   };
   function _pagosEstado(on){ const e=$("pagos-estado"); if(e) e.textContent = on ? "✅ Pagos ABIERTOS" : "🔒 Pagos cerrados (solo preinscripción)"; }
   window.pagosGuardar=async()=>{
