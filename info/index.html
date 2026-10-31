@@ -178,6 +178,13 @@
     letter-spacing:.1em;text-transform:uppercase;text-align:center;margin-bottom:8px;
   }
   .h2sub{color:var(--ivory-m);text-align:center;font-size:18.5px;max-width:820px;margin:0 auto 32px}
+  .cierre{max-width:640px;margin:30px auto 4px;padding-top:22px;position:relative;
+    font-family:'Crimson Text',serif;font-style:italic;font-size:21px;line-height:1.55;
+    color:var(--gold);text-align:center}
+  .cierre::before{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);
+    width:70px;height:2px;border-radius:2px;
+    background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+  @media(max-width:640px){ .cierre{font-size:18px} }
   
   /* ── cita magisterial ── */
   .cita-magisterial{
@@ -715,7 +722,7 @@
         <span class="pt">A Catecumen não busca substituir a necessária experiência da vida paroquial nem o acompanhamento do catequista e do sacerdote; antes, incentiva-os, complementa-os e aproxima-os.</span>
         <span class="it">Catecumen non cerca di sostituire la necessaria esperienza della vita parrocchiale né l'accompagnamento del catechista e del sacerdote, ma li incoraggia, li completa e li avvicina.</span>
       </p>
-      <p>
+      <p class="cierre">
         <span class="es">Catecumen nace de un solo anhelo: que nadie se quede sin la gracia de los sacramentos por falta de una oportunidad para prepararse.</span>
         <span class="en">Catecumen is born of a single longing: that no one be left without the grace of the sacraments for lack of an opportunity to prepare.</span>
         <span class="fr">Catecumen naît d'un seul désir : que personne ne reste privé de la grâce des sacrements faute d'une occasion de s'y préparer.</span>
