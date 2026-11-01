@@ -535,8 +535,6 @@ function WelcomeModal({onContinue,onLogin}){
     {scene:"documentos", t:T("Y con acceso directo a las versiones digitales del Catecismo de la Iglesia Católica y la Biblia autorizadas por la Santa Sede.","And with direct access to the digital versions of the Catechism of the Catholic Church and the Bible authorized by the Holy See.","Et avec un accès direct aux versions numériques du Catéchisme de l'Église catholique et de la Bible autorisées par le Saint-Siège.","Und mit direktem Zugang zu den vom Heiligen Stuhl autorisierten digitalen Fassungen des Katechismus der katholischen Kirche und der Bibel.","E com acesso direto às versões digitais do Catecismo da Igreja Católica e da Bíblia autorizadas pela Santa Sé.","E con accesso diretto alle versioni digitali del Catechismo della Chiesa Cattolica e della Bibbia autorizzate dalla Santa Sede.")},
     // NUEVA tarjeta · neuropedagogía con avatares
     {scene:"avatares", t:T("Cada lección se convierte en una experiencia viva, guiada por avatares de personajes bíblicos y santos de la Iglesia Católica: una manera única de formarte en la fe.","Each lesson becomes a living experience, guided by avatars of biblical figures and saints of the Catholic Church: a unique way to grow in faith.","Chaque leçon devient une expérience vivante, guidée par des avatars de personnages bibliques et de saints de l'Église catholique : une façon unique de vous former dans la foi.","Jede Lektion wird zu einer lebendigen Erfahrung, begleitet von Avataren biblischer Gestalten und Heiliger der katholischen Kirche – ein einzigartiger Weg, im Glauben zu wachsen.","Cada lição torna-se uma experiência viva, guiada por avatares de personagens bíblicos e santos da Igreja Católica: uma forma única de crescer na fé.","Ogni lezione diventa un'esperienza viva, guidata da avatar di personaggi biblici e santi della Chiesa Cattolica: un modo unico per formarti nella fede.")},
-    // NUEVA tarjeta final · comunidad y seguimiento pastoral
-    {scene:"comunidad", t:T("Intégrate a una comunidad de formación sacramental. Recibirás seguimiento pastoral personalizado y en grupos donde profundizaremos las verdades de nuestra fe.","Join a community of sacramental formation. You will receive personalized pastoral guidance, individually and in groups, where we will deepen the truths of our faith.","Rejoignez une communauté de formation sacramentelle. Vous bénéficierez d'un accompagnement pastoral personnalisé et en groupe, où nous approfondirons les vérités de notre foi.","Werde Teil einer Gemeinschaft der Sakramentenbildung. Du erhältst eine persönliche und gemeinschaftliche seelsorgliche Begleitung, in der wir die Wahrheiten unseres Glaubens vertiefen.","Integre-se a uma comunidade de formação sacramental. Você receberá acompanhamento pastoral personalizado e em grupos, onde aprofundaremos as verdades da nossa fé.","Unisciti a una comunità di formazione sacramentale. Riceverai un accompagnamento pastorale personalizzato e di gruppo, in cui approfondiremo le verità della nostra fede.")},
     // Tarjeta final · video de bienvenida y muestra del curso.
     // El video se carga desde el panel (tabla tour_tarjetas, clave "muestra").
     {scene:"ritmo", t:T("Para cuidar tu ritmo de formación, cada día podrás abrir un número limitado de temas nuevos (por lo general, 2); continuar un tema ya empezado no gasta tu cupo. Si un día necesitas avanzar más, puedes solicitar cupo adicional desde la plataforma.","To care for your learning pace, each day you can open a limited number of new topics (usually 2); continuing a topic you already started does not use up your allowance. If one day you need to go further, you can request extra allowance from the platform.","Pour préserver ton rythme de formation, chaque jour tu pourras ouvrir un nombre limité de nouveaux thèmes (en général 2) ; poursuivre un thème déjà commencé n'entame pas ton quota. Si un jour tu dois avancer davantage, tu peux demander un quota supplémentaire depuis la plateforme.","Um dein Lerntempo zu schützen, kannst du jeden Tag eine begrenzte Anzahl neuer Themen öffnen (in der Regel 2); ein bereits begonnenes Thema fortzusetzen verbraucht dein Kontingent nicht. Wenn du an einem Tag weiterkommen möchtest, kannst du über die Plattform zusätzliches Kontingent anfordern.","Para cuidar do teu ritmo de formação, a cada dia poderás abrir um número limitado de temas novos (geralmente, 2); continuar um tema já iniciado não gasta a tua cota. Se num dia precisares de avançar mais, podes solicitar cota adicional pela plataforma.","Per preservare il tuo ritmo di formazione, ogni giorno potrai aprire un numero limitato di nuovi temi (di solito 2); continuare un tema già iniziato non consuma la tua quota. Se un giorno hai bisogno di procedere oltre, puoi richiedere una quota aggiuntiva dalla piattaforma.")},
@@ -782,13 +780,22 @@ function WelcomeModal({onContinue,onLogin}){
                 allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;fullscreen"
                 allowFullScreen/>
             ):(
-              <video src={PROMO_LOCAL} controls autoPlay playsInline
+              // Portada (catecumen-video-thumb) para que no se vea solo negro
+              // antes de darle play; sin autoplay (los navegadores lo bloquean
+              // con sonido, así que mostramos la portada + botón de play nativo).
+              <video src={PROMO_LOCAL} controls playsInline preload="metadata"
+                poster="/catecumen-video-thumb.jpg"
                 style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"contain",background:"#000"}}/>
             )}
+            {/* X de cerrar, pegada a la esquina del video (clara y siempre visible) */}
+            <button onClick={()=>setShowPromo(false)} aria-label={T("Cerrar","Close","Fermer","Schließen","Fechar","Chiudi")}
+              style={{position:"absolute",top:10,right:10,zIndex:5,
+                background:"rgba(10,20,36,0.88)",color:C.goldL,
+                border:`1.5px solid ${C.gold}`,borderRadius:99,width:40,height:40,
+                fontSize:18,fontWeight:700,lineHeight:1,cursor:"pointer",
+                display:"flex",alignItems:"center",justifyContent:"center",
+                boxShadow:"0 2px 10px rgba(0,0,0,0.55)"}}>✕</button>
           </div>
-          <button onClick={()=>setShowPromo(false)} aria-label={T("Cerrar","Close","Fermer","Schließen","Fechar","Chiudi")}
-            style={{position:"absolute",top:16,right:20,background:"rgba(0,0,0,0.6)",color:"#fff",
-              border:"1px solid rgba(255,255,255,0.4)",borderRadius:99,width:42,height:42,fontSize:20,cursor:"pointer"}}>✕</button>
         </div>
       )}
     </div>
@@ -2070,18 +2077,18 @@ export default function App(){
       <style>{`
         :root, [data-theme="dark"]{
           /* Azul marino (no demasiado oscuro). */
-          --c-bg:#14294A; --c-surface:#193458; --c-card:#1E3C64; --c-cardH:#264A73;
+          --c-bg:#0B1A33; --c-surface:#102544; --c-card:#163150; --c-cardH:#1E3E63;
           --c-border:rgba(200,169,81,0.22); --c-borderD:rgba(255,255,255,0.09);
           --c-gold:#C8A951; --c-goldL:#E5C97A; --c-goldDeep:#9A7A2A;
           --c-ivory:#F0EAD6; --c-ivoryM:#A9A08C; --c-tM:#6A7488;
           --c-wine:#8B1A2E; --c-green:#2D7A5A; --c-greenB:#3DA070;
           --c-blue:#2058A8; --c-blueB:#3070D0; --c-gray:#3A4556;
           --c-inputBg:rgba(255,255,255,0.05); --c-label:#FFFFFF; --c-btnPriText:#0A1A30;
-          --c-cardEnd:#183156; --c-cardShadow:0 4px 20px rgba(0,0,0,0.28);
-          --c-modalStart:#204268; --c-modalEnd:#183358;
-          --c-modalShadow:0 24px 60px rgba(0,0,0,0.48),0 1px 0 rgba(200,169,81,0.15) inset;
-          --c-selectBg:#193458; --c-scrollTrack:#14294A; --c-scheme:dark;
-          --c-veil:rgba(16,32,58,0.80);
+          --c-cardEnd:#122847; --c-cardShadow:0 4px 20px rgba(0,0,0,0.34);
+          --c-modalStart:#183354; --c-modalEnd:#122847;
+          --c-modalShadow:0 24px 60px rgba(0,0,0,0.52),0 1px 0 rgba(200,169,81,0.15) inset;
+          --c-selectBg:#102544; --c-scrollTrack:#0B1A33; --c-scheme:dark;
+          --c-veil:rgba(7,16,32,0.82);
         }
         [data-theme="light"]{
           --c-bg:#FBF6EA; --c-surface:#F5EDDA; --c-card:#FFFFFF; --c-cardH:#FAF2DF;
