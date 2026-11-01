@@ -2113,8 +2113,12 @@ export default function App(){
         select option { background:var(--c-selectBg); color:var(--c-ivory); }
         /* Pantalla completa del reproductor: se fullscreenea el CONTENEDOR (no el
            <video>) para que la marca de agua dinámica siga visible encima. */
-        .catePlayer:fullscreen, .catePlayer:-webkit-full-screen { background:#000; border-radius:0; max-height:none; }
-        .catePlayer:fullscreen video, .catePlayer:-webkit-full-screen video { width:100%; height:100%; max-height:none; border-radius:0; object-fit:contain; }
+        /* !important: el <video> lleva maxHeight:320 en estilo inline (para la
+           vista normal, compacta). Sin !important, ese inline gana y en pantalla
+           completa el video se quedaría reducido a 320px con la marca fuera. Con
+           !important el video llena la pantalla y la marca dinámica queda encima. */
+        .catePlayer:fullscreen, .catePlayer:-webkit-full-screen { background:#000!important; border-radius:0!important; max-height:none!important; width:100vw!important; height:100vh!important; }
+        .catePlayer:fullscreen video, .catePlayer:-webkit-full-screen video { width:100%!important; height:100%!important; max-height:none!important; border-radius:0!important; object-fit:contain!important; }
         ::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-track{background:var(--c-scrollTrack)}
         ::-webkit-scrollbar-thumb{background:var(--c-gold);border-radius:3px}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
