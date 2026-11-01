@@ -574,7 +574,28 @@ const RESUMENES={
 // hojas, poner la URL por tema aquí (o moverlo a BD con el panel). Si no hay URL,
 // el botón "Descargar la hoja" no se pinta.
 const HOJAS_PDF={
-  // "KER-01": "/hojas/KER-01.pdf",
+  "KER-01": "/hojas/KER-01.pdf",
+  "KER-02": "/hojas/KER-02.pdf",
+  "KER-03": "/hojas/KER-03.pdf",
+  "KER-04": "/hojas/KER-04.pdf",
+  "KER-05": "/hojas/KER-05.pdf",
+  "KER-06": "/hojas/KER-06.pdf",
+  "TC1-01": "/hojas/TC1-01.pdf",
+  "TC1-02": "/hojas/TC1-02.pdf",
+  "TC1-03": "/hojas/TC1-03.pdf",
+  "TC1-04": "/hojas/TC1-04.pdf",
+  "TC1-05": "/hojas/TC1-05.pdf",
+  "TC1-06": "/hojas/TC1-06.pdf",
+  "TC1-07": "/hojas/TC1-07.pdf",
+  "TC1-08": "/hojas/TC1-08.pdf",
+  "TC1-09": "/hojas/TC1-09.pdf",
+  "TC1-10": "/hojas/TC1-10.pdf",
+  "TC1-11": "/hojas/TC1-11.pdf",
+  "TC1-12": "/hojas/TC1-12.pdf",
+  "TC1-13": "/hojas/TC1-13.pdf",
+  "TC1-14": "/hojas/TC1-14.pdf",
+  "TC1-15": "/hojas/TC1-15.pdf",
+  "TC1-16": "/hojas/TC1-16.pdf",
 };
 // Resúmenes cargados desde la BD (panel admin). Objeto MUTABLE compartido: App lo
 // rellena al arrancar con `obtener_resumenes`. Si un tema está aquí, prevalece
@@ -582,12 +603,11 @@ const HOJAS_PDF={
 const RESUMENES_DB={};
 // Helper: resumen (puntos por idioma) + hoja PDF de un tema (mod). BD > course.js.
 function resumenDeTema(mod, lang="es"){
-  const db=RESUMENES_DB[mod];
-  if(db && db.resumen){
-    return { puntos: db.resumen[lang]||db.resumen.es||null, hojaPdf: db.hoja_pdf_url||null };
-  }
+  const db=RESUMENES_DB[mod]||{};
   const r=RESUMENES[mod];
-  return { puntos: r?(r[lang]||r.es||null):null, hojaPdf: HOJAS_PDF[mod]||null };
+  const puntos = (db.resumen ? (db.resumen[lang]||db.resumen.es) : (r?(r[lang]||r.es):null)) || null;
+  const hojaPdf = (db.hoja_pdf_url || HOJAS_PDF[mod] || null);
+  return { puntos, hojaPdf };
 }
 
 // ─── PREGUNTAS TC1 (5 por tema, escala 10 pts, necesita ≥8) ──────
