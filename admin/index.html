@@ -721,6 +721,13 @@
       </div>
       <div id="sol-lista" class="scroll"></div>
       <hr style="border-color:rgba(200,169,81,.2);margin:18px 0">
+      <h3 style="color:var(--gold);font-family:'Cinzel',serif;margin:6px 0 8px">Cupo diario de temas</h3>
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap;background:rgba(200,169,81,.06);border:1px solid rgba(200,169,81,.2);border-radius:8px;padding:9px 12px">
+        <label>Temas nuevos por día: <input id="cupo-n" type="number" min="1" max="10" style="width:64px;display:inline-block"></label>
+        <label style="display:inline-flex;align-items:center;gap:6px"><input id="cupo-solic" type="checkbox"> Permitir que el alumno solicite cupo extra</label>
+        <button class="btn sm" onclick="guardarCupoCfg()">Guardar</button>
+        <span id="cupo-cfg-msg" class="msg" style="margin:0"></span>
+      </div>
       <h3 style="color:var(--gold);font-family:'Cinzel',serif;margin:6px 0 8px">Solicitudes de cupo diario (temas extra)</h3>
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
         <label>Estado:
@@ -1641,6 +1648,18 @@
           : '—'}</td>
       </tr>`).join("")+`</tbody></table>`;
   }
+  async function cargarCupoCfg(){
+    try{ const {data}=await sb.rpc("obtener_ajuste",{p_clave:"temas_limite_dia"});
+      const v=data||{}; if($("cupo-n")) $("cupo-n").value=v.n||2; if($("cupo-solic")) $("cupo-solic").checked=v.solicitud!==false;
+    }catch(e){}
+  }
+  window.guardarCupoCfg=async()=>{
+    const {data:cur}=await sb.rpc("obtener_ajuste",{p_clave:"temas_limite_dia"});
+    const v=Object.assign({n:2,tz:"America/Mexico_City",solicitud:true},cur||{});
+    v.n=parseInt($("cupo-n").value)||2; v.solicitud=$("cupo-solic").checked;
+    const {error}=await sb.rpc("admin_guardar_ajuste",{p_clave:"temas_limite_dia",p_valor:v});
+    const m=$("cupo-cfg-msg"); if(m){ m.className="msg "+(error?"err":"ok"); m.textContent=error?("Error: "+error.message):"Guardado."; }
+  };
   window.cupoResolver=async(id,ap)=>{
     const extra=parseInt(($("cupo-extra")||{}).value)||1;
     if(!confirm(ap?`¿Aprobar ${extra} tema(s) extra para ese día?`:"¿Rechazar la solicitud de cupo?")) return;
@@ -1768,7 +1787,7 @@
     if(t.dataset.tab==="clics") cargarClics();
     if(t.dataset.tab==="correos") cargarCorreos();
     if(t.dataset.tab==="crear") cuToggle();
-    if(t.dataset.tab==="accesos"){ cargarSolicitudes(); cargarCupos(); cargarDescargas(); cargarProrrogas(); }
+    if(t.dataset.tab==="accesos"){ cargarSolicitudes(); cargarCupoCfg(); cargarCupos(); cargarDescargas(); cargarProrrogas(); }
   }));
 
   // ---------- ESTADÍSTICAS ----------

@@ -538,6 +538,7 @@ function WelcomeModal({onContinue,onLogin}){
     {scene:"comunidad", t:T("Intégrate a una comunidad de formación sacramental. Recibirás seguimiento pastoral personalizado y en grupos donde profundizaremos las verdades de nuestra fe.","Join a community of sacramental formation. You will receive personalized pastoral guidance, individually and in groups, where we will deepen the truths of our faith.","Rejoignez une communauté de formation sacramentelle. Vous bénéficierez d'un accompagnement pastoral personnalisé et en groupe, où nous approfondirons les vérités de notre foi.","Werde Teil einer Gemeinschaft der Sakramentenbildung. Du erhältst eine persönliche und gemeinschaftliche seelsorgliche Begleitung, in der wir die Wahrheiten unseres Glaubens vertiefen.","Integre-se a uma comunidade de formação sacramental. Você receberá acompanhamento pastoral personalizado e em grupos, onde aprofundaremos as verdades da nossa fé.","Unisciti a una comunità di formazione sacramentale. Riceverai un accompagnamento pastorale personalizzato e di gruppo, in cui approfondiremo le verità della nostra fede.")},
     // Tarjeta final · video de bienvenida y muestra del curso.
     // El video se carga desde el panel (tabla tour_tarjetas, clave "muestra").
+    {scene:"ritmo", t:T("Para cuidar tu ritmo de formación, cada día podrás abrir un número limitado de temas nuevos (por lo general, 2); continuar un tema ya empezado no gasta tu cupo. Si un día necesitas avanzar más, puedes solicitar cupo adicional desde la plataforma.","To care for your learning pace, each day you can open a limited number of new topics (usually 2); continuing a topic you already started does not use up your allowance. If one day you need to go further, you can request extra allowance from the platform.","Pour préserver ton rythme de formation, chaque jour tu pourras ouvrir un nombre limité de nouveaux thèmes (en général 2) ; poursuivre un thème déjà commencé n'entame pas ton quota. Si un jour tu dois avancer davantage, tu peux demander un quota supplémentaire depuis la plateforme.","Um dein Lerntempo zu schützen, kannst du jeden Tag eine begrenzte Anzahl neuer Themen öffnen (in der Regel 2); ein bereits begonnenes Thema fortzusetzen verbraucht dein Kontingent nicht. Wenn du an einem Tag weiterkommen möchtest, kannst du über die Plattform zusätzliches Kontingent anfordern.","Para cuidar do teu ritmo de formação, a cada dia poderás abrir um número limitado de temas novos (geralmente, 2); continuar um tema já iniciado não gasta a tua cota. Se num dia precisares de avançar mais, podes solicitar cota adicional pela plataforma.","Per preservare il tuo ritmo di formazione, ogni giorno potrai aprire un numero limitato di nuovi temi (di solito 2); continuare un tema già iniziato non consuma la tua quota. Se un giorno hai bisogno di procedere oltre, puoi richiedere una quota aggiuntiva dalla piattaforma.")},
     {scene:"muestra", t:T("Descarga la aplicación y lleva tu formación católica a todos lados.","Download the app and take your Catholic formation everywhere.","Téléchargez l'application et emportez votre formation catholique partout.","Lade die App herunter und nimm deine katholische Bildung überallhin mit.","Baixe o aplicativo e leve sua formação católica para todos os lugares.","Scarica l'app e porta la tua formazione cattolica ovunque.")},
   ];
 
@@ -1142,6 +1143,8 @@ export default function App(){
   const [insBySec,setInsBySec]=useState({}); // {secId: inscripcion_id} (Parte B)
   const [activeVideo,setActiveVideo]=useState(null); // {secId,vid}
   const [limiteTema,setLimiteTema]=useState(null); // aviso de cupo de temas/día alcanzado
+  const [cupoDia,setCupoDia]=useState(2); // límite de temas nuevos por día (del ajuste)
+  const [cupoInicio,setCupoInicio]=useState(null); // popup al iniciar un sacramento: {nombre,temas,dias}
   const [cupoSol,setCupoSol]=useState(null); // estado de la solicitud de cupo extra: null|'enviando'|'pendiente'|'error'
   const pedirCupoExtra=async()=>{
     setCupoSol("enviando");
@@ -1326,6 +1329,25 @@ export default function App(){
       setBienvDecidido(true); // SIEMPRE: desbloquea la oración pase lo que pase
     })();
   },[phase,uid]);
+
+  // Límite de temas/día (del ajuste), para el popup de inicio de sacramento.
+  useEffect(()=>{ (async()=>{ try{ const {data}=await supabase.rpc("obtener_ajuste",{p_clave:"temas_limite_dia"});
+    if(data&&data.n) setCupoDia(Number(data.n)||2); }catch{} })(); },[]);
+  // Al entrar a un sacramento (una vez por sesión): informar cupo diario y tiempo estimado.
+  useEffect(()=>{
+    if(phase!=="course"||!currentSecId||!bienvDecidido||bienvVideos||oracion) return;
+    try{
+      const key="cat_cupo_ini_"+currentSecId;
+      if(sessionStorage.getItem(key)) return;
+      const sec=SEC_META[currentSecId]; if(!sec) return;
+      const vids=sec.videos||[];
+      const mods=new Set(vids.map(v=>v.mod).filter(Boolean));
+      const temas=mods.size||vids.length;
+      const dias=Math.max(1,Math.ceil(temas/Math.max(1,cupoDia)));
+      sessionStorage.setItem(key,"1");
+      setCupoInicio({nombre:PICK(sec),temas,dias});
+    }catch{}
+  },[currentSecId,phase,bienvDecidido,bienvVideos,oracion,cupoDia]);
 
   useEffect(()=>{
     if(phase!=="course"||!currentSecId) return;
@@ -2357,6 +2379,39 @@ export default function App(){
         </Suspense>
       )}
 
+      {/* Popup al iniciar un sacramento: cupo diario + tiempo estimado. */}
+      {cupoInicio&&(
+        <div style={OVERLAY} onClick={()=>setCupoInicio(null)}>
+          <div className="catePanel" style={{...MODAL,maxWidth:460,textAlign:"center",position:"relative"}} onClick={e=>e.stopPropagation()}>
+            <div style={{fontSize:34,marginBottom:10}} aria-hidden="true">🗓️</div>
+            <h2 style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:17,marginBottom:6}}>{cupoInicio.nombre}</h2>
+            <p style={{color:C.ivory,fontFamily:"'Crimson Text',serif",fontSize:15,lineHeight:1.6,marginBottom:12}}>
+              {T(`Este tramo tiene ${cupoInicio.temas} temas. Para cuidar tu ritmo, puedes abrir hasta ${cupoDia} ${cupoDia===1?"tema":"temas"} nuevos por día.`,
+                 `This stage has ${cupoInicio.temas} topics. To keep a healthy pace, you can start up to ${cupoDia} new ${cupoDia===1?"topic":"topics"} per day.`,
+                 `Cette étape comporte ${cupoInicio.temas} thèmes. Pour préserver ton rythme, tu peux ouvrir jusqu'à ${cupoDia} nouveaux thèmes par jour.`,
+                 `Dieser Abschnitt hat ${cupoInicio.temas} Themen. Für ein gutes Tempo kannst du bis zu ${cupoDia} neue Themen pro Tag beginnen.`,
+                 `Esta etapa tem ${cupoInicio.temas} temas. Para cuidar o teu ritmo, podes abrir até ${cupoDia} temas novos por dia.`,
+                 `Questa tappa ha ${cupoInicio.temas} temi. Per mantenere un buon ritmo, puoi aprire fino a ${cupoDia} nuovi temi al giorno.`)}
+            </p>
+            <div style={{background:"rgba(200,169,81,0.10)",border:"1px solid rgba(200,169,81,0.3)",borderRadius:10,padding:"10px 14px",marginBottom:16}}>
+              <p style={{color:C.gold,fontFamily:"'Cinzel',serif",fontSize:14,margin:0}}>
+                ⏳ {T(`Tiempo estimado: ~${cupoInicio.dias} ${cupoInicio.dias===1?"día":"días"}`,
+                     `Estimated time: ~${cupoInicio.dias} ${cupoInicio.dias===1?"day":"days"}`,
+                     `Temps estimé : ~${cupoInicio.dias} ${cupoInicio.dias===1?"jour":"jours"}`,
+                     `Geschätzte Zeit: ~${cupoInicio.dias} ${cupoInicio.dias===1?"Tag":"Tage"}`,
+                     `Tempo estimado: ~${cupoInicio.dias} ${cupoInicio.dias===1?"dia":"dias"}`,
+                     `Tempo stimato: ~${cupoInicio.dias} ${cupoInicio.dias===1?"giorno":"giorni"}`)}
+              </p>
+              <p style={{color:C.ivoryM,fontFamily:"'Crimson Text',serif",fontSize:12,margin:"4px 0 0"}}>
+                {T("Avanzando al menos un tema por día.","Advancing at least one topic per day.","En avançant au moins un thème par jour.","Bei mindestens einem Thema pro Tag.","Avançando pelo menos um tema por dia.","Avanzando almeno un tema al giorno.")}
+              </p>
+            </div>
+            <button onClick={()=>setCupoInicio(null)} style={{...BTN("pri"),width:"100%",justifyContent:"center"}}>
+              {T("Comenzar","Start","Commencer","Beginnen","Começar","Inizia")}
+            </button>
+          </div>
+        </div>
+      )}
       {/* Aviso: cupo de temas nuevos por día alcanzado. */}
       {limiteTema&&(
         <div style={OVERLAY} onClick={()=>setLimiteTema(null)}>
@@ -2373,7 +2428,7 @@ export default function App(){
                  `Para cuidar o teu ritmo, podes abrir ${limiteTema.limite||2} temas novos por dia. Já atingiste o limite de hoje; podes continuar amanhã. Enquanto isso, podes rever os temas já abertos.`,
                  `Per mantenere un buon ritmo, puoi aprire ${limiteTema.limite||2} nuovi temi al giorno. Hai raggiunto il limite di oggi; potrai continuare domani. Nel frattempo puoi ripassare i temi già aperti.`)}
             </p>
-            {(cupoSol==="pendiente"||limiteTema.solicitud_pendiente)?(
+            {limiteTema.solicitud_visible===false?null:(cupoSol==="pendiente"||limiteTema.solicitud_pendiente)?(
               <p style={{color:C.gold,fontFamily:"'Cinzel',serif",fontSize:13,marginBottom:14}}>
                 ⏳ {T("Solicitud enviada. Un administrador la revisará; si la aprueba, podrás abrir otro tema hoy.","Request sent. An administrator will review it; if approved, you'll be able to open another topic today.","Demande envoyée. Un administrateur l'examinera ; en cas d'approbation, tu pourras ouvrir un autre thème aujourd'hui.","Anfrage gesendet. Ein Administrator prüft sie; bei Genehmigung kannst du heute ein weiteres Thema öffnen.","Solicitação enviada. Um administrador irá avaliá-la; se aprovar, poderás abrir outro tema hoje.","Richiesta inviata. Un amministratore la esaminerà; se approvata, potrai aprire un altro tema oggi.")}
               </p>
