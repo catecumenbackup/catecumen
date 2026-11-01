@@ -108,13 +108,17 @@ def code_of(name):
     if not m: return None
     return f"{m.group(1).upper()}-{m.group(2)}-{m.group(3).upper()}"
 
+# Las hojas/VTT usan el código del tema (KER, TC1, CONF, UNC, REC); los archivos
+# de video pueden tener otro prefijo (Confirmación=TE2, Unción=TC2U, Confesión=TC2R).
+FAM2VID = {"KER": "KER", "TC1": "TC1", "CONF": "TE2", "UNC": "TC2U", "REC": "TC2R"}
+
 def find_video(viddir, code):
-    # code = "KER-01-A" -> busca "KER-01 A*"
-    pre = code.replace("-", " ", 0)  # no-op; construimos patrón manual
     fam, num, letter = code.split("-")
+    vp = FAM2VID.get(fam, fam)
     for f in glob.glob(os.path.join(viddir, "*.mp4")):
         b = os.path.basename(f)
-        if re.match(rf"{fam}-{num}[ \-]{letter}\b", b, re.I):
+        # acepta "TE2-01 A ..." y variantes tipo "TC2R-06 bloque A ..."
+        if re.match(rf"{re.escape(vp)}-{num}[ \-](?:bloque\s+)?{letter}\b", b, re.I):
             return f
     return None
 
@@ -125,6 +129,7 @@ def main():
     ap.add_argument("--out", required=True)
     ap.add_argument("--model", default="small")
     ap.add_argument("--lang", default="es")
+    ap.add_argument("--force", action="store_true", help="rehacer aunque ya esten alineados")
     args = ap.parse_args()
     os.makedirs(args.out, exist_ok=True)
 
@@ -144,6 +149,12 @@ def main():
         vid = find_video(args.videos, code)
         if not vid:
             sin_video.append(code); continue
+        outp_pre = os.path.join(args.out, os.path.basename(vp))
+        if (not args.force) and os.path.exists(outp_pre):
+            try:
+                if "forced-aligned" in open(outp_pre, encoding="utf-8").read(2000):
+                    continue  # ya alineado: saltar (usa --force para rehacer)
+            except Exception: pass
         cues = parse_vtt(vp)
         if not cues: continue
 
