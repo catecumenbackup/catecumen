@@ -77,10 +77,10 @@ export default function EncuestaVideoModal({secId,vid,insBySec,bridge,onDone}){
 
           <div>
             <label style={{color:C.ivoryM,fontSize:13,fontFamily:"'Crimson Text',serif",display:"block",marginBottom:6}}>
-              {T("Comentario o sugerencia (opcional)","Comment or suggestion (optional)","Commentaire ou suggestion (facultatif)","Kommentar oder Vorschlag (optional)","Comentário ou sugestão (opcional)","Commento o suggerimento (facoltativo)")}
+              {T("Comentario, sugerencia o error detectado (opcional)","Comment, suggestion or error you noticed (optional)","Commentaire, suggestion ou erreur détectée (facultatif)","Kommentar, Vorschlag oder entdeckter Fehler (optional)","Comentário, sugestão ou erro detectado (opcional)","Commento, suggerimento o errore rilevato (facoltativo)")}
             </label>
             <textarea value={comentario} onChange={e=>setComentario(e.target.value)} rows={3} maxLength={600}
-              placeholder={T("Escribe aquí…","Write here…","Écrivez ici…","Hier schreiben…","Escreva aqui…","Scrivi qui…")}
+              placeholder={T("Si notaste algún error en el video (imagen, audio, texto o contenido), cuéntanoslo para corregirlo y mejorarlo. También puedes dejar tu comentario o sugerencia.","If you noticed any error in the video (image, audio, text or content), let us know so we can fix and improve it. You can also leave your comment or suggestion.","Si vous avez remarqué une erreur dans la vidéo (image, audio, texte ou contenu), signalez-la-nous pour que nous puissions la corriger. Vous pouvez aussi laisser un commentaire ou une suggestion.","Wenn dir ein Fehler im Video aufgefallen ist (Bild, Ton, Text oder Inhalt), sag uns Bescheid, damit wir ihn beheben können. Du kannst auch einen Kommentar oder Vorschlag hinterlassen.","Se você notou algum erro no vídeo (imagem, áudio, texto ou conteúdo), conte-nos para corrigi-lo e melhorá-lo. Você também pode deixar seu comentário ou sugestão.","Se hai notato un errore nel video (immagine, audio, testo o contenuto), segnalacelo per correggerlo e migliorarlo. Puoi anche lasciare un commento o un suggerimento.")}
               style={{width:"100%",resize:"vertical",background:C.card,color:C.ivory,
                 border:`1px solid ${C.borderD}`,borderRadius:10,padding:"10px 12px",
                 fontFamily:"'Crimson Text',serif",fontSize:14.5,outline:"none"}}/>
