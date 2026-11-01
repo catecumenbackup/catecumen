@@ -554,12 +554,17 @@ function WelcomeModal({onContinue,onLogin}){
   useEffect(()=>{(async()=>{
     try{ const {data}=await supabase.rpc("obtener_ajuste",{p_clave:"promo_video"}); if(data&&data.url) setPromoRaw(data.url); }catch(e){}
   })();},[]);
-  const PROMO_DEFAULT="https://iframe.mediadelivery.net/embed/756611/244e6d24-37a6-45a7-ba93-2cf10e65f3e9";
-  // Normaliza a URL de embed de Bunny (acepta la URL del player o la de embed).
+  // Video de presentación. Si el panel define `promo_video` con una URL de Bunny
+  // válida, se usa ese iframe (streaming adaptativo). Si NO hay override, se cae
+  // al MP4 local /promo-src.mp4 — NO a una librería Bunny fija (la vieja 756611
+  // quedó muerta al migrar a 796078 y rompía el botón). Así el botón funciona
+  // siempre y el panel puede apuntar a un video nuevo de Bunny sin desplegar.
+  const PROMO_LOCAL="/promo-src.mp4";
+  const promoBunny=(promoRaw||"").trim();
+  const promoEsBunny=/^https?:\/\//i.test(promoBunny);
   const PROMO_EMBED=(()=>{
-    let u=(promoRaw||"").trim();
-    if(!/^https?:\/\//i.test(u)) u=PROMO_DEFAULT;
-    else u=u.replace("player.mediadelivery.net/play/","iframe.mediadelivery.net/embed/");
+    if(!promoEsBunny) return null;
+    let u=promoBunny.replace("player.mediadelivery.net/play/","iframe.mediadelivery.net/embed/");
     return u.includes("?")?u:u+"?autoplay=true&preload=true&responsive=true";
   })();
   useEffect(()=>{
@@ -765,10 +770,15 @@ function WelcomeModal({onContinue,onLogin}){
           <div onClick={(e)=>e.stopPropagation()}
             style={{position:"relative",width:"min(960px,100%)",aspectRatio:"16 / 9",
               background:"#000",borderRadius:12,overflow:"hidden",border:`1px solid ${C.gold}44`}}>
-            <iframe src={PROMO_EMBED} title="Catecumen"
-              style={{position:"absolute",inset:0,width:"100%",height:"100%",border:0}}
-              allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;fullscreen"
-              allowFullScreen/>
+            {promoEsBunny?(
+              <iframe src={PROMO_EMBED} title="Catecumen"
+                style={{position:"absolute",inset:0,width:"100%",height:"100%",border:0}}
+                allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;fullscreen"
+                allowFullScreen/>
+            ):(
+              <video src={PROMO_LOCAL} controls autoPlay playsInline
+                style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"contain",background:"#000"}}/>
+            )}
           </div>
           <button onClick={()=>setShowPromo(false)} aria-label={T("Cerrar","Close","Fermer","Schließen","Fechar","Chiudi")}
             style={{position:"absolute",top:16,right:20,background:"rgba(0,0,0,0.6)",color:"#fff",
