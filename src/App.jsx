@@ -772,7 +772,7 @@ function WelcomeModal({onContinue,onLogin}){
           style={{position:"fixed",inset:0,zIndex:9999,background:"rgba(0,0,0,0.88)",
             display:"flex",alignItems:"center",justifyContent:"center",padding:16}}>
           <div onClick={(e)=>e.stopPropagation()}
-            style={{position:"relative",width:"min(960px,100%)",aspectRatio:"16 / 9",
+            style={{position:"relative",width:"min(560px,92vw)",aspectRatio:"16 / 9",
               background:"#000",borderRadius:12,overflow:"hidden",border:`1px solid ${C.gold}44`}}>
             {promoEsBunny?(
               <iframe src={PROMO_EMBED} title="Catecumen"
