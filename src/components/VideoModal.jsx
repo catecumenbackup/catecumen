@@ -71,17 +71,24 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
   // Marca de agua anti-fuga: muestra la identidad del alumno sobre el video y la
   // reposiciona cada pocos segundos (dificulta recortarla y disuade la grabación
   // de pantalla, porque quien reproduzca graba su propio nombre).
-  const [wmPos,setWmPos]=useState({top:"8%",left:"6%"});
+  const [wmPos,setWmPos]=useState({top:"8%",right:"6%"});
   useEffect(()=>{
     if(!marca) return;
-    const spots=[{top:"8%",left:"6%"},{top:"8%",right:"6%"},{bottom:"20%",right:"6%"},
-      {bottom:"20%",left:"6%"},{top:"45%",left:"34%"}];
+    // Se evita la esquina SUPERIOR IZQUIERDA: ahí Bunny incrusta el logo de marca.
+    const spots=[{top:"8%",right:"6%"},{top:"44%",right:"6%"},{bottom:"16%",right:"6%"},
+      {bottom:"16%",left:"6%"},{top:"44%",left:"34%"}];
     let i=0;
     const t=setInterval(()=>{ i=(i+1)%spots.length; setWmPos(spots[i]); },6000);
     return()=>clearInterval(t);
   },[marca]);
   const videoRef=useRef(null);
+  const wrapRef=useRef(null); // contenedor video+marca; se pone en fullscreen ÉL (no el <video>) para que la marca dinámica no desaparezca
   const lastReport=useRef(0); // último segundo reportado (throttle del guardado)
+  // Pantalla completa del CONTENEDOR (mantiene la marca de agua dinámica encima).
+  const toggleFs=()=>{ const el=wrapRef.current; if(!el) return; try{
+    if(document.fullscreenElement){ (document.exitFullscreen||document.webkitExitFullscreen).call(document); }
+    else { (el.requestFullscreen||el.webkitRequestFullscreen).call(el); }
+  }catch(e){} };
   // Coloca el video en la posición guardada al cargar los metadatos, y reporta el
   // avance (cada ~5 s) para que el usuario retome donde lo dejó.
   const seekInicial=()=>{ const v=videoRef.current; if(v && startAt>0 && startAt<(v.duration||1e9)-2){ try{ v.currentTime=startAt; }catch{} } };
@@ -226,8 +233,14 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
       if(cancelado) return;
       if(src===null){ setVideoError(true); return; } // Bunny sin firma: no servir crudo
       if(esHls(src)){
-        if(v.canPlayType("application/vnd.apple.mpegurl")){
-          v.src=src; // Safari / iOS reproducen HLS de forma nativa
+        // Con token firmado de Bunny NO sirve el reproductor nativo de HLS: no
+        // propaga el token (?token=) a las sub-listas y segmentos (→ 403/503).
+        // Se fuerza hls.js, que lo reinyecta con el loader de abajo. Chrome además
+        // reporta canPlayType="maybe" para HLS aunque no lo reproduzca bien, así
+        // que ese "nativo" solo se usa para HLS SIN token (p. ej. Safari/iOS).
+        const tieneToken=/[?&]token=/.test(src);
+        if(!tieneToken && v.canPlayType("application/vnd.apple.mpegurl")){
+          v.src=src; // HLS sin token: reproducción nativa (Safari / iOS)
         }else{
           const Hls=await loadHls().catch(()=>null);
           if(cancelado||!videoRef.current) return;
@@ -236,10 +249,30 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
             // segmento/subplaylist: hls.js no arrastra el query string solo, y el
             // token de directorio de Bunny autoriza toda la carpeta con ese token.
             const qs=(/token=/.test(src)&&src.includes("?"))?src.split("?")[1]:null;
-            hls=new Hls({maxBufferLength:30, ...(qs?{xhrSetup:(xhr,u)=>{
-              const uu=/token=/.test(u)?u:(u+(u.includes("?")?"&":"?")+qs);
-              xhr.open("GET",uu,true);
-            }}:{})});
+            // Propaga el token firmado a CADA subplaylist y segmento. En hls.js
+            // moderno `xhrSetup` ya NO permite cambiar la URL (abre el XHR antes y
+            // descarta el cambio), así que reescribimos la URL con un loader propio
+            // que envuelve al loader por defecto (sirve igual con XHR o con fetch).
+            const hlsCfg={maxBufferLength:30};
+            if(qs){
+              // El loader por defecto se obtiene de una INSTANCIA (`Hls.DefaultConfig`
+              // no está expuesto en el build UMD de hls.js). Lo envolvemos para
+              // reescribir la URL de cada subplaylist/segmento con el token.
+              let Base=null;
+              try{ const probe=new Hls(); Base=probe.config&&probe.config.loader; probe.destroy(); }catch(e){}
+              if(Base){
+                class TokenLoader extends Base{
+                  load(context,config,callbacks){
+                    if(context&&context.url&&!/[?&]token=/.test(context.url)){
+                      context.url+=(context.url.includes("?")?"&":"?")+qs;
+                    }
+                    super.load(context,config,callbacks);
+                  }
+                }
+                hlsCfg.loader=TokenLoader;
+              }
+            }
+            hls=new Hls(hlsCfg);
             hls.loadSource(src);
             hls.attachMedia(videoRef.current);
             hls.on(Hls.Events.ERROR,(_e,data)=>{ if(data?.fatal) setVideoError(true); });
@@ -279,7 +312,7 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
             fontFamily:"'Cinzel',serif",fontSize:11,letterSpacing:"0.06em",fontWeight:700,
           }}>⚠ {T("VIDEO DE PRUEBA — contenido provisional","TEST VIDEO — placeholder content","VIDÉO DE TEST — contenu provisoire","TESTVIDEO — vorläufiger Inhalt","VÍDEO DE TESTE — conteúdo provisório","VIDEO DI PROVA — contenuto provvisorio")}</div>
         )}
-        <div style={{background:(acceso&&acceso.puede_ver===false)?"rgba(40,22,10,0.35)":"#000",
+        <div ref={wrapRef} className="catePlayer" style={{background:(acceso&&acceso.puede_ver===false)?"rgba(40,22,10,0.35)":"#000",
           border:(acceso&&acceso.puede_ver===false)?"1px solid rgba(200,169,81,0.25)":"none",
           borderRadius:12,minHeight:200,display:"flex",flexDirection:"column",
           alignItems:"center",justifyContent:"center",marginBottom:20,position:"relative",overflow:"hidden"}}>
@@ -319,7 +352,7 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
               key={videoPrueba}
               ref={videoRef}
               controls
-              controlsList="nodownload"
+              controlsList="nodownload nofullscreen"
               disablePictureInPicture
               onContextMenu={(e)=>e.preventDefault()}
               playsInline
@@ -355,6 +388,13 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
                 transform:"rotate(-16deg)",whiteSpace:"nowrap",userSelect:"none",
                 transition:"top .6s ease,left .6s ease,right .6s ease,bottom .6s ease"}}>{marca}</div>
             )}
+            <button onClick={toggleFs}
+              title={T("Pantalla completa","Fullscreen","Plein écran","Vollbild","Tela cheia","Schermo intero")}
+              aria-label={T("Pantalla completa","Fullscreen","Plein écran","Vollbild","Tela cheia","Schermo intero")}
+              style={{position:"absolute",top:8,right:8,zIndex:4,
+                background:"rgba(0,0,0,0.55)",color:"#fff",border:"1px solid rgba(255,255,255,0.35)",
+                borderRadius:6,fontFamily:"Arial,sans-serif",fontWeight:800,fontSize:14,lineHeight:1,
+                padding:"4px 9px",cursor:"pointer"}}>⛶</button>
             </>
           ):(<>
             {videoError&&!watching&&!done&&(

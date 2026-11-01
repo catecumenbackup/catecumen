@@ -21,8 +21,8 @@ export const BTN = (v = "pri") => ({
   background: v === "pri" ? `linear-gradient(135deg,${C.goldL} 0%,${C.gold} 45%,var(--c-goldDeep) 100%)` : "transparent",
   color: v === "pri" ? "var(--c-btnPriText)" : C.gold,
   border: v === "pri" ? "none" : `1px solid ${C.gold}60`,
-  borderRadius: 10, padding: v === "pri" ? "12px 28px" : "10px 22px",
-  fontFamily: "'Cinzel',serif", fontSize: 13, fontWeight: 700, letterSpacing: "0.07em",
+  borderRadius: 10, padding: v === "pri" ? "12px clamp(18px,4.5vw,28px)" : "10px clamp(16px,4vw,22px)",
+  fontFamily: "'Cinzel',serif", fontSize: 13, fontWeight: 700, letterSpacing: "clamp(0.035em,0.4vw,0.07em)",
   // Solo props compuestas (transform/opacity/box-shadow) para evitar animaciones
   // no compuestas que Lighthouse penaliza; color/background cambian sin transición.
   cursor: "pointer", transition: "transform .22s ease, box-shadow .22s ease, opacity .22s ease", display: "inline-flex", alignItems: "center", gap: 8,
@@ -31,7 +31,8 @@ export const BTN = (v = "pri") => ({
 
 export const INP = {
   width: "100%", background: "var(--c-inputBg)", border: `1px solid ${C.border}`,
-  borderRadius: 8, padding: "11px 14px", color: C.ivory, fontFamily: "'Crimson Text',serif",
+  borderRadius: 8, padding: "clamp(11px,2.8vw,13px) 14px", color: C.ivory, fontFamily: "'Crimson Text',serif",
+  // 16px mínimo: evita el zoom automático de iOS al enfocar el campo.
   fontSize: 16, outline: "none", transition: "border-color .2s", boxSizing: "border-box",
   colorScheme: "var(--c-scheme, dark)",
 };
@@ -59,14 +60,17 @@ export const radioStyle = (checked, size = 16) => ({
 
 export const CARD = {
   background: `linear-gradient(145deg,${C.card} 0%,var(--c-cardEnd) 100%)`,
-  border: `1px solid ${C.borderD}`, borderRadius: 14, padding: "20px 22px",
+  border: `1px solid ${C.borderD}`, borderRadius: 14, padding: "clamp(16px,3.6vw,20px) clamp(16px,4vw,22px)",
   boxShadow: "var(--c-cardShadow)",
 };
 
 export const MODAL = {
   background: `linear-gradient(160deg,var(--c-modalStart) 0%,${C.surface} 60%,var(--c-modalEnd) 100%)`,
-  border: `1px solid ${C.border}`, borderRadius: 20,
-  maxWidth: 700, width: "95%", maxHeight: "88vh", overflowY: "auto", padding: "32px 28px",
+  border: `1px solid ${C.border}`, borderRadius: "clamp(14px,3vw,20px)",
+  // Padding fluido: en móvil baja a ~20/16 (más ancho útil), en escritorio se
+  // mantiene en 32/28 como antes. maxHeight sube en pantallas chicas.
+  maxWidth: 700, width: "95%", maxHeight: "90vh", overflowY: "auto",
+  padding: "clamp(20px,4.5vw,32px) clamp(16px,4vw,28px)",
   boxShadow: "var(--c-modalShadow)",
   animation: "modalIn .28s cubic-bezier(.34,1.2,.64,1) both",
 };
@@ -76,13 +80,15 @@ export const MODAL = {
 // descarga), ancho de columna limitado, alto contraste, sin mayúsculas.
 export const FONT_READ = "-apple-system,'Segoe UI',Roboto,system-ui,'Helvetica Neue',Arial,sans-serif";
 export const READ = {
-  fontFamily: FONT_READ, fontSize: 17, lineHeight: 1.75, color: C.ivory,
+  // Tamaño fluido: ~15.5px en móvil estrecho → 17px en escritorio. Interlínea
+  // generosa para que el texto largo respire (la queja de "comprimido").
+  fontFamily: FONT_READ, fontSize: "clamp(15.5px,0.6vw + 14px,17px)", lineHeight: 1.78, color: C.ivory,
   textAlign: "left", letterSpacing: "0.005em", maxWidth: "38em", marginLeft: "auto", marginRight: "auto",
 };
 
 export const OVERLAY = {
   position: "fixed", inset: 0,
-  background: "rgba(250,247,240,0.82)",
+  background: "var(--c-veil)",
   display: "flex", alignItems: "center", justifyContent: "center",
-  zIndex: 1000, padding: 16,
+  zIndex: 1000, padding: "clamp(8px,3vw,16px)",
 };

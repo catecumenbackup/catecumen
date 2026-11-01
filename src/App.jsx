@@ -49,6 +49,7 @@ const ValidarConstanciaModal = lazy(() => import("./components/ValidarConstancia
 const CourseSectionView = lazy(() => import("./components/CourseSectionView.jsx"));
 const OracionModal = lazy(() => import("./components/OracionModal.jsx"));
 const BienvenidaVideosModal = lazy(() => import("./components/BienvenidaVideosModal.jsx"));
+const IdiomaProximamenteModal = lazy(() => import("./components/IdiomaProximamenteModal.jsx"));
 const ResumenTemaModal = lazy(() => import("./components/ResumenTemaModal.jsx"));
 const SectionCompleteModal = lazy(() => import("./components/SectionCompleteModal.jsx"));
 const VideoModal = lazy(() => import("./components/VideoModal.jsx"));
@@ -671,15 +672,18 @@ function WelcomeModal({onContinue,onLogin}){
   );
 
   const tour=(
-    <div style={{display:"flex",alignItems:"center",gap:8,width:"100%"}}>
+    // En móvil las flechas NO van a los lados (robaban ~90px y comprimían el
+    // texto a 3-4 palabras por línea): la tarjeta ocupa todo el ancho y las
+    // flechas se muestran junto a los puntos de navegación (abajo).
+    <div style={{display:"flex",alignItems:"center",gap:desktop?8:0,width:"100%"}}>
       <style>{`@keyframes tourSlideIn{from{opacity:.35;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}`}</style>
-      <div>{arrowBtn(-1,i===0)}</div>
+      {desktop&&<div>{arrowBtn(-1,i===0)}</div>}
       <div key={i} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}
-        style={{flex:1,minHeight:270,background:`linear-gradient(145deg,${C.card} 0%,rgba(200,169,81,0.06) 100%)`,
-          border:`1px solid ${C.borderD}`,borderRadius:16,padding:"16px 18px 18px",
+        style={{flex:1,minWidth:0,minHeight:270,background:`linear-gradient(145deg,${C.card} 0%,rgba(200,169,81,0.06) 100%)`,
+          border:`1px solid ${C.borderD}`,borderRadius:16,padding:desktop?"16px 18px 18px":"16px 14px 16px",
           display:"flex",flexDirection:"column",justifyContent:"flex-start",animation:"tourSlideIn .38s ease"}}>
         <TourScene key={cur.scene} tipo={cur.scene} video={cur.video} webm={cur.webm} poster={cur.poster}/>
-        <div style={{display:"flex",gap:9,alignItems:"flex-start",marginTop:12,textAlign:"left"}}>
+        <div style={{display:"flex",gap:desktop?9:7,alignItems:"flex-start",marginTop:12,textAlign:"left"}}>
           <span style={{color:C.gold,flexShrink:0,marginTop:2,fontSize:16}}>✦</span>
           <span style={{color:C.ivory,fontFamily:FONT_READ,fontSize:16.5,lineHeight:1.7}}>{cur.t}</span>
         </div>
@@ -690,21 +694,25 @@ function WelcomeModal({onContinue,onLogin}){
           </button>
         )}
       </div>
-      <div>{arrowBtn(1,i===n-1)}</div>
+      {desktop&&<div>{arrowBtn(1,i===n-1)}</div>}
     </div>
   );
 
   const navegacion=(
     <>
-      <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:2,margin:"10px 0 4px"}}>
-        {cards.map((_,k)=>(
-          <button key={k} aria-label={`Ir a ${k+1}`} aria-current={k===i?"true":undefined} onClick={()=>{track("home_tour_dot");setI(k);}}
-            style={{width:24,height:24,padding:0,border:"none",background:"none",cursor:"pointer",
-              display:"flex",alignItems:"center",justifyContent:"center"}}>
-            <span style={{width:k===i?28:11,height:11,borderRadius:99,display:"block",
-              background:k===i?C.gold:C.ivoryM,opacity:k===i?1:0.55,transition:"all .25s"}}/>
-          </button>
-        ))}
+      <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:desktop?2:10,margin:"10px 0 4px"}}>
+        {!desktop&&arrowBtn(-1,i===0)}
+        <div style={{display:"flex",alignItems:"center",gap:2}}>
+          {cards.map((_,k)=>(
+            <button key={k} aria-label={`Ir a ${k+1}`} aria-current={k===i?"true":undefined} onClick={()=>{track("home_tour_dot");setI(k);}}
+              style={{width:24,height:24,padding:0,border:"none",background:"none",cursor:"pointer",
+                display:"flex",alignItems:"center",justifyContent:"center"}}>
+              <span style={{width:k===i?28:11,height:11,borderRadius:99,display:"block",
+                background:k===i?C.gold:C.ivoryM,opacity:k===i?1:0.55,transition:"all .25s"}}/>
+            </button>
+          ))}
+        </div>
+        {!desktop&&arrowBtn(1,i===n-1)}
       </div>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,flexWrap:"wrap"}}>
         <p style={{color:C.ivoryM,fontSize:12.5,margin:0}}>
@@ -741,7 +749,7 @@ function WelcomeModal({onContinue,onLogin}){
             </div>
           </div>
         ):(
-          <div style={{padding:"32px 28px",display:"flex",flexDirection:"column",overflowY:"auto"}}>
+          <div style={{padding:"26px 16px",display:"flex",flexDirection:"column",overflowY:"auto"}}>
             {branding}
             <div style={{height:12}}/>
             {tour}
@@ -1300,6 +1308,17 @@ export default function App(){
   const [oracion,setOracion]=useState(null); // {ver:"L"|"C"} | null
   const [bienvVideos,setBienvVideos]=useState(null); // {titulo,cuerpo} del popup de 1ª vez | null
   const [bienvDecidido,setBienvDecidido]=useState(false); // ¿ya se decidió si mostrar la bienvenida?
+  // Aviso "próximamente en tu idioma": el contenido (videos) hoy solo existe en
+  // español. A usuarios en otro idioma se les muestra un modal (en la bienvenida
+  // y al entrar al curso) con opción de preinscripción, UNA vez por sesión.
+  // En la BIENVENIDA (pre-login) es un aviso descartable, una vez por sesión.
+  // En el CURSO (post-login) es BLOQUEANTE (ver más abajo en el render).
+  const [idiomaAviso,setIdiomaAviso]=useState(false);
+  useEffect(()=>{
+    if(LANG==="es"||phase!=="welcome") return;
+    try{ if(sessionStorage.getItem("cat_idioma_aviso")) return; }catch{}
+    setIdiomaAviso(true);
+  },[phase]);
 
   // ── Popup de bienvenida (primera vez en el área de videos) ──────────────────
   // Se decide una sola vez por cuenta (marca local por uid). Si aplica, se
@@ -1355,10 +1374,16 @@ export default function App(){
     try{
       const hoy=new Date().toISOString().slice(0,10);
       const SAC=new Set(["bautismo","confirmacion","primera_comunion","tc2_confesion","tc2_uncion"]);
-      let blk=null;
-      if(userType==="catecumeno"){ if(SAC.has(currentSecId)) blk="sac_"+currentSecId; }
-      else { blk="inicio_"+(userType||"x"); }
       let vistos=[]; try{ vistos=JSON.parse(localStorage.getItem("cat_ora_blk")||"[]")||[]; }catch{}
+      let blk=null;
+      if(userType==="catecumeno"){
+        // Oración "Larga" (iniciar mi camino de fe) al EMPEZAR la formación:
+        // la 1ª vez —aunque sea Kerigma/TC1— con la clave "inicio_catecumeno";
+        // después, al entrar a cada sacramento con "sac_<secId>".
+        if(!vistos.includes("inicio_catecumeno")) blk="inicio_catecumeno";
+        else if(SAC.has(currentSecId)) blk="sac_"+currentSecId;
+      }
+      else { blk="inicio_"+(userType||"x"); }
       if(blk && !vistos.includes(blk)){
         vistos.push(blk); localStorage.setItem("cat_ora_blk",JSON.stringify(vistos));
         localStorage.setItem("cat_ora_dia",hoy);
@@ -2040,6 +2065,7 @@ export default function App(){
           --c-modalStart:#204268; --c-modalEnd:#183358;
           --c-modalShadow:0 24px 60px rgba(0,0,0,0.48),0 1px 0 rgba(200,169,81,0.15) inset;
           --c-selectBg:#193458; --c-scrollTrack:#14294A; --c-scheme:dark;
+          --c-veil:rgba(16,32,58,0.80);
         }
         [data-theme="light"]{
           --c-bg:#FBF6EA; --c-surface:#F5EDDA; --c-card:#FFFFFF; --c-cardH:#FAF2DF;
@@ -2053,6 +2079,7 @@ export default function App(){
           --c-modalStart:#FFFFFF; --c-modalEnd:#F5EBD2;
           --c-modalShadow:0 24px 56px rgba(60,45,10,0.22),0 1px 0 rgba(200,169,81,0.25) inset;
           --c-selectBg:#FFFFFF; --c-scrollTrack:#F0E7CF; --c-scheme:light;
+          --c-veil:rgba(250,247,240,0.82);
         }
         *, *::before, *::after { box-sizing: border-box; margin:0; padding:0; }
         html, body { height:100%; margin:0!important; padding:0!important; overflow:hidden; }
@@ -2061,6 +2088,10 @@ export default function App(){
         #root { width:100%; min-height:100%; overflow-x:hidden; }
         body { background:var(--c-bg); transition:background-color .25s ease; }
         select option { background:var(--c-selectBg); color:var(--c-ivory); }
+        /* Pantalla completa del reproductor: se fullscreenea el CONTENEDOR (no el
+           <video>) para que la marca de agua dinámica siga visible encima. */
+        .catePlayer:fullscreen, .catePlayer:-webkit-full-screen { background:#000; border-radius:0; max-height:none; }
+        .catePlayer:fullscreen video, .catePlayer:-webkit-full-screen video { width:100%; height:100%; max-height:none; border-radius:0; object-fit:contain; }
         ::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-track{background:var(--c-scrollTrack)}
         ::-webkit-scrollbar-thumb{background:var(--c-gold);border-radius:3px}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
@@ -2081,6 +2112,15 @@ export default function App(){
         }
         @media(max-width:480px){
           .modal-inner{padding:20px 16px!important;max-height:94vh!important;}
+        }
+        /* Móvil: los títulos Cinzel llevan letter-spacing pensado para escritorio;
+           en pantalla estrecha ese interletrado estira las palabras y provoca
+           saltos de línea apretados. Se afloja (gana a los estilos inline con
+           !important). También se limita el tamaño de los títulos grandes para
+           que no desborden. */
+        @media(max-width:600px){
+          h1{letter-spacing:0.01em!important;line-height:1.2!important;}
+          h2,h3{letter-spacing:0.015em!important;line-height:1.3!important;}
         }
       `}</style>
 
@@ -2369,7 +2409,7 @@ export default function App(){
 
       {/* CURSO */}
       {phase==="course"&&currentSecId&&!showResult&&!showSecComplete&&!showCerts&&!showDash&&(
-        <Suspense fallback={<div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(250,247,240,0.82)"}}><div style={{color:C.gold,fontFamily:"'Cinzel',serif"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div></div>}>
+        <Suspense fallback={<div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"var(--c-veil)"}}><div style={{color:C.gold,fontFamily:"'Cinzel',serif"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div></div>}>
           <CourseSectionView secId={currentSecId} progress={progress} bridge={bridge}
             onVideoAction={handleVideoAction}
             onEvalAction={handleEvalAction}
@@ -2500,6 +2540,16 @@ export default function App(){
           <OracionModal ver={oracion.ver} onClose={()=>setOracion(null)}/>
         </Suspense>
       )}
+      {idiomaAviso&&phase==="welcome"&&(
+        <Suspense fallback={null}>
+          <IdiomaProximamenteModal onClose={()=>{ try{sessionStorage.setItem("cat_idioma_aviso","1");}catch{} setIdiomaAviso(false); }}/>
+        </Suspense>
+      )}
+      {phase==="course"&&LANG!=="es"&&(
+        <Suspense fallback={null}>
+          <IdiomaProximamenteModal bloqueante onLogout={handleLogout}/>
+        </Suspense>
+      )}
       {activeResumen&&(
         <Suspense fallback={null}>
           <ResumenTemaModal
@@ -2519,7 +2569,7 @@ export default function App(){
       )}
 
       {showDash&&(
-        <Suspense fallback={<div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(250,247,240,0.82)"}}><div style={{color:C.gold,fontFamily:"'Cinzel',serif"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div></div>}>
+        <Suspense fallback={<div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"var(--c-veil)"}}><div style={{color:C.gold,fontFamily:"'Cinzel',serif"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div></div>}>
           <Dashboard formData={formData} sequence={sequence} progress={progress}
             userType={userType}
             userId={uid}

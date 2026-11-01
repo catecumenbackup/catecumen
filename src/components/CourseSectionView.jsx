@@ -19,7 +19,7 @@ export default function CourseSectionView({secId,progress,bridge,onVideoAction,o
   const stateLabelES={locked:"Bloqueado",available:"Disponible",watched:"Visto — Evaluación pendiente",passed:"Aprobado",done:"Visto"};
   const stateLabelEN={locked:"Locked",available:"Available",watched:"Watched — Evaluation pending",passed:"Passed",done:"Watched"};
   return(
-    <div style={{minHeight:"100vh",background:"rgba(250,247,240,0.82)",padding:"24px 16px",
+    <div style={{minHeight:"100vh",background:"var(--c-veil)",padding:"24px 16px",
       display:"flex",justifyContent:"center",alignItems:"flex-start"}}>
       <div className="catePanel" style={{maxWidth:720,width:"100%",
         background:`linear-gradient(160deg,var(--c-modalStart) 0%,${C.surface} 55%,var(--c-modalEnd) 100%)`,

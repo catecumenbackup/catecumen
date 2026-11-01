@@ -93,7 +93,7 @@ export default function EncuestaVideoModal({secId,vid,insBySec,bridge,onDone}){
           {enviando
             ? T("Guardando…","Saving…","Enregistrement…","Speichern…","Salvando…","Salvataggio…")
             : (completa
-                ? T("Continuar a la evaluación","Continue to evaluation","Continuer vers l'évaluation","Weiter zur Bewertung","Continuar para a avaliação","Continua alla valutazione")+" →"
+                ? T("Continuar","Continue","Continuer","Weiter","Continuar","Continua")+" →"
                 : T("Califica los 4 aspectos","Rate all 4 aspects","Évaluez les 4 aspects","Bewerten Sie alle 4 Aspekte","Avalie os 4 aspectos","Valuta tutti e 4 gli aspetti"))}
         </button>
       </div>

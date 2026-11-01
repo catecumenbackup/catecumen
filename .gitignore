@@ -64,3 +64,31 @@ entregables
 /anclas_municipios.json
 /emparejar-osm.mjs
 /geocodificar-*.mjs
+
+# ── Carpetas de trabajo de medios y respaldos (NO son parte del build/deploy) ──
+# Video/audio/imágenes fuente y respaldos: pesan gigas y se regeneran.
+AUDIOS DE VIDEO/
+Claude outputs/
+IMAGENES CANVA/
+IMAGENES CORREGIDAS/
+SUBIR A BUNNY/
+VIDEOS BORRADORES/
+VIDEOS BUNNY/
+VIDEOS FINALES/
+VIDEOS RESTAURADOS/
+_respaldo audio actual/
+_respaldo cama/
+_respaldo video/
+_f115/
+_splice*.json
+
+# ── Secretos sueltos y notas con claves (CRÍTICO: NUNCA al repo) ──────────────
+# STRIPE/ trae SECRET KEY y SIGNING SECRET; bunny code.txt trae IDs de Bunny.
+STRIPE/
+bunny code.txt
+LOGO CATECUMEN.png
+LOGO CATECUMEN sin fondo.png
+
+# ── Tooling local del agente / Python cache ─────────────────────────────────
+.claude/
+scripts/__pycache__/
