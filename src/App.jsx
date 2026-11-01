@@ -548,6 +548,12 @@ function WelcomeModal({onContinue,onLogin}){
   // Video promocional (clic para reproducir, con audio) en la diapositiva final.
   // Alojado en Bunny Stream; el iframe player trae controles + streaming adaptativo.
   const [showPromo,setShowPromo]=useState(false);
+  // Al entrar al home, abre automáticamente el video de presentación (una vez por
+  // sesión del navegador, para no reaparecer al volver). El usuario puede cerrarlo.
+  useEffect(()=>{
+    try{ if(sessionStorage.getItem("cat_promo_auto")) return; sessionStorage.setItem("cat_promo_auto","1"); }catch{}
+    setShowPromo(true);
+  },[]);
   // URL del promo editable desde el panel (ajuste `promo_video`). Si no está
   // configurada, se usa el video por defecto de abajo.
   const [promoRaw,setPromoRaw]=useState(null);
