@@ -14,12 +14,30 @@ export default function LoginModal({ onBack, onSuccess, onResume }) {
   const [err, setErr] = useState("");
   const canLogin = email.includes("@") && pass.length >= 6;
 
+  // Reintenta el login ante fallos de RED transitorios (p. ej. red móvil
+  // intermitente): hasta 3 intentos con pequeña espera. Los errores reales de
+  // credenciales/servidor NO se reintentan (se lanzan de inmediato).
+  const esFalloRed = (m) => /failed to fetch|networkerror|network request failed|load failed|timeout|fetch/i.test(m || "");
+  const loginConReintento = async (tries = 3) => {
+    let ultimo;
+    for (let i = 0; i < tries; i++) {
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
+        if (error) { if (esFalloRed(error.message) && i < tries - 1) { ultimo = error; await new Promise(r => setTimeout(r, 700 * (i + 1))); continue; } throw error; }
+        return data;
+      } catch (e) {
+        if (esFalloRed(e?.message) && i < tries - 1) { ultimo = e; await new Promise(r => setTimeout(r, 700 * (i + 1))); continue; }
+        throw e;
+      }
+    }
+    throw ultimo;
+  };
+
   const handleLogin = async () => {
     if (!canLogin) return;
     setLoading(true); setErr("");
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
-      if (error) throw error;
+      const data = await loginConReintento();
       onSuccess(data.user);
     } catch (e) {
       const msg = e?.message || "";
