@@ -1429,17 +1429,28 @@ export default function App(){
   useEffect(()=>{
     if(!uid) return;
     let cancel=false;
+    // Falsos positivos: un solo "conflicto" puede ser transitorio (carrera entre
+    // reclamar_sesion y el primer validar_sesion justo tras entrar, un reintento
+    // de red, o réplica lenta de la BD). Solo cerramos sesión tras DOS conflictos
+    // SEGUIDOS (~45–90 s): un conflicto real de otro dispositivo persiste; uno
+    // momentáneo se descarta en el siguiente ciclo.
+    let strikes=0;
     const chequear=async()=>{
       if(cancel||document.hidden) return;
       let tk=null; try{ tk=localStorage.getItem("cat_sesion_token"); }catch{}
       if(!tk){ tk=(crypto?.randomUUID?.()||String(Date.now())+Math.random()); try{localStorage.setItem("cat_sesion_token",tk);}catch{} }
       try{
         const {data,error}=await supabase.rpc("validar_sesion",{p_token:tk});
-        if(!cancel && !error && data==="conflicto"){
+        if(cancel||error) return;              // red/error: no cuenta, reintenta luego
+        if(data==="conflicto"){
+          strikes++;
+          if(strikes<2) return;                // primer conflicto: dar un ciclo de gracia
           try{ await supabase.auth.signOut({scope:"local"}); }catch(e){ console.error("signOut(sesion):",e); }
           setSequence([]); setSeqIdx(0); setProgress({}); setInsBySec({});
           setShowDash(false); setShowCerts(false); setActiveVideo(null);
           setSesionCerrada(true); setPhase("welcome");
+        } else {
+          strikes=0;                           // sesión vigente: reinicia el contador
         }
       }catch(e){ /* red intermitente: reintentar en el siguiente ciclo */ }
     };
