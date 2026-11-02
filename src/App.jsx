@@ -54,6 +54,7 @@ const ResumenTemaModal = lazy(() => import("./components/ResumenTemaModal.jsx"))
 const SectionCompleteModal = lazy(() => import("./components/SectionCompleteModal.jsx"));
 const VideoModal = lazy(() => import("./components/VideoModal.jsx"));
 const EncuestaVideoModal = lazy(() => import("./components/EncuestaVideoModal.jsx"));
+const DemoSesion = lazy(() => import("./components/DemoSesion.jsx"));
 const EvalModal = lazy(() => import("./components/EvalModal.jsx"));
 const ResultModal = lazy(() => import("./components/ResultModal.jsx"));
 const CertificatesModal = lazy(() => import("./components/CertificatesModal.jsx"));
@@ -523,7 +524,7 @@ function TourScene({tipo,video,webm,poster}){
   return scenes[tipo]||scenes.bienvenida;
 }
 
-function WelcomeModal({onContinue,onLogin}){
+function WelcomeModal({onContinue,onLogin,onDemo}){
   // Tarjetas por defecto (respaldo). El panel de administración puede
   // sobrescribir videos y textos vía la tabla `tour_tarjetas`; si la BD no
   // responde o un campo viene vacío, se usa lo que está aquí.
@@ -663,6 +664,14 @@ function WelcomeModal({onContinue,onLogin}){
             🔑 {T("Iniciar sesión","Sign in","Se connecter","Anmelden","Entrar","Accedi")}
           </button>
         </div>
+      )}
+      {onDemo&&(
+        <button onClick={()=>{track("home_demo");onDemo();}}
+          style={{width:"100%",boxSizing:"border-box",justifyContent:"center",fontSize:14,cursor:"pointer",
+            display:"inline-flex",alignItems:"center",gap:8,fontFamily:"'Cinzel',serif",fontWeight:700,letterSpacing:"0.04em",
+            background:"rgba(120,80,190,0.16)",color:C.ivory,border:"1px solid rgba(140,100,200,0.6)",borderRadius:10,padding:"12px 14px"}}>
+          ▶ {T("Probar una sesión de demostración","Try a demo session","Essayer une session de démonstration","Demo-Sitzung ausprobieren","Experimentar uma sessão de demonstração","Prova una sessione dimostrativa")}
+        </button>
       )}
       <DirectorioButton estilo={{width:"100%"}} tono="green" track="home_buscar_parroquia"/>
       <AyudaConexionButton estilo={{width:"100%"}} track="home_ayuda_conexion"/>
@@ -1173,6 +1182,32 @@ export default function App(){
   };
   const [insBySec,setInsBySec]=useState({}); // {secId: inscripcion_id} (Parte B)
   const [activeVideo,setActiveVideo]=useState(null); // {secId,vid}
+  // ── Sesión de DEMOSTRACIÓN (sin cuenta) ─────────────────────────────────────
+  const [demoSesion,setDemoSesion]=useState(null); // {secId,vid,bridge} activa | null
+  const [demoEstado,setDemoEstado]=useState(null); // null | "cargando" | "nodisp"
+  const iniciarDemo=async()=>{
+    if(demoSesion||demoEstado==="cargando") return;
+    setDemoEstado("cargando");
+    try{
+      const {data,error}=await supabase.functions.invoke("demo-sesion",{body:{}});
+      if(error||!data||!data.activa){ setDemoEstado("nodisp"); return; }
+      const secId=data.slug;
+      const vid=(SEC_META[secId]?.videos||[]).find(v=>v.o===Number(data.orden))||(SEC_META[secId]?.videos||[])[0];
+      if(!vid){ setDemoEstado("nodisp"); return; }
+      // URL del video ya FIRMADA por la edge function; si no hay (PENDIENTE), cae al
+      // video de prueba de la sección. Mini-puente SIN frontToUuid → nada se guarda.
+      const url=data.url||PICK(SEC_META[secId]?.videoPrueba)||null;
+      const b={ frontToUrl:{[secId]:{[vid.id]:url}}, frontToSub:{[secId]:{[vid.id]:data.sub||null}} };
+      setDemoEstado(null);
+      setDemoSesion({secId,vid,bridge:b});
+      supabase.rpc("demo_registrar",{p_evento:"inicio"}).then(()=>{},()=>{});
+    }catch(e){ console.error("iniciarDemo:",e); setDemoEstado("nodisp"); }
+  };
+  // Enlace directo: catecumen.com/?demo=1 abre la demo al cargar (sin registrarse).
+  useEffect(()=>{
+    try{ if(new URLSearchParams(window.location.search).get("demo")==="1") iniciarDemo(); }catch{}
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[]);
   const [limiteTema,setLimiteTema]=useState(null); // aviso de cupo de temas/día alcanzado
   const [cupoDia,setCupoDia]=useState(2); // límite de temas nuevos por día (del ajuste)
   const [cupoInicio,setCupoInicio]=useState(null); // popup al iniciar un sacramento: {nombre,temas,dias}
@@ -2289,7 +2324,31 @@ export default function App(){
       {phase==="welcome"&&!sesionCerrada&&!sesionInactiva&&<WelcomeModal
         onContinue={()=>setPhase("filter")}
         onLogin={()=>setPhase("login")}
+        onDemo={iniciarDemo}
       />}
+      {demoSesion&&(
+        <Suspense fallback={<div style={OVERLAY}><div style={{color:C.gold,fontFamily:"'Cinzel',serif"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div></div>}>
+          <DemoSesion secId={demoSesion.secId} vid={demoSesion.vid} bridge={demoSesion.bridge}
+            onClose={()=>{ setDemoSesion(null); try{window.history.replaceState({},"",window.location.pathname);}catch{} }}
+            onRegister={()=>{ setDemoSesion(null); try{window.history.replaceState({},"",window.location.pathname);}catch{} setPhase("filter"); }}/>
+        </Suspense>
+      )}
+      {demoEstado==="nodisp"&&(
+        <div style={OVERLAY} onClick={()=>setDemoEstado(null)}>
+          <div style={{...MODAL,maxWidth:420,textAlign:"center"}} onClick={e=>e.stopPropagation()}>
+            <div style={{fontSize:34,marginBottom:8}} aria-hidden="true">🎬</div>
+            <h2 style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:18,marginBottom:10}}>
+              {T("Demostración no disponible","Demo unavailable","Démo indisponible","Demo nicht verfügbar","Demonstração indisponível","Demo non disponibile")}
+            </h2>
+            <p style={{color:C.ivory,fontFamily:"'Crimson Text',serif",fontSize:15,lineHeight:1.6,marginBottom:18}}>
+              {T("La sesión de demostración no está disponible por ahora. Vuelve a intentarlo más tarde.","The demo session isn't available right now. Please try again later.","La session de démonstration n'est pas disponible pour le moment. Réessayez plus tard.","Die Demo-Sitzung ist derzeit nicht verfügbar. Bitte versuche es später erneut.","A sessão de demonstração não está disponível por enquanto. Tente novamente mais tarde.","La sessione dimostrativa non è disponibile al momento. Riprova più tardi.")}
+            </p>
+            <button onClick={()=>setDemoEstado(null)} style={{...BTN("pri"),width:"100%",justifyContent:"center"}}>
+              {T("Entendido","Got it","Compris","Verstanden","Entendi","Capito")}
+            </button>
+          </div>
+        </div>
+      )}
       {phase==="login"&&(
         <Suspense fallback={<div style={OVERLAY}><div style={{color:C.gold,fontFamily:"'Cinzel',serif"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div></div>}>
           <LoginModal

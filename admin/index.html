@@ -172,6 +172,7 @@
       <button class="tab" data-tab="constancias">🏆 Constancias</button>
       <button class="tab" data-tab="afiliados">⛪ Afiliados</button>
       <button class="tab" data-tab="preinscripcion">📝 Preinscripción</button>
+      <button class="tab" data-tab="demo">🎬 Demo</button>
       <button class="tab" data-tab="bienvenida">👋 Bienvenida</button>
       <button class="tab" data-tab="resumenes">📝 Resúmenes</button>
       <button class="tab" data-tab="donativos">💛 Donativos</button>
@@ -582,6 +583,39 @@
           <button class="btn ghost" onclick="cargarDonativos()">↻ Recargar</button>
         </div>
         <div id="don-lista" class="scroll"></div>
+      </div>
+    </div>
+
+    <!-- TAB DEMO -->
+    <div id="tab-demo" class="tabpane hidden">
+      <h2>🎬 Sesión de demostración</h2>
+      <p style="color:var(--ivory-m);font-size:13px;margin:0 0 14px">
+        Permite que un visitante pruebe <b>un video + encuesta + evaluación</b> sin crear cuenta ni pagar.
+        Entra por el botón de la bienvenida o por el enlace directo
+        <b>catecumen.com/?demo=1</b>. No se guarda ninguna respuesta personal, solo contadores anónimos.
+      </p>
+
+      <div class="panelbox" style="margin-bottom:16px">
+        <label style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+          <input id="demo-activa" type="checkbox"> <b>Demostración activa</b>
+        </label>
+        <label style="display:block;margin-bottom:10px">Video — sacramento:
+          <select id="demo-slug" style="min-width:240px;display:inline-block"></select>
+        </label>
+        <label style="display:block;margin-bottom:12px">Video — orden del tema/bloque:
+          <input id="demo-orden" type="number" min="1" value="1" style="width:90px;display:inline-block">
+          <span style="font-size:12px;color:var(--ivory-m)"> (1 = primer video del sacramento)</span>
+        </label>
+        <button class="btn" onclick="window.demoGuardar()">Guardar</button>
+        <span id="demo-guardado" style="margin-left:10px;font-size:13px;color:var(--gold)"></span>
+      </div>
+
+      <div class="panelbox">
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
+          <h3 style="color:var(--gold);font-family:'Cinzel',serif;margin:0">Contadores anónimos</h3>
+          <button class="btn ghost" onclick="cargarDemo()">↻ Recargar</button>
+        </div>
+        <div id="demo-stats" style="display:flex;gap:12px;flex-wrap:wrap"></div>
       </div>
     </div>
 
@@ -1451,6 +1485,36 @@
     $("don-guardado").textContent=error?("Error: "+error.message):"✓ Guardado";
     setTimeout(()=>{$("don-guardado").textContent="";},3000);
   };
+  // ---------- DEMO ----------
+  async function cargarDemo(){
+    try{
+      const {data:sacs}=await sb.rpc("admin_listar_sacramentos");
+      $("demo-slug").innerHTML=(sacs||[]).map(s=>`<option value="${esc(s.slug)}">${esc(s.nombre_es||s.nombre||s.slug)}</option>`).join("");
+    }catch(e){ console.error("demo sacramentos:",e); }
+    try{
+      const {data:aj}=await sb.rpc("obtener_ajuste",{p_clave:"demo"});
+      const d=aj||{};
+      $("demo-activa").checked=!!d.activa;
+      if(d.slug) $("demo-slug").value=d.slug;
+      $("demo-orden").value=d.orden||1;
+    }catch(e){ console.error("demo ajuste:",e); }
+    try{
+      const {data:c}=await sb.rpc("obtener_ajuste",{p_clave:"demo_contadores"});
+      const k=c||{}; const n=Number(k.n||0); const prom=n?Math.round((Number(k.suma||0)/n)*10)/10:0;
+      $("demo-stats").innerHTML=
+        donCard("Iniciaron",k.inicios||0)+
+        donCard("Completaron",k.completos||0)+
+        donCard("Aprobaron",k.aprobados||0)+
+        donCard("Promedio eval.",prom+"/10");
+    }catch(e){ console.error("demo contadores:",e); }
+  }
+  window.demoGuardar=async()=>{
+    const valor={ activa:$("demo-activa").checked, slug:$("demo-slug").value||"kerigma", orden:Number($("demo-orden").value)||1 };
+    const {error}=await sb.rpc("admin_guardar_ajuste",{p_clave:"demo",p_valor:valor});
+    $("demo-guardado").textContent=error?("Error: "+error.message):"✓ Guardado";
+    setTimeout(()=>{$("demo-guardado").textContent="";},3000);
+  };
+
   // ---------- REDIRECTOR DE QR ----------
   let _qrData=[];
   async function cargarQR(){
@@ -1772,6 +1836,7 @@
     if(t.dataset.tab==="constancias") cargarConstancias();
     if(t.dataset.tab==="afiliados") cargarAfiliados();
     if(t.dataset.tab==="preinscripcion") cargarPreinscripcion();
+    if(t.dataset.tab==="demo") cargarDemo();
     if(t.dataset.tab==="bienvenida") cargarBienvenida();
     if(t.dataset.tab==="resumenes") cargarResumenes();
     if(t.dataset.tab==="donativos") cargarDonativos();

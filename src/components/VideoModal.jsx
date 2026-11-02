@@ -51,7 +51,7 @@ async function resolverFuente(url, videoId){
   return null; // Bunny sin firma válida o acceso bloqueado: no reproducir crudo
 }
 
-export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=null,onProgress,onWatched,onClose}){
+export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=null,demo=false,onProgress,onWatched,onClose}){
   useEscClose(onClose);
   const [watching,setWatching]=useState(false);
   const [done,setDone]=useState(false);
@@ -229,7 +229,9 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
       if(offlineUrl){ v.src=offlineUrl;
         if(videoUuid){ try{ supabase.rpc("registrar_descarga",{p_video_id:videoUuid,p_resultado:"reproduccion_offline",p_ua:navigator.userAgent,p_device_id:deviceId()}).then(()=>{},()=>{}); }catch{} }
         return; } // copia cifrada local: ver sin conexión (queda registrado)
-      const src=await resolverFuente(videoPrueba, videoUuid); // firma si es Bunny; null si no pudo firmarse
+      // En DEMO la URL ya viene firmada por la edge function `demo-sesion` (el
+      // visitante es anónimo y no puede llamar a firmar-video); se usa tal cual.
+      const src=demo ? videoPrueba : await resolverFuente(videoPrueba, videoUuid); // firma si es Bunny; null si no pudo firmarse
       if(cancelado) return;
       if(src===null){ setVideoError(true); return; } // Bunny sin firma: no servir crudo
       if(esHls(src)){
@@ -428,7 +430,7 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
             )}
           </>)}
         </div>
-        {acceso&&acceso.puede_ver!==false&&videoPrueba&&!videoError&&(
+        {!demo&&acceso&&acceso.puede_ver!==false&&videoPrueba&&!videoError&&(
           <div style={{background:"rgba(70,120,190,0.10)",border:"1px solid rgba(70,120,190,0.35)",
             borderRadius:10,padding:"10px 13px",marginBottom:14,textAlign:"left"}}>
             <p style={{color:C.ivory,fontFamily:"'Crimson Text',serif",fontSize:12.5,lineHeight:1.5,margin:0}}>
