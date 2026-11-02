@@ -120,7 +120,7 @@ def sb_headers(service_key, extra=None):
 def construir_mapa(vids, host, idioma):
     """Devuelve (asignaciones, sin_codigo, conflictos).
     asignaciones: lista de dicts {slug,orden,guid,title,url}."""
-    por_slot = {}      # (slug,orden) -> list de (title,guid)
+    por_slot = {}      # (slug,orden) -> list de (title,guid,length)
     sin_codigo = []
     for v in vids:
         title = v.get("title", ""); guid = v.get("guid", "")
@@ -128,16 +128,16 @@ def construir_mapa(vids, host, idioma):
         if not cm or not GUID_RE.match(guid or ""):
             sin_codigo.append(title or "(sin título)")
             continue
-        por_slot.setdefault(cm, []).append((title, guid))
+        por_slot.setdefault(cm, []).append((title, guid, int(v.get("length") or 0)))
 
     asignaciones, conflictos = [], []
     for (slug, orden), lst in sorted(por_slot.items()):
         if len(lst) > 1:
-            conflictos.append(((slug, orden), lst))
+            conflictos.append(((slug, orden), [(t, g) for t, g, _ in lst]))
             continue  # NO asignar un slot con dos videos distintos
-        title, guid = lst[0]
+        title, guid, length = lst[0]
         asignaciones.append({
-            "slug": slug, "orden": orden, "guid": guid, "title": title,
+            "slug": slug, "orden": orden, "guid": guid, "title": title, "length": length,
             "url": f"https://{host}/{guid}/playlist.m3u8"})
     return asignaciones, sin_codigo, conflictos
 
@@ -154,29 +154,48 @@ def sql_de(asignaciones, idioma):
 
 
 # ── --apply: escribe directo en Supabase (REST, service role) ────────────────
-def aplicar(asignaciones, idioma, sb_url, service_key):
+def aplicar(asignaciones, idioma, sb_url, service_key, activar=False, crear=False):
     _, sacs = http("GET", f"{sb_url}/rest/v1/sacramentos?select=id,slug",
                    sb_headers(service_key))
     slug2id = {s["slug"]: s["id"] for s in (sacs or [])}
-    ok = falt = err = 0
+    ok = creadas = falt = err = 0
     for a in asignaciones:
         sid = slug2id.get(a["slug"])
         if not sid:
             print(f"  ! sacramento desconocido: {a['slug']}"); err += 1; continue
         q = (f"{sb_url}/rest/v1/videos?sacramento_id=eq.{sid}"
              f"&orden=eq.{a['orden']}&idioma=eq.{idioma}")
+        body = {"url_video": a["url"]}
+        if activar:
+            body["activo"] = True                 # --activar: reactiva al poner la URL
         try:
             _, rows = http("PATCH", q,
                            sb_headers(service_key, {"Prefer": "return=representation"}),
-                           {"url_video": a["url"]})
+                           body)
             n = len(rows or [])
-            if n == 0:
-                print(f"  · sin fila para {a['slug']} orden {a['orden']} ({idioma})"); falt += 1
-            else:
+            if n:
                 ok += n
+                continue
+            # No existía la fila (orden no sembrado).
+            if not crear:
+                print(f"  · sin fila para {a['slug']} orden {a['orden']} ({idioma})"); falt += 1
+                continue
+            # --crear: insertar la fila completa (título y duración de Bunny; activo).
+            nueva = {
+                "sacramento_id": sid, "orden": a["orden"], "idioma": idioma,
+                "titulo_es": a["title"], "titulo_en": a["title"],
+                "url_video": a["url"], "duracion_segundos": a.get("length", 0),
+                "es_repaso_final": False, "activo": True,
+            }
+            http("POST", f"{sb_url}/rest/v1/videos",
+                 sb_headers(service_key, {"Prefer": "return=representation"}), nueva)
+            creadas += 1
         except urllib.error.HTTPError as e:
-            print(f"  ! error {a['slug']} orden {a['orden']}: HTTP {e.code}"); err += 1
-    print(f"\nAplicado: {ok} filas actualizadas · {falt} sin fila (orden no sembrado) · {err} errores.")
+            detalle = ""
+            try: detalle = " :: " + e.read().decode("utf-8")[:120]
+            except Exception: pass
+            print(f"  ! error {a['slug']} orden {a['orden']}: HTTP {e.code}{detalle}"); err += 1
+    print(f"\nAplicado: {ok} actualizadas · {creadas} creadas · {falt} sin fila (usa --crear) · {err} errores.")
 
 
 # ── --verify: audita lo que YA está en la base ───────────────────────────────
@@ -220,6 +239,8 @@ def main():
     ap.add_argument("--out", default="bunny-videos.sql")
     ap.add_argument("--api-key", default=os.environ.get("BUNNY_API_KEY", ""))
     ap.add_argument("--apply", action="store_true", help="escribe directo en Supabase (service role)")
+    ap.add_argument("--activar", action="store_true", help="con --apply: marca activo=true al poner la URL")
+    ap.add_argument("--crear", action="store_true", help="con --apply: INSERTA la fila si el orden no existe (título y duración de Bunny)")
     ap.add_argument("--verify", action="store_true", help="audita las URLs que ya están en la base")
     args = ap.parse_args()
     host = args.host.replace("https://", "").replace("http://", "").strip("/")
@@ -265,8 +286,10 @@ def main():
             sys.exit("Para --apply necesito SUPABASE_URL (o VITE_SUPABASE_URL en .env) y SUPABASE_SERVICE_ROLE_KEY.")
         if conflictos:
             sys.exit("Hay conflictos sin resolver (arriba). Corrige los títulos en Bunny y reintenta; no aplico nada.")
-        print("\nAplicando a Supabase…")
-        aplicar(asignaciones, args.idioma, sb, key)
+        print("\nAplicando a Supabase…"
+              + ("  (+activar)" if args.activar else "")
+              + ("  (+crear filas faltantes)" if args.crear else ""))
+        aplicar(asignaciones, args.idioma, sb, key, activar=args.activar, crear=args.crear)
         print("Listo. Verifica con:  python scripts/bunny_urls.py --verify")
     else:
         print("\n(Modo revisión) Revisa el .sql y córrelo en el SQL Editor, o usa --apply para escribir solo.")
