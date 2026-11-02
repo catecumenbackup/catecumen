@@ -124,6 +124,22 @@ El script escribe directo en Supabase y te dice cuántas filas actualizó.
 
 ---
 
+## Actualizar SOLO un video
+
+Si solo cambiaste o subiste **un** video, usa `--solo` con su código:
+
+```powershell
+# Revisar (genera un .sql con una sola línea):
+python scripts\bunny_urls.py --solo "KER-03 B"
+
+# Escribir solo ese (con service key):
+python scripts\bunny_urls.py --apply --solo "KER-03 B"
+```
+
+También sirve con `--activar` / `--crear`. Alternativa sin filtro: corre la
+herramienta normal (es idempotente, re-pone las URLs correctas de todos sin dañar
+nada) o abre el `bunny-videos.sql` y copia solo la línea del video que te interesa.
+
 ## 6) Verifica que quedó bien
 
 ```powershell

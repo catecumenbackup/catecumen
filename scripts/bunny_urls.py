@@ -242,6 +242,7 @@ def main():
     ap.add_argument("--activar", action="store_true", help="con --apply: marca activo=true al poner la URL")
     ap.add_argument("--crear", action="store_true", help="con --apply: INSERTA la fila si el orden no existe (título y duración de Bunny)")
     ap.add_argument("--verify", action="store_true", help="audita las URLs que ya están en la base")
+    ap.add_argument("--solo", default="", help="procesa SOLO un video por su código, p.ej. --solo \"KER-03 B\"")
     args = ap.parse_args()
     host = args.host.replace("https://", "").replace("http://", "").strip("/")
 
@@ -259,6 +260,18 @@ def main():
     vids = fetch_bunny_videos(args.library, args.api_key)
     print(f"Videos en la librería Bunny: {len(vids)}")
     asignaciones, sin_codigo, conflictos = construir_mapa(vids, host, args.idioma)
+
+    # --solo: quedarse con UN video por su código (p.ej. "KER-03 B").
+    if args.solo:
+        objetivo = code_from_title(args.solo)
+        if not objetivo:
+            sys.exit(f"--solo: no reconozco el código '{args.solo}'. Usa algo como \"KER-03 B\".")
+        asignaciones = [a for a in asignaciones if (a["slug"], a["orden"]) == objetivo]
+        conflictos = [c for c in conflictos if c[0] == objetivo]
+        sin_codigo = []
+        if not asignaciones and not conflictos:
+            sys.exit(f"--solo: no hay ningún video en Bunny con el código '{args.solo}' "
+                     f"(revisa el título del video).")
 
     print(f"Emparejados por código de título: {len(asignaciones)}")
     for a in asignaciones:
