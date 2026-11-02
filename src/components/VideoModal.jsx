@@ -92,7 +92,12 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
   // Coloca el video en la posición guardada al cargar los metadatos, y reporta el
   // avance (cada ~5 s) para que el usuario retome donde lo dejó.
   const seekInicial=()=>{ const v=videoRef.current; if(v && startAt>0 && startAt<(v.duration||1e9)-2){ try{ v.currentTime=startAt; }catch{} } };
-  const reportar=()=>{ const v=videoRef.current; if(!v||!onProgress) return; const t=Math.floor(v.currentTime||0); if(t>0 && Math.abs(t-lastReport.current)>=5){ lastReport.current=t; onProgress(t); } };
+  const reportar=()=>{ const v=videoRef.current; if(!v) return;
+    // Marcar "terminado" al llegar al final AUNQUE no dispare onEnded (con HLS vía
+    // hls.js el evento 'ended' a veces no llega; sin esto no aparece "Continuar" ni
+    // la encuesta). Umbral: dentro de los últimos 0.75 s de la duración.
+    if(v.duration>0 && isFinite(v.duration) && v.currentTime>=v.duration-0.75){ setDone(true); }
+    if(!onProgress) return; const t=Math.floor(v.currentTime||0); if(t>0 && Math.abs(t-lastReport.current)>=5){ lastReport.current=t; onProgress(t); } };
   // Prioridad: URL real del video en la BD (idioma del usuario) → video de prueba local.
   const urlReal=bridge?.frontToUrl?.[secId]?.[vid?.id]||null;
   const videoPrueba=urlReal||PICK(SEC_META[secId]?.videoPrueba)||null; // real o prueba, en el idioma activo
