@@ -744,6 +744,18 @@ function WelcomeModal({onContinue,onLogin,onDemo}){
           </button>
         ):<span/>}
       </div>
+      {/* Canal de WhatsApp — al pie del carrusel */}
+      <a href="https://bit.ly/catecumen" target="_blank" rel="noopener noreferrer"
+        onClick={()=>track("home_whatsapp")}
+        style={{marginTop:12,width:"100%",boxSizing:"border-box",justifyContent:"center",fontSize:14,cursor:"pointer",
+          display:"inline-flex",alignItems:"center",gap:8,fontFamily:"'Cinzel',serif",fontWeight:700,letterSpacing:"0.04em",
+          background:"#25D366",color:"#07210F",border:"1px solid #1DA851",borderRadius:10,padding:"12px 14px",
+          textDecoration:"none",boxShadow:"0 4px 14px rgba(37,211,102,0.35)"}}>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style={{flexShrink:0}}>
+          <path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.945C.16 5.335 5.495 0 12.057 0a11.82 11.82 0 018.413 3.488 11.82 11.82 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884a9.82 9.82 0 001.636 5.4l-.999 3.648 3.753-.985zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.148-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.074-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
+        </svg>
+        {T("Síguenos en WhatsApp","Follow us on WhatsApp","Suivez-nous sur WhatsApp","Folge uns auf WhatsApp","Siga-nos no WhatsApp","Seguici su WhatsApp")}
+      </a>
     </>
   );
 
