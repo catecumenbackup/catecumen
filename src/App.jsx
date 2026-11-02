@@ -1395,7 +1395,11 @@ export default function App(){
     if(phase!=="course"||!currentSecId) return;
     if(!bienvDecidido||bienvVideos) return; // esperar a que se resuelva/cierre la bienvenida
     try{
-      const hoy=new Date().toISOString().slice(0,10);
+      // Fecha LOCAL (no UTC). Con toISOString() el "día" cambiaba a medianoche
+      // UTC (= 6 p. m. en México), así que una sesión por la tarde marcaba el
+      // día siguiente y la oración corta no volvía a salir a la mañana siguiente.
+      const _d=new Date();
+      const hoy=`${_d.getFullYear()}-${String(_d.getMonth()+1).padStart(2,"0")}-${String(_d.getDate()).padStart(2,"0")}`;
       const SAC=new Set(["bautismo","confirmacion","primera_comunion","tc2_confesion","tc2_uncion"]);
       let vistos=[]; try{ vistos=JSON.parse(localStorage.getItem("cat_ora_blk")||"[]")||[]; }catch{}
       let blk=null;
