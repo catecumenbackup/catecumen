@@ -1,101 +1,276 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-bunny_urls.py — Genera el SQL que pone la URL HLS de cada video de Bunny en la
-tabla `videos` de Supabase, emparejando por el título (que empieza por el código
-"KER-01 A", "TC1-03 B", etc.) con (sacramento, orden).
+bunny_urls.py — Carga AUTOMÁTICA y a prueba de errores de las URLs de video de
+Bunny Stream a Supabase (tabla `videos`) y, con ello, a la plataforma.
 
-Evita pegar 24+ URLs a mano en el panel. No toca subtítulos (esos ya se asignan
-con kerygma-subtitulos.sql).
+Qué hace y por qué NO te equivocas con esto
+-------------------------------------------
+  • Toma los GUID directamente de la API de Bunny (no copias nada a mano), así
+    que NUNCA se cuela una URL firmada (bcdn_token=…/expires=…), un placeholder
+    ni un GUID pegado mal. Siempre guarda el formato LIMPIO que espera la app:
+        https://<host>/<guid>/playlist.m3u8
+    (la app la firma sola al reproducir, con Token Authentication).
+  • Empareja cada video con (sacramento, orden) por el CÓDIGO del título
+    ("KER-02 B", "TC1-03 D", …). orden = (tema-1)*4 + bloque (A=1,B=2,C=3,D=4).
+  • Valida antes de escribir: avisa de slots repetidos, GUID duplicados y títulos
+    que no reconoce. Si hay conflicto grave, NO aplica.
 
-Requisitos
-----------
-    pip install requests        # (o usa urllib, abajo ya va con urllib, sin deps)
+Modos
+-----
+  (por defecto)   Lee Bunny, empareja, MUESTRA un resumen y escribe un .sql para
+                  revisar/correr en el SQL Editor. No toca la base.
+  --apply         Además, ESCRIBE directo en Supabase (REST, service role). Un
+                  solo comando y listo; no copias SQL.
+  --verify        Audita lo que YA hay en `videos`: marca URLs con token, con
+                  placeholder, sin formato /<guid>/playlist.m3u8, y GUID duplicados.
 
-Datos que necesitas (de tu panel de Bunny)
-------------------------------------------
-  • API key de la Video Library:  Stream → tu librería → pestaña "API" → "API Key"
-    (es un secreto; se usa solo localmente, no se guarda en el repo).
-  • Library ID:                    756611 (va en la URL del panel).
-  • CDN hostname:                  algo como  vz-xxxxxxxx-xxx.b-cdn.net
-    (Stream → librería → "API"/"Embed"/"Delivery"; NO es secreto).
+Secrets (solo en tu equipo; nunca se guardan en el repo)
+--------------------------------------------------------
+  BUNNY_API_KEY                API key de la Video Library (Stream → librería → API).
+  SUPABASE_SERVICE_ROLE_KEY    solo para --apply y --verify (Supabase → Settings →
+                               API → service_role). Omítela para solo generar SQL.
+  SUPABASE_URL                 opcional; si no, se lee VITE_SUPABASE_URL de ../.env.
 
-Uso
----
-    set BUNNY_API_KEY=pega-aqui-tu-api-key           (Windows CMD)
-    $env:BUNNY_API_KEY="pega-aqui-tu-api-key"        (PowerShell)
-    python scripts\bunny_urls.py --library 756611 --host vz-xxxx.b-cdn.net --out scripts\kerygma-videos.sql
-
-    # Por defecto genera el .m3u8 (HLS) de cada video:  https://HOST/<guid>/playlist.m3u8
-    # Procesa TODO lo que haya en la librería y lo casa por el código del título.
-
-Después: revisa el .sql y córrelo en el SQL Editor de Supabase. Luego, en el
-reproductor, VideoModal firma esas URLs con Token Authentication (si lo activaste).
+Uso (PowerShell)
+----------------
+  $env:BUNNY_API_KEY="tu-api-key"
+  python scripts\bunny_urls.py                      # genera el .sql (revisar)
+  $env:SUPABASE_SERVICE_ROLE_KEY="tu-service-key"
+  python scripts\bunny_urls.py --apply              # escribe en Supabase
+  python scripts\bunny_urls.py --verify             # audita lo que ya está
 """
-import argparse, os, re, sys, json, urllib.request
+import argparse, os, re, sys, json, urllib.request, urllib.error
+
+# ── Defaults de ESTA cuenta (ya no hay que recordarlos) ──────────────────────
+DEFAULT_LIBRARY = "796078"
+DEFAULT_HOST    = "vz-20178245-a58.b-cdn.net"
 
 FAM2SLUG = {"KER": "kerigma", "TC1": "tc1", "CONF": "confirmacion",
             "UNC": "tc2_uncion", "REC": "tc2_confesion"}
 BL = {"A": 1, "B": 2, "C": 3, "D": 4}
+GUID_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.I)
+
 
 def code_from_title(t):
-    m = re.match(r"\s*(KER|TC1|CONF|UNC|REC)-(\d{1,2})[ \-]([ABCD])\b", t, re.I)
-    if not m: return None
+    """'KER-02 B · …' → ('kerigma', 6).  Devuelve None si no reconoce el código."""
+    m = re.match(r"\s*(KER|TC1|CONF|UNC|REC)[ \-]?(\d{1,2})[ \-]?([ABCD])\b", t or "", re.I)
+    if not m:
+        return None
     fam = m.group(1).upper(); num = int(m.group(2)); letter = m.group(3).upper()
     slug = FAM2SLUG.get(fam)
-    if not slug: return None
-    orden = (num - 1) * 4 + BL[letter]
-    return slug, orden
+    if not slug:
+        return None
+    return slug, (num - 1) * 4 + BL[letter]
 
-def fetch_videos(library, api_key):
+
+# ── Lectura del .env del proyecto (solo para SUPABASE_URL, por comodidad) ─────
+def env_from_dotenv(key):
+    try:
+        here = os.path.dirname(os.path.abspath(__file__))
+        with open(os.path.join(here, "..", ".env"), encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith(key + "="):
+                    return line.split("=", 1)[1].strip().strip('"').strip("'")
+    except OSError:
+        pass
+    return ""
+
+
+def supabase_url():
+    return (os.environ.get("SUPABASE_URL")
+            or env_from_dotenv("VITE_SUPABASE_URL") or "").rstrip("/")
+
+
+# ── HTTP helpers ─────────────────────────────────────────────────────────────
+def http(method, url, headers, body=None):
+    data = json.dumps(body).encode("utf-8") if body is not None else None
+    req = urllib.request.Request(url, data=data, headers=headers, method=method)
+    with urllib.request.urlopen(req, timeout=40) as r:
+        raw = r.read().decode("utf-8")
+        return r.status, (json.loads(raw) if raw else None)
+
+
+def fetch_bunny_videos(library, api_key):
     vids, page = [], 1
     while True:
-        url = f"https://video.bunnycdn.com/library/{library}/videos?page={page}&itemsPerPage=100&orderBy=date"
-        req = urllib.request.Request(url, headers={"AccessKey": api_key, "accept": "application/json"})
-        with urllib.request.urlopen(req, timeout=30) as r:
-            data = json.loads(r.read().decode("utf-8"))
-        items = data.get("items", [])
-        if not items: break
+        url = (f"https://video.bunnycdn.com/library/{library}/videos"
+               f"?page={page}&itemsPerPage=100&orderBy=date")
+        _, data = http("GET", url, {"AccessKey": api_key, "accept": "application/json"})
+        items = (data or {}).get("items", [])
+        if not items:
+            break
         vids.extend(items)
-        if len(vids) >= data.get("totalItems", len(vids)): break
+        if len(vids) >= (data or {}).get("totalItems", len(vids)):
+            break
         page += 1
     return vids
 
+
+def sb_headers(service_key, extra=None):
+    h = {"apikey": service_key, "Authorization": "Bearer " + service_key,
+         "Content-Type": "application/json"}
+    if extra:
+        h.update(extra)
+    return h
+
+
+# ── Emparejado Bunny → (slug, orden) con validación ──────────────────────────
+def construir_mapa(vids, host, idioma):
+    """Devuelve (asignaciones, sin_codigo, conflictos).
+    asignaciones: lista de dicts {slug,orden,guid,title,url}."""
+    por_slot = {}      # (slug,orden) -> list de (title,guid)
+    sin_codigo = []
+    for v in vids:
+        title = v.get("title", ""); guid = v.get("guid", "")
+        cm = code_from_title(title)
+        if not cm or not GUID_RE.match(guid or ""):
+            sin_codigo.append(title or "(sin título)")
+            continue
+        por_slot.setdefault(cm, []).append((title, guid))
+
+    asignaciones, conflictos = [], []
+    for (slug, orden), lst in sorted(por_slot.items()):
+        if len(lst) > 1:
+            conflictos.append(((slug, orden), lst))
+            continue  # NO asignar un slot con dos videos distintos
+        title, guid = lst[0]
+        asignaciones.append({
+            "slug": slug, "orden": orden, "guid": guid, "title": title,
+            "url": f"https://{host}/{guid}/playlist.m3u8"})
+    return asignaciones, sin_codigo, conflictos
+
+
+def sql_de(asignaciones, idioma):
+    out = ["-- bunny-videos.sql — generado por bunny_urls.py (revisar antes de correr).",
+           "-- Idempotente: UPDATE por (slug, orden, idioma). URLs limpias /<guid>/playlist.m3u8."]
+    for a in asignaciones:
+        out.append(
+            f"UPDATE public.videos SET url_video='{a['url']}' "
+            f"WHERE sacramento_id=(SELECT id FROM public.sacramentos WHERE slug='{a['slug']}') "
+            f"AND orden={a['orden']} AND idioma='{idioma}';")
+    return "\n".join(out) + "\n"
+
+
+# ── --apply: escribe directo en Supabase (REST, service role) ────────────────
+def aplicar(asignaciones, idioma, sb_url, service_key):
+    _, sacs = http("GET", f"{sb_url}/rest/v1/sacramentos?select=id,slug",
+                   sb_headers(service_key))
+    slug2id = {s["slug"]: s["id"] for s in (sacs or [])}
+    ok = falt = err = 0
+    for a in asignaciones:
+        sid = slug2id.get(a["slug"])
+        if not sid:
+            print(f"  ! sacramento desconocido: {a['slug']}"); err += 1; continue
+        q = (f"{sb_url}/rest/v1/videos?sacramento_id=eq.{sid}"
+             f"&orden=eq.{a['orden']}&idioma=eq.{idioma}")
+        try:
+            _, rows = http("PATCH", q,
+                           sb_headers(service_key, {"Prefer": "return=representation"}),
+                           {"url_video": a["url"]})
+            n = len(rows or [])
+            if n == 0:
+                print(f"  · sin fila para {a['slug']} orden {a['orden']} ({idioma})"); falt += 1
+            else:
+                ok += n
+        except urllib.error.HTTPError as e:
+            print(f"  ! error {a['slug']} orden {a['orden']}: HTTP {e.code}"); err += 1
+    print(f"\nAplicado: {ok} filas actualizadas · {falt} sin fila (orden no sembrado) · {err} errores.")
+
+
+# ── --verify: audita lo que YA está en la base ───────────────────────────────
+def verificar(sb_url, service_key, idioma):
+    url = (f"{sb_url}/rest/v1/videos?select=orden,url_video,sacramentos(slug)"
+           f"&idioma=eq.{idioma}&url_video=neq.PENDIENTE&order=orden")
+    _, rows = http("GET", url, sb_headers(service_key))
+    rows = rows or []
+    problemas, guids = [], {}
+    for r in rows:
+        u = r.get("url_video") or ""
+        slug = (r.get("sacramentos") or {}).get("slug", "?")
+        orden = r.get("orden")
+        m = re.search(r"/([0-9a-f-]{36})/playlist\.m3u8$", u, re.I)
+        if "bcdn_token" in u or "token=" in u or "expires=" in u:
+            problemas.append((slug, orden, "URL FIRMADA (token) — pega solo /<guid>/playlist.m3u8"))
+        elif not m:
+            problemas.append((slug, orden, "formato inválido (¿placeholder? ¿falta /<guid>/playlist.m3u8?)"))
+        else:
+            g = m.group(1).lower()
+            guids.setdefault(g, []).append(f"{slug} orden {orden}")
+    dups = {g: v for g, v in guids.items() if len(v) > 1}
+    print(f"Videos con URL real ({idioma}): {len(rows)}")
+    if problemas:
+        print(f"\n❌ {len(problemas)} URL con problema:")
+        for slug, orden, msg in problemas:
+            print(f"   - {slug} orden {orden}: {msg}")
+    if dups:
+        print(f"\n❌ GUID duplicados (dos temas al mismo video):")
+        for g, where in dups.items():
+            print(f"   - {g}: {', '.join(where)}")
+    if not problemas and not dups:
+        print("\n✅ Todo correcto: formato limpio /<guid>/playlist.m3u8 y sin GUID duplicados.")
+
+
 def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--library", required=True)
-    ap.add_argument("--host", required=True, help="CDN hostname, p.ej. vz-xxxx.b-cdn.net")
-    ap.add_argument("--out", default="bunny-videos.sql")
+    ap = argparse.ArgumentParser(description="Carga de URLs de Bunny a Supabase (a prueba de errores).")
+    ap.add_argument("--library", default=DEFAULT_LIBRARY)
+    ap.add_argument("--host", default=DEFAULT_HOST, help="CDN hostname, p.ej. vz-xxxx.b-cdn.net")
     ap.add_argument("--idioma", default="es")
+    ap.add_argument("--out", default="bunny-videos.sql")
     ap.add_argument("--api-key", default=os.environ.get("BUNNY_API_KEY", ""))
+    ap.add_argument("--apply", action="store_true", help="escribe directo en Supabase (service role)")
+    ap.add_argument("--verify", action="store_true", help="audita las URLs que ya están en la base")
     args = ap.parse_args()
-    if not args.api_key:
-        sys.exit("Falta la API key. Pon BUNNY_API_KEY en el entorno o usa --api-key.")
     host = args.host.replace("https://", "").replace("http://", "").strip("/")
 
-    vids = fetch_videos(args.library, args.api_key)
-    print(f"Videos en la librería: {len(vids)}")
-    lines = ["-- bunny-videos.sql — URLs HLS de Bunny por (sacramento, orden). Generado por bunny_urls.py.",
-             "-- Revisar antes de correr. Idempotente (UPDATE por slug+orden+idioma)."]
-    casados, sin_codigo = 0, []
-    for v in vids:
-        title = v.get("title", "")
-        guid = v.get("guid", "")
-        cm = code_from_title(title)
-        if not cm or not guid:
-            sin_codigo.append(title); continue
-        slug, orden = cm
-        url = f"https://{host}/{guid}/playlist.m3u8"
-        lines.append(
-            f"UPDATE public.videos SET url_video='{url}' "
-            f"WHERE sacramento_id=(SELECT id FROM public.sacramentos WHERE slug='{slug}') "
-            f"AND orden={orden} AND idioma='{args.idioma}';")
-        casados += 1
-    open(args.out, "w", encoding="utf-8").write("\n".join(lines) + "\n")
-    print(f"Emparejados por código: {casados}  → {args.out}")
+    # ── Modo auditoría ──
+    if args.verify:
+        sb, key = supabase_url(), os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
+        if not sb or not key:
+            sys.exit("Para --verify necesito SUPABASE_URL (o VITE_SUPABASE_URL en .env) y SUPABASE_SERVICE_ROLE_KEY.")
+        verificar(sb, key, args.idioma)
+        return
+
+    if not args.api_key:
+        sys.exit("Falta la API key de Bunny. Define BUNNY_API_KEY o usa --api-key.")
+
+    vids = fetch_bunny_videos(args.library, args.api_key)
+    print(f"Videos en la librería Bunny: {len(vids)}")
+    asignaciones, sin_codigo, conflictos = construir_mapa(vids, host, args.idioma)
+
+    print(f"Emparejados por código de título: {len(asignaciones)}")
+    for a in asignaciones:
+        print(f"   {a['slug']:14} orden {a['orden']:>2}  ←  {a['title'][:48]}")
     if sin_codigo:
-        print("Sin código reconocible en el título (revisa manualmente):")
-        for t in sin_codigo[:50]: print("  -", t)
+        print(f"\n⚠ Sin código reconocible ({len(sin_codigo)}) — se IGNORAN:")
+        for t in sin_codigo[:50]:
+            print(f"   - {t[:60]}")
+    if conflictos:
+        print(f"\n❌ CONFLICTO: dos videos distintos para el mismo (sacramento, orden). "
+              f"NO se asignan hasta resolverlo:")
+        for (slug, orden), lst in conflictos:
+            print(f"   - {slug} orden {orden}:")
+            for title, guid in lst:
+                print(f"       · {title[:50]}  [{guid}]")
+
+    # Siempre deja el .sql para revisar/correr a mano.
+    with open(args.out, "w", encoding="utf-8") as f:
+        f.write(sql_de(asignaciones, args.idioma))
+    print(f"\nSQL escrito en: {args.out}  ({len(asignaciones)} UPDATE)")
+
+    if args.apply:
+        sb, key = supabase_url(), os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
+        if not sb or not key:
+            sys.exit("Para --apply necesito SUPABASE_URL (o VITE_SUPABASE_URL en .env) y SUPABASE_SERVICE_ROLE_KEY.")
+        if conflictos:
+            sys.exit("Hay conflictos sin resolver (arriba). Corrige los títulos en Bunny y reintenta; no aplico nada.")
+        print("\nAplicando a Supabase…")
+        aplicar(asignaciones, args.idioma, sb, key)
+        print("Listo. Verifica con:  python scripts/bunny_urls.py --verify")
+    else:
+        print("\n(Modo revisión) Revisa el .sql y córrelo en el SQL Editor, o usa --apply para escribir solo.")
+
 
 if __name__ == "__main__":
     main()
