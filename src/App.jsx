@@ -1533,27 +1533,33 @@ export default function App(){
       const newSp={...sp,[vid.id]:newVp};
       return{...p,[secId]:newSp};
     });
-    // Persistir la aprobación (no bajamos `visto` en la BD si reprueba).
-    persistProgreso(secId,vid.id, result.passed
-      ? {aprobado:true, visto:true, fecha_aprobado:new Date().toISOString()}
-      : {aprobado:false});
+    // Persistir la aprobación (no bajamos `visto` en la BD si reprueba). En modo
+    // BD (result.serverGraded), calificar_evaluacion YA hizo el upsert idempotente
+    // de progreso_videos y el registro del intento, así que NO re-escribimos.
+    if(!result.serverGraded){
+      persistProgreso(secId,vid.id, result.passed
+        ? {aprobado:true, visto:true, fecha_aprobado:new Date().toISOString()}
+        : {aprobado:false});
+    }
     // Registrar el INTENTO (aprobado o no) para el listado de Atención del panel.
     // Usa la tabla `intentos_evaluacion` existente, que enlaza por inscripcion_id.
     (async()=>{
       const videoUuid=bridge?.frontToUuid?.[secId]?.[vid.id];
       const insId=insBySec[secId];
       if(!videoUuid||!insId) return;
-      const payload={
-        p_inscripcion_id:insId, p_video_id:videoUuid,
-        p_aprobado:!!result.passed,
-        p_puntaje:(typeof result.score==="number"?result.score:null),
-        p_puntaje_maximo:(typeof result.total==="number"?result.total:null)};
-      try{
-        const {error}=await supabase.rpc("registrar_intento",payload);
-        if(error) throw error;
-      }catch(e){
-        console.warn("registrar_intento → encolado:",e?.message||e);
-        syncEnqueue({tipo:"intento",payload});
+      if(!result.serverGraded){
+        const payload={
+          p_inscripcion_id:insId, p_video_id:videoUuid,
+          p_aprobado:!!result.passed,
+          p_puntaje:(typeof result.score==="number"?result.score:null),
+          p_puntaje_maximo:(typeof result.total==="number"?result.total:null)};
+        try{
+          const {error}=await supabase.rpc("registrar_intento",payload);
+          if(error) throw error;
+        }catch(e){
+          console.warn("registrar_intento → encolado:",e?.message||e);
+          syncEnqueue({tipo:"intento",payload});
+        }
       }
       // Si APROBÓ (≥8), bloquear automáticamente el acceso al video.
       if(result.passed){
@@ -2612,6 +2618,7 @@ export default function App(){
           )}
           {activeEval&&(
             <EvalModal secId={activeEval.secId} vid={activeEval.vid}
+              videoUuid={bridge?.frontToUuid?.[activeEval.secId]?.[activeEval.vid.id]||null}
               onResult={handleEvalResult} onClose={()=>setActiveEval(null)}/>
           )}
           {showResult&&lastResult&&(
