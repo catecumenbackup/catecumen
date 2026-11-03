@@ -25,6 +25,11 @@ Ej.: `KER-02 B` → (2−1)×4 + 2 = **orden 6**.
 > código al inicio del título y listo. Lo que no tenga código, el script lo ignora
 > y te avisa (no rompe nada).
 
+> **Subtítulos incluidos:** el script también enlaza el subtítulo `.vtt` de cada
+> video (busca `public/subtitulos/<CÓDIGO>.es.vtt`, p.ej. `KER-02-B.es.vtt`). Solo
+> lo pone si el archivo existe, así que no tienes que correr los SQL de subtítulos
+> aparte. En el resumen verás "con subtítulo .vtt: N" y un `[+sub]` por video.
+
 ---
 
 ## 1) Consigue tu API Key de Bunny (una sola vez)

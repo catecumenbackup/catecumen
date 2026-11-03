@@ -51,6 +51,29 @@ FAM2SLUG = {"KER": "kerigma", "TC1": "tc1", "CONF": "confirmacion",
 BL = {"A": 1, "B": 2, "C": 3, "D": 4}
 GUID_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.I)
 
+# Subtítulos: los .vtt viven en public/subtitulos y se sirven desde el sitio.
+SUB_BASE = "https://www.catecumen.com/subtitulos/"
+SUBS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "public", "subtitulos")
+
+
+def codigo_vtt(title):
+    """'KER-02 B · …' → 'KER-02-B' (como se llama el .vtt). None si no reconoce."""
+    m = re.match(r"\s*(KER|TC1|CONF|UNC|REC)[ \-]?(\d{1,2})[ \-]?([ABCD])\b", title or "", re.I)
+    if not m:
+        return None
+    return f"{m.group(1).upper()}-{int(m.group(2)):02d}-{m.group(3).upper()}"
+
+
+def sub_url_si_existe(title, idioma):
+    """URL del subtítulo si el archivo .vtt existe localmente (solo 'es' por ahora)."""
+    if idioma != "es":
+        return None
+    code = codigo_vtt(title)
+    if not code:
+        return None
+    fname = f"{code}.es.vtt"
+    return (SUB_BASE + fname) if os.path.isfile(os.path.join(SUBS_DIR, fname)) else None
+
 
 def code_from_title(t):
     """'KER-02 B · …' → ('kerigma', 6).  Devuelve None si no reconoce el código."""
@@ -138,7 +161,8 @@ def construir_mapa(vids, host, idioma):
         title, guid, length = lst[0]
         asignaciones.append({
             "slug": slug, "orden": orden, "guid": guid, "title": title, "length": length,
-            "url": f"https://{host}/{guid}/playlist.m3u8"})
+            "url": f"https://{host}/{guid}/playlist.m3u8",
+            "sub": sub_url_si_existe(title, idioma)})   # None si no hay .vtt para ese video
     return asignaciones, sin_codigo, conflictos
 
 
@@ -146,8 +170,11 @@ def sql_de(asignaciones, idioma):
     out = ["-- bunny-videos.sql — generado por bunny_urls.py (revisar antes de correr).",
            "-- Idempotente: UPDATE por (slug, orden, idioma). URLs limpias /<guid>/playlist.m3u8."]
     for a in asignaciones:
+        sets = f"url_video='{a['url']}'"
+        if a.get("sub"):
+            sets += f", url_subtitulos='{a['sub']}'"
         out.append(
-            f"UPDATE public.videos SET url_video='{a['url']}' "
+            f"UPDATE public.videos SET {sets} "
             f"WHERE sacramento_id=(SELECT id FROM public.sacramentos WHERE slug='{a['slug']}') "
             f"AND orden={a['orden']} AND idioma='{idioma}';")
     return "\n".join(out) + "\n"
@@ -166,6 +193,8 @@ def aplicar(asignaciones, idioma, sb_url, service_key, activar=False, crear=Fals
         q = (f"{sb_url}/rest/v1/videos?sacramento_id=eq.{sid}"
              f"&orden=eq.{a['orden']}&idioma=eq.{idioma}")
         body = {"url_video": a["url"]}
+        if a.get("sub"):
+            body["url_subtitulos"] = a["sub"]     # enlaza el .vtt si existe
         if activar:
             body["activo"] = True                 # --activar: reactiva al poner la URL
         try:
@@ -187,6 +216,8 @@ def aplicar(asignaciones, idioma, sb_url, service_key, activar=False, crear=Fals
                 "url_video": a["url"], "duracion_segundos": a.get("length", 0),
                 "es_repaso_final": False, "activo": True,
             }
+            if a.get("sub"):
+                nueva["url_subtitulos"] = a["sub"]
             http("POST", f"{sb_url}/rest/v1/videos",
                  sb_headers(service_key, {"Prefer": "return=representation"}), nueva)
             creadas += 1
@@ -273,9 +304,11 @@ def main():
             sys.exit(f"--solo: no hay ningún video en Bunny con el código '{args.solo}' "
                      f"(revisa el título del video).")
 
-    print(f"Emparejados por código de título: {len(asignaciones)}")
+    con_sub = sum(1 for a in asignaciones if a.get("sub"))
+    print(f"Emparejados por código de título: {len(asignaciones)}  (con subtítulo .vtt: {con_sub})")
     for a in asignaciones:
-        print(f"   {a['slug']:14} orden {a['orden']:>2}  ←  {a['title'][:48]}")
+        print(f"   {a['slug']:14} orden {a['orden']:>2}  ←  {a['title'][:46]}"
+              + ("  [+sub]" if a.get("sub") else ""))
     if sin_codigo:
         print(f"\n⚠ Sin código reconocible ({len(sin_codigo)}) — se IGNORAN:")
         for t in sin_codigo[:50]:
