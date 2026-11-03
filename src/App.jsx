@@ -670,7 +670,7 @@ function WelcomeModal({onContinue,onLogin,onDemo}){
           style={{width:"100%",boxSizing:"border-box",justifyContent:"center",fontSize:14,cursor:"pointer",
             display:"inline-flex",alignItems:"center",gap:8,fontFamily:"'Cinzel',serif",fontWeight:700,letterSpacing:"0.04em",
             background:"rgba(120,80,190,0.16)",color:C.ivory,border:"1px solid rgba(140,100,200,0.6)",borderRadius:10,padding:"12px 14px"}}>
-          ▶ {T("Probar una sesión de demostración","Try a demo session","Essayer une session de démonstration","Demo-Sitzung ausprobieren","Experimentar uma sessão de demonstração","Prova una sessione dimostrativa")}
+          ▶ {T("Probar demostración","Try the demo","Essayer la démo","Demo ausprobieren","Experimentar demonstração","Prova la demo")}
         </button>
       )}
       <DirectorioButton estilo={{width:"100%"}} tono="green" track="home_buscar_parroquia"/>
