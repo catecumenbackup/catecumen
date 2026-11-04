@@ -22,6 +22,18 @@ const DB_NAME = "catecumen-offline";
 const STORE = "videos";
 const SALT = "catecumen-offline-salt-v1";
 
+// Caducidad de las lecciones descargadas: 72 h desde que se descargaron, igual
+// que la ventana de visualización de los videos en streaming. Pasado ese plazo
+// la copia local VENCE: no se reproduce, se purga al listarla/usarla, y para
+// volver a verla hay que descargarla de nuevo (requiere conexión y cuenta contra
+// el límite diario de descargas) — el análogo offline de reabrir el acceso.
+export const DESCARGA_TTL_MS = 72 * 60 * 60 * 1000;
+
+// ¿Está vencida una copia? (sin ts, se trata como vencida por seguridad).
+export function vencida(rec, ahora = Date.now()) {
+  return !rec || !rec.ts || (ahora - rec.ts) > DESCARGA_TTL_MS;
+}
+
 // ── Cripto: llave AES-GCM derivada de la cuenta (HKDF-SHA256) ────────────────
 async function keyFor(ownerId) {
   const enc = new TextEncoder();
@@ -83,6 +95,7 @@ export async function obtenerBlob({ clave, ownerId }) {
     const rec = await pReq(tx(db, "readonly").get(clave));
     db.close();
     if (!rec) return null;
+    if (vencida(rec)) { try { await borrar(clave); } catch { /* no-op */ } return null; } // 72 h: caducó
     if (rec.ownerId !== String(ownerId || "anon")) return null; // atada a otra cuenta
     const bytes = await decryptBytes(ownerId, rec.iv, rec.ct); // falla si la llave no corresponde
     return new Blob([bytes], { type: rec.mime || "video/mp4" });
@@ -94,6 +107,7 @@ export async function tiene(clave) {
     const db = await openDB();
     const rec = await pReq(tx(db, "readonly").get(clave));
     db.close();
+    if (rec && vencida(rec)) { try { await borrar(clave); } catch { /* no-op */ } return false; }
     return !!rec;
   } catch { return false; }
 }
@@ -107,9 +121,14 @@ export async function listar(ownerId) {
     const db = await openDB();
     const all = await pReq(tx(db, "readonly").getAll());
     db.close();
-    return (all || [])
-      .filter(r => ownerId == null || r.ownerId === String(ownerId))
-      .map(r => ({ clave: r.clave, size: r.size, ts: r.ts, meta: r.meta || {} }));
+    const ahora = Date.now();
+    const mias = (all || []).filter(r => ownerId == null || r.ownerId === String(ownerId));
+    // Purga las vencidas (fire-and-forget) para no acumular copias caducadas.
+    for (const r of mias) if (vencida(r, ahora)) { borrar(r.clave).catch(() => {}); }
+    return mias
+      .filter(r => !vencida(r, ahora))
+      .map(r => ({ clave: r.clave, size: r.size, ts: r.ts, meta: r.meta || {},
+                   expira: (r.ts || 0) + DESCARGA_TTL_MS }));
   } catch { return []; }
 }
 

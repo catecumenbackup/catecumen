@@ -14,6 +14,20 @@ function fmt(bytes) {
   return (mb >= 100 ? Math.round(mb) : mb.toFixed(1)) + " MB";
 }
 
+// Texto del tiempo que le queda a una descarga antes de caducar (72 h).
+function restante(expira) {
+  if (!expira) return null;
+  const ms = expira - Date.now();
+  if (ms <= 0) return { texto: T("Caducada", "Expired", "Expirée", "Abgelaufen", "Expirada", "Scaduta"), urgente: true };
+  const h = ms / (1000 * 60 * 60);
+  if (h < 1) {
+    const min = Math.max(1, Math.round(ms / (1000 * 60)));
+    return { texto: T(`Vence en ~${min} min`, `Expires in ~${min} min`, `Expire dans ~${min} min`, `Läuft in ~${min} Min. ab`, `Expira em ~${min} min`, `Scade tra ~${min} min`), urgente: true };
+  }
+  const hr = Math.round(h);
+  return { texto: T(`Vence en ~${hr} h`, `Expires in ~${hr} h`, `Expire dans ~${hr} h`, `Läuft in ~${hr} Std. ab`, `Expira em ~${hr} h`, `Scade tra ~${hr} h`), urgente: hr <= 6 };
+}
+
 export default function DescargasTab({ userId }) {
   const [items, setItems] = useState(null); // null = cargando
   const cargar = useCallback(async () => {
@@ -35,12 +49,12 @@ export default function DescargasTab({ userId }) {
   return (
     <div>
       <p style={{ color: C.ivoryM, fontFamily: "'Crimson Text',serif", fontSize: 15, marginBottom: 16 }}>
-        {T("Lecciones que descargaste para verlas sin conexión en este dispositivo. Se guardan cifradas y ligadas a tu cuenta.",
-           "Lessons you downloaded to watch offline on this device. They are stored encrypted and tied to your account.",
-           "Leçons que vous avez téléchargées pour les voir hors ligne sur cet appareil. Elles sont chiffrées et liées à votre compte.",
-           "Lektionen, die du zum Offline-Ansehen auf diesem Gerät heruntergeladen hast. Sie werden verschlüsselt und mit deinem Konto verknüpft gespeichert.",
-           "Lições que você baixou para ver offline neste dispositivo. São salvas criptografadas e vinculadas à sua conta.",
-           "Lezioni che hai scaricato per vederle offline su questo dispositivo. Sono salvate cifrate e legate al tuo account.")}
+        {T("Lecciones que descargaste para verlas sin conexión en este dispositivo. Se guardan cifradas y ligadas a tu cuenta, y caducan 72 horas después de descargarse (luego hay que volver a descargarlas).",
+           "Lessons you downloaded to watch offline on this device. They are stored encrypted and tied to your account, and expire 72 hours after download (after that you need to download them again).",
+           "Leçons que vous avez téléchargées pour les voir hors ligne sur cet appareil. Elles sont chiffrées et liées à votre compte, et expirent 72 heures après le téléchargement (ensuite il faut les retélécharger).",
+           "Lektionen, die du zum Offline-Ansehen auf diesem Gerät heruntergeladen hast. Sie werden verschlüsselt und mit deinem Konto verknüpft gespeichert und laufen 72 Stunden nach dem Download ab (danach musst du sie erneut herunterladen).",
+           "Lições que você baixou para ver offline neste dispositivo. São salvas criptografadas e vinculadas à sua conta e expiram 72 horas após o download (depois é preciso baixá-las de novo).",
+           "Lezioni che hai scaricato per vederle offline su questo dispositivo. Sono salvate cifrate e legate al tuo account e scadono 72 ore dopo il download (poi vanno scaricate di nuovo).")}
       </p>
 
       {items === null ? (
@@ -77,6 +91,9 @@ export default function DescargasTab({ userId }) {
                   </div>
                   <div style={{ color: C.ivoryM, fontSize: 12 }}>
                     {fmt(it.size)}{it.meta && it.meta.lang ? " · " + String(it.meta.lang).toUpperCase() : ""}
+                    {(() => { const r = restante(it.expira); return r
+                      ? <span style={{ color: r.urgente ? "#F0A24B" : C.ivoryM }}> · ⏳ {r.texto}</span>
+                      : null; })()}
                   </div>
                 </div>
                 <button onClick={() => borrar(it.clave)} style={{ ...BTN("sec"), fontSize: 11.5, flex: "0 0 auto",
