@@ -33,7 +33,7 @@ const DEMO_EVAL = [
          c: "Cumplir reglas para merecer el cielo", d: "Un conjunto de tradiciones culturales" }, k: "b" },
 ];
 
-export default function DemoSesion({ secId, vid, bridge, onClose, onRegister }) {
+export default function DemoSesion({ secId, vid, bridge, preguntas = null, onClose, onRegister }) {
   const [step, setStep] = useState("video"); // video | encuesta | eval | result
   const [res, setRes] = useState(null);
 
@@ -61,7 +61,8 @@ export default function DemoSesion({ secId, vid, bridge, onClose, onRegister }) 
         <EncuestaVideoModal secId={secId} vid={vid} bridge={bridge} onDone={() => setStep("eval")} />
       )}
       {step === "eval" && (
-        <EvalModal secId={secId} vid={vid} preguntas={DEMO_EVAL} onResult={finEval} onClose={onClose} />
+        <EvalModal secId={secId} vid={vid} preguntas={(preguntas && preguntas.length) ? preguntas : DEMO_EVAL}
+          onResult={finEval} onClose={onClose} />
       )}
       {step === "result" && createPortal(
         <div style={OVERLAY} onClick={onClose}>
