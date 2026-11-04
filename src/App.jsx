@@ -745,7 +745,7 @@ function WelcomeModal({onContinue,onLogin,onDemo}){
         ):<span/>}
       </div>
       {/* Canal de WhatsApp — al pie del carrusel */}
-      <a href="https://bit.ly/catecumen" target="_blank" rel="noopener noreferrer"
+      <a href="https://whatsapp.com/channel/0029VbDo8aWEVccOFcQ1jQ1e" target="_blank" rel="noopener noreferrer"
         onClick={()=>track("home_whatsapp")}
         style={{marginTop:12,width:"100%",boxSizing:"border-box",justifyContent:"center",fontSize:14,cursor:"pointer",
           display:"inline-flex",alignItems:"center",gap:8,fontFamily:"'Cinzel',serif",fontWeight:700,letterSpacing:"0.04em",

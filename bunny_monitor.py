@@ -19,6 +19,7 @@ Con "Actualizar cada 5 s" el panel se refresca solo.
 import streamlit as st
 import requests
 import time
+from datetime import datetime, timezone
 
 st.set_page_config(page_title="Bunny Stream Monitor", page_icon="🎬", layout="wide")
 st.title("🎬 Bunny Stream Monitor")
@@ -36,6 +37,18 @@ CON_ERROR = {5, 6}
 
 def estado_de(status):
     return ESTADOS.get(status, ("Desconocido", "❔"))
+
+
+def fmt_ts(iso):
+    """Formatea una fecha ISO de Bunny (UTC) a hora local 'YYYY-MM-DD HH:MM'."""
+    if not iso:
+        return ""
+    try:
+        s = str(iso).replace("Z", "").split(".")[0]
+        dt = datetime.fromisoformat(s).replace(tzinfo=timezone.utc).astimezone()
+        return dt.strftime("%Y-%m-%d %H:%M")
+    except Exception:
+        return str(iso)[:16].replace("T", " ")
 
 
 with st.sidebar:
@@ -82,6 +95,34 @@ def obtener_todos():
     return vids
 
 
+# ── Horas REALES de fin de codificación (del webhook de Bunny, guardadas en
+#    Supabase por la edge function `bunny-webhook` y leídas aquí por su RPC).
+SUPABASE_URL = "https://jqlfjfamraavsbhdusuq.supabase.co"
+SUPABASE_ANON_KEY = (
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."
+    "eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxbGZqZmFtcmFhdnNiaGR1c3VxIiwicm9sZSI6ImFub24i"
+    "LCJpYXQiOjE3ODEyMDEwNjIsImV4cCI6MjA5Njc3NzA2Mn0."
+    "AFD2j0ERaNqx4gii8z3sOvdbkIJl3Kzs_qyDErm7SL8"
+)
+
+
+def obtener_codificaciones():
+    """Devuelve {guid: 'YYYY-MM-DD HH:MM'} con la hora real de fin de Bunny.
+    Si la tabla/RPC aún no existe o no hay red, devuelve {} sin romper el panel."""
+    try:
+        r = requests.post(
+            f"{SUPABASE_URL}/rest/v1/rpc/bunny_codificaciones_listar",
+            headers={"apikey": SUPABASE_ANON_KEY,
+                     "Authorization": f"Bearer {SUPABASE_ANON_KEY}",
+                     "content-type": "application/json"},
+            json={}, timeout=15,
+        )
+        r.raise_for_status()
+        return {row["guid"]: fmt_ts(row.get("codificado_en")) for row in r.json()}
+    except Exception:
+        return {}
+
+
 # ─────────────────────────── VISTA: TODA LA LIBRERÍA ─────────────────────────
 def vista_libreria():
     vids = obtener_todos()
@@ -105,13 +146,25 @@ def vista_libreria():
         prioridad = 0 if s in CON_ERROR else (1 if s in EN_PROCESO else 2)
         return (prioridad, v.get("encodeProgress", 0), v.get("title", ""))
 
+    # Hora REAL de fin de codificación: la manda el webhook de Bunny (Status=3
+    # Finished, campo Timestamp) y la guarda la edge function en Supabase.
+    enc = obtener_codificaciones()
+
     filas = []
     for v in sorted(vids, key=orden):
         txt, ico = estado_de(v.get("status"))
+        guid = v.get("guid", "")
+        if guid in enc:
+            codificado = enc[guid]                       # hora real de Bunny (webhook)
+        elif v.get("status") in FINAL_OK:
+            codificado = "~ " + fmt_ts(v.get("dateUploaded"))  # sin webhook (subido antes); aprox.
+        else:
+            codificado = "—"                             # aún codificando
         filas.append({
             "Video": v.get("title", "(sin título)")[:70],
             "Estado": f"{ico} {txt}",
             "%": v.get("encodeProgress", 0),
+            "Codificado": codificado,
             "Resoluciones": v.get("availableResolutions") or "—",
             "Dur (s)": v.get("length", 0),
             "Tamaño (MB)": round(v.get("storageSize", 0) / 1024 / 1024, 1),
@@ -122,6 +175,8 @@ def vista_libreria():
         column_config={"%": st.column_config.ProgressColumn(
             "% codificación", min_value=0, max_value=100, format="%d%%")},
     )
+    st.caption("🕐 «Codificado» = hora REAL en que Bunny terminó de codificar (webhook de Bunny). "
+               "El prefijo «~» es la fecha de subida (videos codificados antes de activar el webhook, sin hora real).")
     if proc == 0 and err == 0 and total:
         st.success("¡Todo el lote está codificado! 🎉")
     elif err:
@@ -154,7 +209,13 @@ def vista_un_video():
     st.write("**Resoluciones disponibles:**", video.get("availableResolutions", "Pendientes"))
     st.write("**Códec:**", video.get("outputCodecs", "No disponible"))
     st.write("**Tamaño:**", f"{video.get('storageSize', 0) / 1024 / 1024:.2f} MB")
-    st.write("**Fecha de subida:**", video.get("dateUploaded", "No disponible"))
+    st.write("**Fecha de subida:**", fmt_ts(video.get("dateUploaded")) or "No disponible")
+    enc = obtener_codificaciones()
+    guid = video.get("guid", "")
+    if guid in enc:
+        st.write("**Codificado (hora real de Bunny):**", enc[guid])
+    elif video.get("status") in FINAL_OK:
+        st.write("**Codificado:**", "~ " + (fmt_ts(video.get("dateUploaded")) or "—") + "  (sin webhook: codificado antes de activarlo)")
     if video.get("status") in FINAL_OK:
         st.success("¡El video está completamente codificado!")
     elif video.get("status") in CON_ERROR:
