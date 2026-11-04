@@ -46,9 +46,19 @@ import argparse, os, re, sys, json, urllib.request, urllib.error
 DEFAULT_LIBRARY = "796078"
 DEFAULT_HOST    = "vz-20178245-a58.b-cdn.net"
 
-FAM2SLUG = {"KER": "kerigma", "TC1": "tc1", "CONF": "confirmacion",
-            "UNC": "tc2_uncion", "REC": "tc2_confesion"}
+# Familia del título → slug del sacramento. Los videos de Confirmación/Unción/
+# Confesión en Bunny vienen titulados TE2 / TC2U / TC2R, pero el sacramento (y el
+# nombre del .vtt) usan CONF / UNC / REC. Ambos juegos de códigos se aceptan.
+FAM2SLUG = {"KER": "kerigma", "TC1": "tc1",
+            "CONF": "confirmacion", "UNC": "tc2_uncion", "REC": "tc2_confesion",
+            "TE2": "confirmacion", "TC2U": "tc2_uncion", "TC2R": "tc2_confesion"}
+# Familia del título → prefijo del archivo de subtítulos (.vtt).
+FAM2VTT = {"KER": "KER", "TC1": "TC1", "CONF": "CONF", "UNC": "UNC", "REC": "REC",
+           "TE2": "CONF", "TC2U": "UNC", "TC2R": "REC"}
 BL = {"A": 1, "B": 2, "C": 3, "D": 4}
+# Orden importa: las familias de 4 letras (TC2U/TC2R) antes que las de 3 (TE2) y
+# que TC1, para que la alternancia del regex no corte mal.
+CODE_RE = re.compile(r"\s*(TC2U|TC2R|TC1|TE2|KER|CONF|UNC|REC)[ \-]?(\d{1,2})[ \-]?([ABCD])\b", re.I)
 GUID_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.I)
 
 # Subtítulos: los .vtt viven en public/subtitulos y se sirven desde el sitio.
@@ -57,11 +67,14 @@ SUBS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "publi
 
 
 def codigo_vtt(title):
-    """'KER-02 B · …' → 'KER-02-B' (como se llama el .vtt). None si no reconoce."""
-    m = re.match(r"\s*(KER|TC1|CONF|UNC|REC)[ \-]?(\d{1,2})[ \-]?([ABCD])\b", title or "", re.I)
+    """'KER-02 B' → 'KER-02-B', 'TE2-01 A' → 'CONF-01-A' (nombre del .vtt). None si no reconoce."""
+    m = CODE_RE.match(title or "")
     if not m:
         return None
-    return f"{m.group(1).upper()}-{int(m.group(2)):02d}-{m.group(3).upper()}"
+    pre = FAM2VTT.get(m.group(1).upper())
+    if not pre:
+        return None
+    return f"{pre}-{int(m.group(2)):02d}-{m.group(3).upper()}"
 
 
 def sub_url_si_existe(title, idioma):
@@ -76,15 +89,14 @@ def sub_url_si_existe(title, idioma):
 
 
 def code_from_title(t):
-    """'KER-02 B · …' → ('kerigma', 6).  Devuelve None si no reconoce el código."""
-    m = re.match(r"\s*(KER|TC1|CONF|UNC|REC)[ \-]?(\d{1,2})[ \-]?([ABCD])\b", t or "", re.I)
+    """'KER-02 B' → ('kerigma', 6); 'TE2-01 A' → ('confirmacion', 1). None si no reconoce."""
+    m = CODE_RE.match(t or "")
     if not m:
         return None
-    fam = m.group(1).upper(); num = int(m.group(2)); letter = m.group(3).upper()
-    slug = FAM2SLUG.get(fam)
+    slug = FAM2SLUG.get(m.group(1).upper())
     if not slug:
         return None
-    return slug, (num - 1) * 4 + BL[letter]
+    return slug, (int(m.group(2)) - 1) * 4 + BL[m.group(3).upper()]
 
 
 # ── Lectura del .env del proyecto (solo para SUPABASE_URL, por comodidad) ─────
