@@ -1210,13 +1210,8 @@ export default function App(){
       // video de prueba de la sección. Mini-puente SIN frontToUuid → nada se guarda.
       const url=data.url||PICK(SEC_META[secId]?.videoPrueba)||null;
       const b={ frontToUrl:{[secId]:{[vid.id]:url}}, frontToSub:{[secId]:{[vid.id]:data.sub||null}} };
-      // Evaluación de la demo = la del TEMA de ese video (el bloque que evalúa, D),
-      // para que SIEMPRE coincida con el contenido, sea cual sea el video configurado.
-      const vids=SEC_META[secId]?.videos||[];
-      const dBlock=vids.find(v=>v.mod===vid.mod && requiereEval(v)) || vids.find(v=>v.mod===vid.mod && v.blk==="D");
-      const demoQs=(dBlock && Array.isArray(Q[dBlock.id]) && Q[dBlock.id].length) ? Q[dBlock.id] : null;
       setDemoEstado(null);
-      setDemoSesion({secId,vid,bridge:b,demoQs});
+      setDemoSesion({secId,vid,bridge:b});
       supabase.rpc("demo_registrar",{p_evento:"inicio"}).then(()=>{},()=>{});
     }catch(e){ console.error("iniciarDemo:",e); setDemoEstado("nodisp"); }
   };
@@ -2351,7 +2346,7 @@ export default function App(){
       />}
       {demoSesion&&(
         <Suspense fallback={<div style={OVERLAY}><div style={{color:C.gold,fontFamily:"'Cinzel',serif"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div></div>}>
-          <DemoSesion secId={demoSesion.secId} vid={demoSesion.vid} bridge={demoSesion.bridge} preguntas={demoSesion.demoQs}
+          <DemoSesion secId={demoSesion.secId} vid={demoSesion.vid} bridge={demoSesion.bridge}
             onClose={()=>{ setDemoSesion(null); try{window.history.replaceState({},"",window.location.pathname);}catch{} }}
             onRegister={()=>{ setDemoSesion(null); try{window.history.replaceState({},"",window.location.pathname);}catch{} setPhase("filter"); }}/>
         </Suspense>

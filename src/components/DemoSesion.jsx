@@ -18,22 +18,26 @@ const reg = (evento, puntaje) => {
   try { supabase.rpc("demo_registrar", { p_evento: evento, p_puntaje: puntaje ?? null }).then(() => {}, () => {}); } catch {}
 };
 
-// Evaluación FIJA de la sesión de demostración — separada de las del curso, hecha
-// para el video de muestra por defecto (Kerygma 1 · "Dios te ama y te llama").
-// Si cambias el video de la demo en el panel, actualiza estas preguntas.
+// Evaluación FIJA de la sesión de demostración — hecha a partir del GUIÓN del
+// video de muestra KER-03 A ("En voz de María Magdalena": la tumba vacía, el
+// cristianismo como evento histórico, no como filosofía o sentimiento).
+// Si cambias el video de la demo en el panel, avísanos para actualizar estas preguntas.
 const DEMO_EVAL = [
-  { id: "d1", q: "Según esta lección, ¿cómo es Dios contigo?",
-    o: { a: "Un vigilante que anota tus errores", b: "Un Padre que toma la iniciativa y sale a buscarte primero",
-         c: "Una fuerza impersonal y lejana", d: "Un juez que espera que falles" }, k: "b" },
-  { id: "d2", q: "¿Por qué te ama Dios?",
-    o: { a: "Porque te lo ganas portándote bien", b: "Por tu constancia en la oración",
-         c: "Porque Él es Padre; la causa está en Él, no en ti", d: "Porque eres perfecto" }, k: "c" },
-  { id: "d3", q: "¿Qué es el cristianismo, según el mensaje del video?",
-    o: { a: "Subir una escalera de méritos hasta Dios", b: "Dejarte alcanzar por Dios, que bajó la escalera hasta ti",
-         c: "Cumplir reglas para merecer el cielo", d: "Un conjunto de tradiciones culturales" }, k: "b" },
+  { id: "d1", q: "Según el video, ¿qué es el cristianismo?",
+    o: { a: "Un conjunto de valores y un código moral", b: "La noticia de un evento histórico que partió el tiempo en dos",
+         c: "Una sabiduría bonita sobre el amor y el perdón", d: "Una filosofía más, intercambiable por otras" }, k: "b" },
+  { id: "d2", q: "María Magdalena insiste en que, en la tumba, cuenta…",
+    o: { a: "La paz que sintió en su corazón", b: "Una revelación interior que tuvo",
+         c: "Un hecho concreto —lo que había y lo que no había—, no una experiencia interior", d: "Lo que comprendió sobre el amor" }, k: "c" },
+  { id: "d3", q: "¿Cuál es, según el video, la manera «elegante» de neutralizar el cristianismo?",
+    o: { a: "Negar que Jesús existió", b: "Reducirlo a un conjunto de valores, un código moral o una sabiduría sobre el amor",
+         c: "Prohibir su práctica", d: "Mezclarlo con otras religiones" }, k: "b" },
+  { id: "d4", q: "¿Cuál es el contenido central de esa «noticia»?",
+    o: { a: "Que debemos ser mejores personas", b: "Que alguien dio buenos consejos sobre la vida",
+         c: "Que alguien tomó tu lugar en el corredor de la muerte, cuando todo estaba perdido", d: "Que el amor es lo más importante" }, k: "c" },
 ];
 
-export default function DemoSesion({ secId, vid, bridge, preguntas = null, onClose, onRegister }) {
+export default function DemoSesion({ secId, vid, bridge, onClose, onRegister }) {
   const [step, setStep] = useState("video"); // video | encuesta | eval | result
   const [res, setRes] = useState(null);
 
@@ -61,8 +65,7 @@ export default function DemoSesion({ secId, vid, bridge, preguntas = null, onClo
         <EncuestaVideoModal secId={secId} vid={vid} bridge={bridge} onDone={() => setStep("eval")} />
       )}
       {step === "eval" && (
-        <EvalModal secId={secId} vid={vid} preguntas={(preguntas && preguntas.length) ? preguntas : DEMO_EVAL}
-          onResult={finEval} onClose={onClose} />
+        <EvalModal secId={secId} vid={vid} preguntas={DEMO_EVAL} onResult={finEval} onClose={onClose} />
       )}
       {step === "result" && createPortal(
         <div style={OVERLAY} onClick={onClose}>
