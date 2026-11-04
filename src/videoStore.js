@@ -102,6 +102,18 @@ export async function obtenerBlob({ clave, ownerId }) {
   } catch { try { db && db.close(); } catch { /* no-op */ } return null; }
 }
 
+// Info de caducidad de una copia (sin descifrarla): { ts, expira } o null si no
+// existe o ya venció. Para mostrar el tiempo restante en el reproductor.
+export async function infoCopia(clave) {
+  try {
+    const db = await openDB();
+    const rec = await pReq(tx(db, "readonly").get(clave));
+    db.close();
+    if (!rec || vencida(rec)) return null;
+    return { ts: rec.ts, expira: (rec.ts || 0) + DESCARGA_TTL_MS };
+  } catch { return null; }
+}
+
 export async function tiene(clave) {
   try {
     const db = await openDB();

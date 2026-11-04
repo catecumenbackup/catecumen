@@ -62,6 +62,7 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
   const [descargado,setDescargado]=useState(false);
   const [descargando,setDescargando]=useState(false);
   const [descError,setDescError]=useState(false);
+  const [descExpira,setDescExpira]=useState(null); // ms de caducidad (72 h) de la copia local
   // Control de acceso (bloqueo por aprobación ≥8 o tope de 72 h + reapertura admin).
   const [acceso,setAcceso]=useState(null);    // null = verificando; {puede_ver, restante_horas, ...}
   const [vistasInfo,setVistasInfo]=useState(null); // {vistas,vistas_max,vistas_restantes} tras registrar una vista (NO toca `acceso` para no re-disparar la carga del video)
@@ -157,7 +158,8 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
       if(!userId) return;
       const blob=await videoStore.obtenerBlob({clave:claveOffline,ownerId:userId});
       if(!vivo) return;
-      if(blob){ url=URL.createObjectURL(blob); setOfflineUrl(url); setDescargado(true); }
+      if(blob){ url=URL.createObjectURL(blob); setOfflineUrl(url); setDescargado(true);
+        const info=await videoStore.infoCopia(claveOffline); if(vivo&&info) setDescExpira(info.expira); }
     })();
     return()=>{ vivo=false; if(url) URL.revokeObjectURL(url); };
   },[claveOffline,userId]);
@@ -185,7 +187,8 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
         mime:resp.headers.get("content-type")||"video/mp4",
         meta:{secId,vid:vid?.id,titulo:PICK(vid),lang:LANG}});
       const blob=await videoStore.obtenerBlob({clave:claveOffline,ownerId:userId});
-      if(blob){ const u=URL.createObjectURL(blob); setOfflineUrl(u); setDescargado(true); }
+      if(blob){ const u=URL.createObjectURL(blob); setOfflineUrl(u); setDescargado(true);
+        const info=await videoStore.infoCopia(claveOffline); if(info) setDescExpira(info.expira); }
       // Rastreo: descarga EXITOSA.
       if(videoUuid){ try{ supabase.rpc("registrar_descarga",{p_video_id:videoUuid,p_resultado:"exito",p_ua:navigator.userAgent,p_device_id:dev}).then(()=>{},()=>{}); }catch{} }
     }catch(e){ console.error("descargar offline:",e); setDescError(true); }
@@ -194,7 +197,7 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
   const borrarDescarga=async()=>{
     await videoStore.borrar(claveOffline);
     setOfflineUrl(u=>{ if(u) URL.revokeObjectURL(u); return null; });
-    setDescargado(false);
+    setDescargado(false); setDescExpira(null);
   };
 
   // ── Acceso (ventana de 72 h) ────────────────────────────────────────────────
@@ -486,6 +489,12 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
                 <span style={{color:"#22C55E",fontFamily:"'Crimson Text',serif"}}>
                   ⬇️ {T("Disponible sin conexión","Available offline","Disponible hors ligne","Offline verfügbar","Disponível offline","Disponibile offline")}
                 </span>
+                {descExpira&&(()=>{ const ms=descExpira-Date.now(); const h=ms/3600000; const hr=Math.max(0,Math.round(h));
+                  const urg=h<=6;
+                  const txt=h<1
+                    ? T("Vence en menos de 1 h","Expires in under 1 h","Expire dans moins d'1 h","Läuft in unter 1 Std. ab","Expira em menos de 1 h","Scade tra meno di 1 h")
+                    : T(`Vence en ~${hr} h`,`Expires in ~${hr} h`,`Expire dans ~${hr} h`,`Läuft in ~${hr} Std. ab`,`Expira em ~${hr} h`,`Scade tra ~${hr} h`);
+                  return <span style={{color:urg?"#F0A24B":C.ivoryM,fontFamily:"'Crimson Text',serif",fontSize:12.5}}>⏳ {txt}</span>; })()}
                 <button onClick={borrarDescarga} style={{background:"none",border:"none",cursor:"pointer",
                   color:C.ivoryM,textDecoration:"underline",fontSize:12.5,fontFamily:"'Crimson Text',serif"}}>
                   {T("Borrar descarga","Delete download","Supprimer le téléchargement","Download löschen","Excluir download","Elimina download")}
