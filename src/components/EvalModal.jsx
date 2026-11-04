@@ -10,17 +10,19 @@ import { useEscClose, BotonX } from "./modalUtils.jsx";
 // en el SERVIDOR (`calificar_evaluacion`) — así la respuesta correcta nunca viaja
 // al navegador. Si el video no tiene preguntas en la BD (o no hay sesión, p. ej. la
 // demo), se cae al banco estático `Q` del código con calificación local.
-export default function EvalModal({ secId, vid, videoUuid = null, onResult, onClose }) {
+export default function EvalModal({ secId, vid, videoUuid = null, preguntas = null, onResult, onClose }) {
   useEscClose(onClose);
   const localBank = () => Q[vid.id] || (() => { const keys = Object.keys(Q); return Q[keys[vid.o % keys.length]]; })();
-  const [qs, setQs] = useState(() => (videoUuid ? null : localBank()));   // null = cargando
+  // `preguntas` (p.ej. la evaluación FIJA de la demo) tiene prioridad y se califica
+  // localmente; si no, se usa la BD (obtener_preguntas) o el banco estático.
+  const [qs, setQs] = useState(() => (preguntas ? preguntas : (videoUuid ? null : localBank())));   // null = cargando
   const [modo, setModo] = useState("local");                              // "db" | "local"
   const [ans, setAns] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [err, setErr] = useState("");
 
   useEffect(() => {
-    if (!videoUuid) return;                 // sin puente/sesión: banco local ya está
+    if (preguntas || !videoUuid) return;    // demo/sin puente/sin sesión: banco local ya está
     let vivo = true;
     (async () => {
       try {

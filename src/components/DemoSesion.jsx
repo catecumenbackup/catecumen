@@ -18,6 +18,21 @@ const reg = (evento, puntaje) => {
   try { supabase.rpc("demo_registrar", { p_evento: evento, p_puntaje: puntaje ?? null }).then(() => {}, () => {}); } catch {}
 };
 
+// Evaluación FIJA de la sesión de demostración — separada de las del curso, hecha
+// para el video de muestra por defecto (Kerygma 1 · "Dios te ama y te llama").
+// Si cambias el video de la demo en el panel, actualiza estas preguntas.
+const DEMO_EVAL = [
+  { id: "d1", q: "Según esta lección, ¿cómo es Dios contigo?",
+    o: { a: "Un vigilante que anota tus errores", b: "Un Padre que toma la iniciativa y sale a buscarte primero",
+         c: "Una fuerza impersonal y lejana", d: "Un juez que espera que falles" }, k: "b" },
+  { id: "d2", q: "¿Por qué te ama Dios?",
+    o: { a: "Porque te lo ganas portándote bien", b: "Por tu constancia en la oración",
+         c: "Porque Él es Padre; la causa está en Él, no en ti", d: "Porque eres perfecto" }, k: "c" },
+  { id: "d3", q: "¿Qué es el cristianismo, según el mensaje del video?",
+    o: { a: "Subir una escalera de méritos hasta Dios", b: "Dejarte alcanzar por Dios, que bajó la escalera hasta ti",
+         c: "Cumplir reglas para merecer el cielo", d: "Un conjunto de tradiciones culturales" }, k: "b" },
+];
+
 export default function DemoSesion({ secId, vid, bridge, onClose, onRegister }) {
   const [step, setStep] = useState("video"); // video | encuesta | eval | result
   const [res, setRes] = useState(null);
@@ -46,7 +61,7 @@ export default function DemoSesion({ secId, vid, bridge, onClose, onRegister }) 
         <EncuestaVideoModal secId={secId} vid={vid} bridge={bridge} onDone={() => setStep("eval")} />
       )}
       {step === "eval" && (
-        <EvalModal secId={secId} vid={vid} onResult={finEval} onClose={onClose} />
+        <EvalModal secId={secId} vid={vid} preguntas={DEMO_EVAL} onResult={finEval} onClose={onClose} />
       )}
       {step === "result" && createPortal(
         <div style={OVERLAY} onClick={onClose}>

@@ -73,12 +73,38 @@ export function ResumenContenido({ titulo = null, bloques = [], puntos = null, h
         </div>
       )}
       {hojaPdfUrl && (
-        <div style={{ textAlign: "center", marginTop: 14 }}>
-          <a href={hojaPdfUrl} target="_blank" rel="noopener noreferrer"
-            style={{ ...BTN("sec"), textDecoration: "none", fontSize: 12.5 }}>
-            📄 {T("Descargar la hoja", "Download the sheet", "Télécharger la fiche", "Blatt herunterladen", "Baixar a folha", "Scarica la scheda")}
-          </a>
-        </div>
+        <a href={hojaPdfUrl} target="_blank" rel="noopener noreferrer"
+          style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 16, textDecoration: "none",
+            background: C.card, border: `1px solid ${C.gold}55`, borderRadius: 12, padding: "12px 14px",
+            boxShadow: "0 2px 12px rgba(0,0,0,0.25)" }}>
+          {/* Miniatura: una "hoja de trabajo" para que se note que hay material descargable */}
+          <svg width="52" height="66" viewBox="0 0 52 66" style={{ flexShrink: 0, filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.35))" }} aria-hidden="true">
+            <rect x="2" y="2" width="48" height="62" rx="4" fill="#FBF6EA" stroke="#C8A951" strokeWidth="1.5" />
+            <path d="M38 2 L50 14 L38 14 Z" fill="#E5C97A" />
+            <rect x="9" y="12" width="22" height="4.5" rx="2" fill="#C8A951" />
+            <rect x="9" y="24" width="34" height="2.4" rx="1.2" fill="#C2AE74" />
+            <rect x="9" y="31" width="34" height="2.4" rx="1.2" fill="#C2AE74" />
+            <rect x="9" y="38" width="26" height="2.4" rx="1.2" fill="#C2AE74" />
+            <rect x="9" y="47" width="34" height="2.4" rx="1.2" fill="#C2AE74" />
+            <rect x="9" y="54" width="20" height="2.4" rx="1.2" fill="#C2AE74" />
+          </svg>
+          <div style={{ textAlign: "left", flex: 1 }}>
+            <p style={{ color: C.gold, fontFamily: "'Cinzel',serif", fontSize: 11.5, fontWeight: 700, letterSpacing: "0.05em", margin: "0 0 3px" }}>
+              {T("MATERIAL DE TRABAJO", "WORKSHEET", "FICHE DE TRAVAIL", "ARBEITSBLATT", "MATERIAL DE TRABALHO", "MATERIALE DI LAVORO")}
+            </p>
+            <p style={{ color: C.ivoryM, fontFamily: "'Crimson Text',serif", fontSize: 13.5, lineHeight: 1.35, margin: "0 0 8px" }}>
+              {T("Hoja descargable para profundizar y practicar lo aprendido en este tema.",
+                 "Downloadable sheet to go deeper and practice what you learned in this topic.",
+                 "Fiche téléchargeable pour approfondir et mettre en pratique ce thème.",
+                 "Herunterladbares Blatt, um das Gelernte dieses Themas zu vertiefen und zu üben.",
+                 "Folha para baixar e aprofundar e praticar o que você aprendeu neste tema.",
+                 "Scheda scaricabile per approfondire e mettere in pratica ciò che hai imparato in questo tema.")}
+            </p>
+            <span style={{ ...BTN("pri"), fontSize: 12.5, padding: "8px 16px", display: "inline-flex", color: "var(--c-btnPriText)" }}>
+              ⬇ {T("Descarga el material de trabajo", "Download the worksheet", "Télécharger la fiche de travail", "Arbeitsblatt herunterladen", "Baixe o material de trabalho", "Scarica il materiale di lavoro")}
+            </span>
+          </div>
+        </a>
       )}
     </div>
   );
