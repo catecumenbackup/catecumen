@@ -561,10 +561,10 @@ function WelcomeModal({onContinue,onLogin,onDemo}){
   })();},[]);
   // Video de presentación. Si el panel define `promo_video` con una URL de Bunny
   // válida, se usa ese iframe (streaming adaptativo). Si NO hay override, se cae
-  // al MP4 local /promo-src.mp4 — NO a una librería Bunny fija (la vieja 756611
+  // al MP4 local /promo-spot-2026.mp4 — NO a una librería Bunny fija (la vieja 756611
   // quedó muerta al migrar a 796078 y rompía el botón). Así el botón funciona
   // siempre y el panel puede apuntar a un video nuevo de Bunny sin desplegar.
-  const PROMO_LOCAL="/promo-src.mp4";
+  const PROMO_LOCAL="/promo-spot-2026.mp4";
   const promoBunny=(promoRaw||"").trim();
   const promoEsBunny=/^https?:\/\//i.test(promoBunny);
   const PROMO_EMBED=(()=>{
@@ -801,11 +801,11 @@ function WelcomeModal({onContinue,onLogin,onDemo}){
                 allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;fullscreen"
                 allowFullScreen/>
             ):(
-              // Portada (catecumen-video-thumb) para que no se vea solo negro
+              // Portada (promo-poster-2026 = la vela) para que no se vea solo negro
               // antes de darle play; sin autoplay (los navegadores lo bloquean
               // con sonido, así que mostramos la portada + botón de play nativo).
               <video src={PROMO_LOCAL} controls playsInline preload="metadata"
-                poster="/catecumen-video-thumb.jpg"
+                poster="/promo-poster-2026.jpg"
                 style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"contain",background:"#000"}}/>
             )}
             {/* X de cerrar, pegada a la esquina del video (clara y siempre visible) */}
