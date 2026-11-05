@@ -131,7 +131,13 @@ def http(method, url, headers, body=None):
 
 
 def fetch_bunny_videos(library, api_key):
-    vids, page = [], 1
+    # Deduplicamos por GUID: al paginar con orderBy=date, Bunny puede devolver el
+    # MISMO video en el borde de dos páginas (si comparten fecha o el orden cambia
+    # entre peticiones). Sin deduplicar, ese video repetido se veía como un
+    # "CONFLICTO" (dos videos para el mismo slot) que además cambiaba en cada
+    # corrida. Contamos los crudos para decidir cuándo parar, pero devolvemos uno
+    # por GUID.
+    por_guid, page, crudos, total = {}, 1, 0, None
     while True:
         url = (f"https://video.bunnycdn.com/library/{library}/videos"
                f"?page={page}&itemsPerPage=100&orderBy=date")
@@ -139,11 +145,16 @@ def fetch_bunny_videos(library, api_key):
         items = (data or {}).get("items", [])
         if not items:
             break
-        vids.extend(items)
-        if len(vids) >= (data or {}).get("totalItems", len(vids)):
+        for it in items:
+            g = it.get("guid")
+            if g and g not in por_guid:
+                por_guid[g] = it
+        crudos += len(items)
+        total = (data or {}).get("totalItems", total)
+        if total is not None and crudos >= total:
             break
         page += 1
-    return vids
+    return list(por_guid.values())
 
 
 def sb_headers(service_key, extra=None):
@@ -170,9 +181,13 @@ def construir_mapa(vids, host, idioma):
 
     asignaciones, conflictos = [], []
     for (slug, orden), lst in sorted(por_slot.items()):
-        if len(lst) > 1:
+        # Solo es conflicto si hay GUIDs DISTINTOS en el mismo slot (dos videos
+        # diferentes). Si el mismo GUID aparece repetido, es un duplicado inocuo:
+        # nos quedamos con uno y asignamos normalmente.
+        guids_distintos = {g for _, g, _ in lst}
+        if len(guids_distintos) > 1:
             conflictos.append(((slug, orden), [(t, g) for t, g, _ in lst]))
-            continue  # NO asignar un slot con dos videos distintos
+            continue  # NO asignar un slot con dos videos realmente distintos
         title, guid, length = lst[0]
         asignaciones.append({
             "slug": slug, "orden": orden, "guid": guid, "title": title, "length": length,
