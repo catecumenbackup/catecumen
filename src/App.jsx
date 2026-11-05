@@ -564,7 +564,7 @@ function WelcomeModal({onContinue,onLogin,onDemo}){
   // al MP4 local /promo-spot-2026.mp4 — NO a una librería Bunny fija (la vieja 756611
   // quedó muerta al migrar a 796078 y rompía el botón). Así el botón funciona
   // siempre y el panel puede apuntar a un video nuevo de Bunny sin desplegar.
-  const PROMO_LOCAL="/promo-spot-2026.mp4";
+  const PROMO_LOCAL="/promo-spot-2026-oficial.mp4";
   const promoBunny=(promoRaw||"").trim();
   const promoEsBunny=/^https?:\/\//i.test(promoBunny);
   const PROMO_EMBED=(()=>{
@@ -805,7 +805,7 @@ function WelcomeModal({onContinue,onLogin,onDemo}){
               // antes de darle play; sin autoplay (los navegadores lo bloquean
               // con sonido, así que mostramos la portada + botón de play nativo).
               <video src={PROMO_LOCAL} controls playsInline preload="metadata"
-                poster="/promo-poster-2026.jpg"
+                poster="/promo-poster-2026-oficial.jpg"
                 style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"contain",background:"#000"}}/>
             )}
             {/* X de cerrar, pegada a la esquina del video (clara y siempre visible) */}
