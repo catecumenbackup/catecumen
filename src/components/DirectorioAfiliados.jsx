@@ -3,6 +3,7 @@ import { supabase } from "../supabaseClient.js";
 import { COUNTRIES, MX_ESTADOS } from "../data/countries.js";
 import { C, BTN, MODAL, OVERLAY } from "../ui.js";
 import { T } from "../i18n.js";
+import InvitarParroquiaModal from "./InvitarParroquiaModal.jsx";
 
 // Buscador PÚBLICO de parroquias y diócesis afiliadas: por cercanía (geolocalización)
 // o por texto, con mapa Leaflet + OpenStreetMap (gratis, sin API key). Consume las
@@ -55,6 +56,15 @@ export default function DirectorioAfiliados({ onClose }) {
   // (p. ej. el "todas" inicial) sobrescriba a una más reciente (las "cercanas").
   const reqRef = useRef(0);
   const [desktop, setDesktop] = useState(typeof window !== "undefined" && window.innerWidth >= 900);
+  // Aviso "invitar a mi parroquia": se abre solo al entrar (una vez por sesión del
+  // navegador) y queda disponible desde el botón del encabezado.
+  const [invitarOpen, setInvitarOpen] = useState(() => {
+    try { return !sessionStorage.getItem("cat_dir_invitar_visto"); } catch { return true; }
+  });
+  const cerrarInvitar = () => {
+    try { sessionStorage.setItem("cat_dir_invitar_visto", "1"); } catch { /* no-op */ }
+    setInvitarOpen(false);
+  };
   const mapDiv = useRef(null), mapRef = useRef(null), layerRef = useRef(null);
 
   useEffect(() => {
@@ -328,7 +338,12 @@ export default function DirectorioAfiliados({ onClose }) {
               {T("Encuentra una parroquia o diócesis afiliada", "Find an affiliated parish or diocese", "Trouvez une paroisse ou un diocèse affilié", "Finde eine angeschlossene Pfarrei oder Diözese", "Encontre uma paróquia ou diocese afiliada", "Trova una parrocchia o diocesi affiliata")}
             </h2>
           </div>
-          <button onClick={onClose} style={{ ...BTN("sec"), fontSize: 12, padding: "6px 12px" }}>✕</button>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <button onClick={() => setInvitarOpen(true)} style={{ ...BTN("pri"), fontSize: 12, padding: "6px 12px", whiteSpace: "nowrap" }}>
+              ⛪ {T("Invitar a mi parroquia", "Invite my parish", "Inviter ma paroisse", "Meine Pfarrei einladen", "Convidar minha paróquia", "Invita la mia parrocchia")}
+            </button>
+            <button onClick={onClose} style={{ ...BTN("sec"), fontSize: 12, padding: "6px 12px" }}>✕</button>
+          </div>
         </div>
 
         {desktop ? (
@@ -355,6 +370,7 @@ export default function DirectorioAfiliados({ onClose }) {
           </>
         )}
       </div>
+      {invitarOpen && <InvitarParroquiaModal onClose={cerrarInvitar} />}
     </div>
   );
 }

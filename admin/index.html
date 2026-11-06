@@ -2744,7 +2744,7 @@
   }
 
   // ---------- AVISOS (notificaciones al admin) ----------
-  const AV_ICONO={registro:"🎓",preinscripcion:"📝",soporte:"🆘",consulta:"✝️"};
+  const AV_ICONO={registro:"🎓",preinscripcion:"📝",soporte:"🆘",consulta:"✝️",invitar_parroquia:"⛪"};
   async function refrescarBadgeAvisos(){
     try{
       const {data,error}=await sb.rpc("admin_notificaciones_no_leidas");
@@ -2762,7 +2762,7 @@
     if(!rows.length){ cont.innerHTML="<p style='color:var(--ivory-m)'>Sin avisos.</p>"; refrescarBadgeAvisos(); return; }
     cont.innerHTML=rows.map(r=>{
       const d=r.detalle||{};
-      const linea=[d.nombre,d.email,d.pais,d.perfil,d.asunto,d.contexto,d.mensaje,(d.monto!=null?(d.monto+" "+(d.moneda||"")):null)].filter(Boolean).map(esc).join(" · ");
+      const linea=[d.parroquia,d.ciudad,d.nombre,d.email,d.pais,d.perfil,d.asunto,d.contexto,d.mensaje,(d.monto!=null?(d.monto+" "+(d.moneda||"")):null)].filter(Boolean).map(esc).join(" · ");
       return `<div style="display:flex;gap:10px;align-items:flex-start;justify-content:space-between;padding:10px 12px;border:1px solid rgba(200,169,81,.2);border-radius:8px;margin-bottom:6px;${r.leida?'opacity:.6':''}">
         <div style="min-width:0">
           <div>${AV_ICONO[r.tipo]||"🔔"} <b style="color:var(--gold)">${esc(r.titulo)}</b> ${r.leida?'':'<span class="pill bad">nuevo</span>'}</div>
