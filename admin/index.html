@@ -264,7 +264,7 @@
       </div>
       <div class="scroll"><table><thead><tr>
         <th style="width:34px"><input type="checkbox" id="gsel-todos-head" title="Seleccionar todos"/></th>
-        <th>Nombre</th><th>N° ID</th><th>Correo</th><th>Teléfono</th><th>Tipo</th><th>Sacramento / Rol</th><th>País</th><th>Idioma</th><th class="num">Pago</th><th class="num">Insc.</th><th class="num">Const.</th><th>Inicio</th><th>Últ. sesión</th><th>Último video</th><th class="num">Avance</th><th class="num">Estado</th><th>Acciones</th>
+        <th>Nombre</th><th>N° ID</th><th>Correo</th><th>Teléfono</th><th>Tipo</th><th>Sacramento / Rol</th><th>País</th><th>Idioma</th><th class="num">Pago</th><th class="num">Insc.</th><th class="num">Const.</th><th>Inscripción</th><th>Inicio</th><th>Últ. sesión</th><th>Último video</th><th class="num">Avance</th><th class="num">Estado</th><th>Acciones</th>
       </tr></thead><tbody id="usuarios-body"></tbody></table></div>
       <p id="usuarios-msg" class="msg"></p>
     </div>
@@ -2098,6 +2098,7 @@
         <td class="num">${pago}</td>
         <td class="num">${u.num_inscripciones}</td>
         <td class="num">${u.num_constancias}</td>
+        <td style="font-size:12px;white-space:nowrap">${_fechaCorta2(u.fecha_registro)}</td>
         <td style="font-size:12px;white-space:nowrap">${_fechaCorta2(u.formacion_inicio)}</td>
         <td style="font-size:12px;white-space:nowrap">${_fechaCorta2(u.ultima_sesion)}</td>
         <td style="font-size:12px">${esc(u.ultimo_video||"—")}</td>
@@ -2112,7 +2113,7 @@
             : `<button class="btn ghost sm" onclick="window.__suspender('${u.id}',true)">Suspender</button>`}
           <button class="btn danger sm" onclick="window.__eliminarMenu('${u.id}')">Eliminar</button>
         </div></td>
-      </tr>`;}).join(""):`<tr><td colspan="17" class="empty">Sin usuarios.</td></tr>`;
+      </tr>`;}).join(""):`<tr><td colspan="18" class="empty">Sin usuarios.</td></tr>`;
     // Reenganchar los listeners de las casillas de fila tras re-render.
     document.querySelectorAll(".gsel-row").forEach(cb=>cb.addEventListener("change",e=>{
       const uid=e.target.dataset.uid;
