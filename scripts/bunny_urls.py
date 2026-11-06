@@ -56,7 +56,7 @@ FAM2SLUG = {"KER": "kerigma", "TC1": "tc1",
 # Familia del título → prefijo del archivo de subtítulos (.vtt).
 FAM2VTT = {"KER": "KER", "TC1": "TC1", "CONF": "CONF", "UNC": "UNC", "REC": "REC",
            "TE2": "CONF", "TC2U": "UNC", "TC2R": "REC",
-           "TE1B": "BAU"}
+           "TE1B": "TE1B"}
 BL = {"A": 1, "B": 2, "C": 3, "D": 4}
 # Orden importa: las familias de 4 letras (TC2U/TC2R) antes que las de 3 (TE2) y
 # que TC1, para que la alternancia del regex no corte mal.
