@@ -51,17 +51,19 @@ DEFAULT_HOST    = "vz-20178245-a58.b-cdn.net"
 # nombre del .vtt) usan CONF / UNC / REC. Ambos juegos de códigos se aceptan.
 FAM2SLUG = {"KER": "kerigma", "TC1": "tc1",
             "CONF": "confirmacion", "UNC": "tc2_uncion", "REC": "tc2_confesion",
-            "TE2": "confirmacion", "TC2U": "tc2_uncion", "TC2R": "tc2_confesion"}
+            "TE2": "confirmacion", "TC2U": "tc2_uncion", "TC2R": "tc2_confesion",
+            "TE1B": "bautismo"}
 # Familia del título → prefijo del archivo de subtítulos (.vtt).
 FAM2VTT = {"KER": "KER", "TC1": "TC1", "CONF": "CONF", "UNC": "UNC", "REC": "REC",
-           "TE2": "CONF", "TC2U": "UNC", "TC2R": "REC"}
+           "TE2": "CONF", "TC2U": "UNC", "TC2R": "REC",
+           "TE1B": "BAU"}
 BL = {"A": 1, "B": 2, "C": 3, "D": 4}
 # Orden importa: las familias de 4 letras (TC2U/TC2R) antes que las de 3 (TE2) y
 # que TC1, para que la alternancia del regex no corte mal.
 # Tolerante: acepta "TC2R-06 A", "TC2R-06-A" y también "TC2R-06 bloque A"
 # (algún video quedó titulado con "bloque A" en vez de solo "A").
 CODE_RE = re.compile(
-    r"\s*(TC2U|TC2R|TC1|TE2|KER|CONF|UNC|REC)[ \-]?(\d{1,2})[ \-]?(?:bloque\s*)?([ABCD])\b", re.I)
+    r"\s*(TC2U|TC2R|TE1B|TC1|TE2|KER|CONF|UNC|REC)[ \-]?(\d{1,2})[ \-]?(?:bloque\s*)?([ABCD])\b", re.I)
 GUID_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.I)
 
 # Subtítulos: los .vtt viven en public/subtitulos y se sirven desde el sitio.
