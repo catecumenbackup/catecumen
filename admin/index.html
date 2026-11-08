@@ -1873,7 +1873,10 @@
       const out=await res.json();
       if(!res.ok||out.error){ msg.className="msg err"; msg.textContent="Error: "+(out.error||res.status); btn.disabled=false; return; }
       msg.className="msg ok"; msg.textContent=out.reutilizada?"Enlace regenerado (la cuenta ya existía).":"Revisor creado.";
-      $("rev-usuario").textContent="Usuario de acceso (para iniciar sesión): "+out.email+"  ·  comparte este usuario Y el enlace.";
+      var esSint=/^rev\d+@revisor\.catecumen\.com$/i.test(out.email||"");
+      $("rev-usuario").innerHTML = (esSint && out.telefono)
+        ? ("Inicia sesión con el <b>teléfono</b> "+esc(out.telefono)+" (o el usuario <b>"+esc(out.email)+"</b>) y la contraseña que fije. Comparte esto <b>y</b> el enlace de abajo.")
+        : ("Usuario de acceso para iniciar sesión: <b>"+esc(out.email)+"</b>. Comparte el usuario <b>y</b> el enlace de abajo.");
       if(out.enlace){ $("rev-enlace").value=out.enlace; }
       else { $("rev-enlace").value=""; msg.textContent+=" — no se generó el enlace automáticamente; genera uno de recuperación de contraseña desde Supabase → Authentication."; }
       $("rev-enlace-box").style.display="block";

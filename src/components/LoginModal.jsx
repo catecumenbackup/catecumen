@@ -12,7 +12,17 @@ export default function LoginModal({ onBack, onSuccess, onResume }) {
   const [pass, setPass] = useState("");
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
-  const canLogin = email.includes("@") && pass.length >= 6;
+  // Identificador de acceso: correo normal, o —para REVISORES sin correo— su
+  // teléfono, que se traduce al usuario sintético rev<digitos>@revisor.catecumen.com.
+  const soloDigitos = (s) => (s || "").replace(/\D/g, "");
+  const idLogin = () => {
+    const e = email.trim();
+    if (e.includes("@")) return e.toLowerCase();
+    const d = soloDigitos(e);
+    if (d.length >= 7) return "rev" + d + "@revisor.catecumen.com";
+    return e;
+  };
+  const canLogin = (email.includes("@") || soloDigitos(email).length >= 7) && pass.length >= 6;
 
   // Reintenta el login ante fallos de RED transitorios (p. ej. red móvil
   // intermitente): hasta 3 intentos con pequeña espera. Los errores reales de
@@ -22,7 +32,7 @@ export default function LoginModal({ onBack, onSuccess, onResume }) {
     let ultimo;
     for (let i = 0; i < tries; i++) {
       try {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
+        const { data, error } = await supabase.auth.signInWithPassword({ email: idLogin(), password: pass });
         if (error) { if (esFalloRed(error.message) && i < tries - 1) { ultimo = error; await new Promise(r => setTimeout(r, 700 * (i + 1))); continue; } throw error; }
         return data;
       } catch (e) {
@@ -64,11 +74,11 @@ export default function LoginModal({ onBack, onSuccess, onResume }) {
             {T("Iniciar sesión", "Sign in", "Se connecter", "Anmelden", "Entrar", "Accedi")}
           </h2>
           <p style={{ color: C.ivoryM, fontFamily: "'Crimson Text',serif", fontSize: 14, marginTop: 6 }}>
-            {T("Ingresa con tu correo y contraseña registrados.", "Sign in with your registered email and password.", "Connectez-vous avec votre e-mail et votre mot de passe enregistrés.", "Melden Sie sich mit Ihrer registrierten E-Mail-Adresse und Ihrem Passwort an.", "Entre com seu e-mail e senha cadastrados.", "Accedi con la tua email e password registrate.")}
+            {T("Ingresa con tu correo (o tu teléfono, si eres revisor) y tu contraseña.", "Sign in with your email (or your phone, if you are a reviewer) and your password.", "Connectez-vous avec votre e-mail (ou votre téléphone, si vous êtes réviseur) et votre mot de passe.", "Melden Sie sich mit Ihrer E-Mail-Adresse (oder Ihrem Telefon, falls Sie Prüfer sind) und Ihrem Passwort an.", "Entre com seu e-mail (ou seu telefone, se for revisor) e sua senha.", "Accedi con la tua email (o il tuo telefono, se sei revisore) e la tua password.")}
           </p>
         </div>
-        <FRow label={T("Correo electrónico", "Email address", "Adresse e-mail", "E-Mail-Adresse", "E-mail", "Indirizzo email")}>
-          <Input type="email" value={email} onChange={setEmail} placeholder="usuario@correo.com" />
+        <FRow label={T("Correo o teléfono", "Email or phone", "E-mail ou téléphone", "E-Mail oder Telefon", "E-mail ou telefone", "Email o telefono")}>
+          <Input type="text" value={email} onChange={setEmail} placeholder={T("usuario@correo.com", "user@email.com", "utilisateur@email.com", "nutzer@email.com", "usuario@email.com", "utente@email.com")} />
         </FRow>
         <FRow label={T("Contraseña", "Password", "Mot de passe", "Passwort", "Senha", "Password")}>
           <PasswordInput value={pass} onChange={setPass}
