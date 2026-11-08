@@ -131,7 +131,7 @@ describe("calcularCuotaPais — cuotas PPP por país", () => {
     expect(q.b).toBe(130);
     expect(q.c).toBe(130);
     expect(q.p).toBe(130);
-    expect(q.pre).toBe(redondearCuota(130 * 0.60)); // presacramental/padrino
+    expect(q.pre).toBe(redondearCuota(130 * 0.30)); // presacramental/padrino (RATIO_PRE bajado 0.60→0.30)
     expect(q.cat).toBe(redondearCuota(130 * 0.77)); // catequista
     expect(q.cur).toBe("USD");
     expect(q.tier).toBe(1);
