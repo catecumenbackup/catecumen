@@ -1899,6 +1899,8 @@
       <td>${r.n_descargas||0}</td>
       <td>${r.n_comentarios||0}</td>
       <td style="white-space:nowrap"><button class="btn ghost sm" onclick="verRevisor('${r.usuario_id}',${JSON.stringify(esc(r.nombre||r.email||"")).replace(/"/g,'&quot;')})">Ver</button>
+        <button class="btn ghost sm" onclick="revEnlace('${esc(r.email||"")}')">Enlace</button>
+        <button class="btn ghost sm" onclick="revInvalidar('${esc(r.email||"")}')">Anular enlaces</button>
         ${r.suspendido
           ? `<button class="btn ghost sm" onclick="revAcceso('${r.usuario_id}',false)">Reactivar</button>`
           : `<button class="btn ghost sm" style="color:#F87171;border-color:#F87171" onclick="revAcceso('${r.usuario_id}',true)">Revocar</button>`}</td>
@@ -1935,6 +1937,38 @@
     const {error}=await sb.rpc("admin_revisor_acceso",{p_usuario_id:uid,p_revocar:revocar});
     if(error){ alert("Error: "+error.message); return; }
     cargarRevisores();
+  };
+  // Genera un enlace NUEVO para un revisor existente (al generarlo, Supabase
+  // invalida el anterior). exponer=false => solo anula los enlaces previos.
+  async function _revGenerar(email,exponer){
+    const {data:{session}}=await sb.auth.getSession();
+    const res=await fetch(EDGE_REVISOR,{method:"POST",
+      headers:{"Content-Type":"application/json","Authorization":`Bearer ${session.access_token}`,"apikey":SUPABASE_ANON},
+      body:JSON.stringify({email})});
+    const out=await res.json();
+    if(!res.ok||out.error) throw new Error(out.error||("HTTP "+res.status));
+    return out;
+  }
+  window.revEnlace=async function(email){
+    const msg=$("rev-msg"); msg.className="msg"; msg.textContent="Generando enlace…";
+    try{
+      const out=await _revGenerar(email,true);
+      if(out.enlace){
+        $("rev-usuario").innerHTML="Enlace nuevo para <b>"+esc(email)+"</b> (el anterior quedó anulado). Cópialo y envíaselo:";
+        $("rev-enlace").value=out.enlace; $("rev-enlace-box").style.display="block";
+        msg.className="msg ok"; msg.textContent="Enlace regenerado.";
+        $("rev-enlace-box").scrollIntoView({behavior:"smooth",block:"center"});
+      } else { msg.className="msg err"; msg.textContent="No se pudo generar el enlace."; }
+    }catch(e){ msg.className="msg err"; msg.textContent="Error: "+(e.message||e); }
+  };
+  window.revInvalidar=async function(email){
+    if(!confirm("¿Anular los enlaces de acceso ya entregados a este revisor?\n\nCualquier enlace que hayas compartido dejará de funcionar. Para darle acceso de nuevo, usa \"Enlace\" y comparte el nuevo. (Si ya fijó su contraseña, esto no cierra su sesión; para cortar el acceso usa \"Revocar\".)")) return;
+    const msg=$("rev-msg"); msg.className="msg"; msg.textContent="Anulando enlaces…";
+    try{
+      await _revGenerar(email,false);   // genera (y desecha) un token nuevo → invalida los anteriores
+      $("rev-enlace-box").style.display="none";
+      msg.className="msg ok"; msg.textContent="Los enlaces anteriores de "+email+" quedaron anulados.";
+    }catch(e){ msg.className="msg err"; msg.textContent="Error: "+(e.message||e); }
   };
 
   // ---------- TABS ----------
