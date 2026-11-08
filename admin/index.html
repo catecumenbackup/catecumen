@@ -1892,13 +1892,16 @@
     if(error){ tb.innerHTML='<tr><td colspan="7" style="color:#F87171">'+esc(error.message)+'</td></tr>'; return; }
     if(!data||!data.length){ tb.innerHTML='<tr><td colspan="7" style="color:var(--ivory-m)">Aún no hay revisores. Da de alta uno arriba.</td></tr>'; refreshRevBadge(); return; }
     tb.innerHTML=data.map(r=>`<tr>
-      <td>${esc(r.nombre||"—")}${r.n_comentarios_no_leidos>0?` <span class="pill bad">${r.n_comentarios_no_leidos}</span>`:""}</td>
+      <td>${esc(r.nombre||"—")}${r.n_comentarios_no_leidos>0?` <span class="pill bad">${r.n_comentarios_no_leidos}</span>`:""}${r.suspendido?` <span class="pill bad">Revocado</span>`:""}</td>
       <td>${esc(r.email||"")}</td>
       <td>${r.ultima_actividad?new Date(r.ultima_actividad).toLocaleString():"—"}</td>
       <td>${r.n_actividades||0}</td>
       <td>${r.n_descargas||0}</td>
       <td>${r.n_comentarios||0}</td>
-      <td><button class="btn ghost sm" onclick="verRevisor('${r.usuario_id}',${JSON.stringify(esc(r.nombre||r.email||"")).replace(/"/g,'&quot;')})">Ver</button></td>
+      <td style="white-space:nowrap"><button class="btn ghost sm" onclick="verRevisor('${r.usuario_id}',${JSON.stringify(esc(r.nombre||r.email||"")).replace(/"/g,'&quot;')})">Ver</button>
+        ${r.suspendido
+          ? `<button class="btn ghost sm" onclick="revAcceso('${r.usuario_id}',false)">Reactivar</button>`
+          : `<button class="btn ghost sm" style="color:#F87171;border-color:#F87171" onclick="revAcceso('${r.usuario_id}',true)">Revocar</button>`}</td>
     </tr>`).join("");
     refreshRevBadge();
   }
@@ -1927,6 +1930,12 @@
       </div>`;
   };
   window.revMarkRead=async function(id,uid,nombre){ await sb.rpc("admin_revisor_comentario_leido",{p_id:id}); verRevisor(uid,nombre); cargarRevisores(); };
+  window.revAcceso=async function(uid,revocar){
+    if(!confirm(revocar?"¿Revocar el acceso de este revisor? No podrá iniciar sesión ni ver el contenido.":"¿Reactivar el acceso de este revisor?")) return;
+    const {error}=await sb.rpc("admin_revisor_acceso",{p_usuario_id:uid,p_revocar:revocar});
+    if(error){ alert("Error: "+error.message); return; }
+    cargarRevisores();
+  };
 
   // ---------- TABS ----------
   document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{

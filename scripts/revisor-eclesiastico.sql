@@ -32,9 +32,31 @@ language sql stable security definer set search_path = public as $$
   select exists(
     select 1 from public.usuarios
      where id = coalesce(p_uid, auth.uid()) and tipo_usuario = 'revisor'
+       and coalesce(suspendido,false) = false and coalesce(eliminado,false) = false
   );
 $$;
 grant execute on function public.es_revisor(uuid) to authenticated;
+
+-- ── ADMIN: revocar / reactivar el acceso de un revisor ──────────────────────
+-- Revocar = suspendido=true (bloquea el login en handleLoginSuccess Y, por el
+-- filtro de arriba, es_revisor() deja de concederle el acceso ilimitado).
+create or replace function public.admin_revisor_acceso(p_usuario_id uuid, p_revocar boolean)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not es_admin() then raise exception 'no autorizado'; end if;
+  update usuarios
+     set suspendido = p_revocar,
+         suspendido_en = case when p_revocar then now() else null end,
+         suspendido_motivo = case when p_revocar then 'Acceso de revisor revocado por el administrador' else null end
+   where id = p_usuario_id and tipo_usuario='revisor';
+  begin
+    insert into admin_log (admin_id, admin_email, accion, entidad, entidad_id, detalle)
+      values (auth.uid(), (select email from auth.users where id=auth.uid()),
+              case when p_revocar then 'revisor.revocado' else 'revisor.reactivado' end,
+              'usuarios', p_usuario_id::text, jsonb_build_object('revocar', p_revocar));
+  exception when others then null; end;
+end $$;
+grant execute on function public.admin_revisor_acceso(uuid, boolean) to authenticated;
 
 -- ════════════════════════════════════════════════════════════════════════════
 --  BYPASS DE LÍMITES PARA REVISORES (reproduce el cuerpo vigente + rama revisor)
@@ -272,8 +294,9 @@ grant execute on function public.revisor_comentar(uuid, text, text) to authentic
 -- ════════════════════════════════════════════════════════════════════════════
 
 -- Lista de revisores con resumen de actividad.
-create or replace function public.admin_revisores_listar()
-returns table (usuario_id uuid, email text, nombre text, creado timestamptz,
+drop function if exists public.admin_revisores_listar();
+create function public.admin_revisores_listar()
+returns table (usuario_id uuid, email text, nombre text, creado timestamptz, suspendido boolean,
                ultima_actividad timestamptz, n_actividades bigint,
                n_comentarios bigint, n_comentarios_no_leidos bigint,
                n_descargas bigint)
@@ -283,7 +306,7 @@ begin
   return query
     select u.id, u.email,
            trim(coalesce(u.nombre,'')||' '||coalesce(u.apellido,'')) as nombre,
-           u.created_at as creado,
+           u.created_at as creado, coalesce(u.suspendido,false) as suspendido,
            (select max(a.creado) from revisor_actividad a where a.usuario_id = u.id) as ultima_actividad,
            (select count(*) from revisor_actividad a where a.usuario_id = u.id) as n_actividades,
            (select count(*) from revisor_comentarios c where c.usuario_id = u.id) as n_comentarios,
