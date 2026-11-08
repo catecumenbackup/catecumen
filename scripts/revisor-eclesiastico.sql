@@ -19,6 +19,12 @@
 --  NO añadir al final una llamada a una RPC protegida por es_admin() (revierte).
 -- ════════════════════════════════════════════════════════════════════════════
 
+-- ── Permitir tipo_usuario='revisor' en el CHECK de usuarios ─────────────────
+-- (el CHECK original solo admitía catecumeno/prebautismal/padrino/catequista).
+alter table public.usuarios drop constraint if exists usuarios_tipo_usuario_check;
+alter table public.usuarios add constraint usuarios_tipo_usuario_check
+  check (tipo_usuario = any (array['catecumeno','prebautismal','padrino','catequista','revisor']));
+
 -- ── Helper: ¿esta cuenta es revisor? ────────────────────────────────────────
 create or replace function public.es_revisor(p_uid uuid default auth.uid())
 returns boolean
@@ -277,7 +283,7 @@ begin
   return query
     select u.id, u.email,
            trim(coalesce(u.nombre,'')||' '||coalesce(u.apellido,'')) as nombre,
-           u.creado,
+           u.created_at as creado,
            (select max(a.creado) from revisor_actividad a where a.usuario_id = u.id) as ultima_actividad,
            (select count(*) from revisor_actividad a where a.usuario_id = u.id) as n_actividades,
            (select count(*) from revisor_comentarios c where c.usuario_id = u.id) as n_comentarios,
@@ -285,7 +291,7 @@ begin
            (select count(*) from descargas_log d where d.usuario_id = u.id) as n_descargas
       from usuarios u
      where u.tipo_usuario = 'revisor'
-     order by ultima_actividad desc nulls last, u.creado desc;
+     order by ultima_actividad desc nulls last, u.created_at desc;
 end $$;
 
 -- Línea de tiempo de actividad de un revisor (incluye descargas de descargas_log).
