@@ -13,6 +13,10 @@
 // `testMode` reduce todo a una sola sección (fase de pruebas).
 export function buildSeq(uType, sacs = [], testMode = false) {
   if (testMode) return ["tc1"];
+  // El REVISOR eclesiástico audita TODO el catálogo, en orden lógico de revisión.
+  if (uType === "revisor")
+    return ["kerigma", "tc1", "bautismo", "confirmacion", "primera_comunion",
+            "prebautismal", "catequista", "tc2_confesion", "tc2_uncion"];
   // El catequista solo cursa el Módulo I de Neuropedagogía Catequética.
   if (uType === "catequista") return ["catequista"];
 

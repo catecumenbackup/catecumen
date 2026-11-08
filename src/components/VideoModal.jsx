@@ -51,7 +51,7 @@ async function resolverFuente(url, videoId){
   return null; // Bunny sin firma válida o acceso bloqueado: no reproducir crudo
 }
 
-export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=null,demo=false,onProgress,onWatched,onClose}){
+export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=null,demo=false,esRevisor=false,onProgress,onWatched,onClose}){
   useEscClose(onClose);
   const [watching,setWatching]=useState(false);
   const [done,setDone]=useState(false);
@@ -134,6 +134,13 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
   // Tope de 3 reproducciones: registra UNA vista por apertura del modal al iniciar
   // la reproducción. Actualiza el estado de acceso con las vistas restantes.
   const vistaRef=useRef(false);
+  // Monitoreo del revisor eclesiástico: registra la apertura de cada video.
+  const revAbrioRef=useRef(false);
+  useEffect(()=>{
+    if(!esRevisor||!videoUuid||revAbrioRef.current) return;
+    revAbrioRef.current=true;
+    try{ supabase.rpc("registrar_actividad_revisor",{p_tipo:"video_abierto",p_video_id:videoUuid,p_detalle:{secId}}).then(()=>{},()=>{}); }catch{}
+  },[esRevisor,videoUuid,secId]);
   const registrarVista=()=>{
     if(vistaRef.current||!videoUuid) return;
     vistaRef.current=true;
@@ -442,7 +449,14 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
           <div style={{background:"rgba(70,120,190,0.10)",border:"1px solid rgba(70,120,190,0.35)",
             borderRadius:10,padding:"10px 13px",marginBottom:14,textAlign:"left"}}>
             <p style={{color:C.ivory,fontFamily:"'Crimson Text',serif",fontSize:12.5,lineHeight:1.5,margin:0}}>
-              ⏳ {acceso.restante_horas!=null
+              ⏳ {esRevisor
+                ? T("Acceso de revisión: sin límite de reproducciones ni caducidad; el contenido conserva toda su protección.",
+                    "Review access: no play limit and no expiry; the content keeps all its protection.",
+                    "Accès de révision : sans limite de lectures ni expiration ; le contenu conserve toute sa protection.",
+                    "Prüfzugang: ohne Wiedergabelimit und ohne Ablauf; der Inhalt behält seinen vollen Schutz.",
+                    "Acesso de revisão: sem limite de reproduções nem expiração; o conteúdo mantém toda a sua proteção.",
+                    "Accesso di revisione: senza limite di riproduzioni né scadenza; il contenuto mantiene tutta la sua protezione.")
+                : acceso.restante_horas!=null
                 ? T(`Este video permanece disponible como máximo 72 horas desde que lo abriste (te quedan ~${Math.max(0,Math.round(acceso.restante_horas))} h). Al aprobar la evaluación se cierra el acceso.`,
                     `This video stays available for at most 72 hours after you opened it (about ${Math.max(0,Math.round(acceso.restante_horas))} h left). Passing the evaluation closes access.`,
                     `Cette vidéo reste disponible au maximum 72 heures après son ouverture (il reste ~${Math.max(0,Math.round(acceso.restante_horas))} h). Réussir l'évaluation ferme l'accès.`,
@@ -456,7 +470,8 @@ export default function VideoModal({secId,vid,bridge,startAt=0,marca="",userId=n
                     "Este vídeo fica disponível no máximo 72 horas após abri-lo. Aprovar a avaliação encerra o acesso.",
                     "Questo video resta disponibile al massimo 72 ore dall'apertura. Superare la valutazione chiude l'accesso.")}
             </p>
-            {(()=>{ const vr=vistasInfo?vistasInfo.vistas_restantes:acceso.vistas_restantes;
+            {(()=>{ if(esRevisor) return null;
+              const vr=vistasInfo?vistasInfo.vistas_restantes:acceso.vistas_restantes;
               const vm=(vistasInfo?vistasInfo.vistas_max:acceso.vistas_max)||3;
               return typeof vr==="number"?(
               <p style={{color:C.gold,fontFamily:"'Crimson Text',serif",fontSize:12,lineHeight:1.5,margin:"6px 0 0"}}>

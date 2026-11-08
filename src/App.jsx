@@ -53,6 +53,7 @@ const IdiomaProximamenteModal = lazy(() => import("./components/IdiomaProximamen
 const ResumenTemaModal = lazy(() => import("./components/ResumenTemaModal.jsx"));
 const SectionCompleteModal = lazy(() => import("./components/SectionCompleteModal.jsx"));
 const VideoModal = lazy(() => import("./components/VideoModal.jsx"));
+const RevisorComentarioModal = lazy(() => import("./components/RevisorComentarioModal.jsx"));
 const EncuestaVideoModal = lazy(() => import("./components/EncuestaVideoModal.jsx"));
 const DemoSesion = lazy(() => import("./components/DemoSesion.jsx"));
 const EvalModal = lazy(() => import("./components/EvalModal.jsx"));
@@ -1194,6 +1195,8 @@ export default function App(){
   };
   const [insBySec,setInsBySec]=useState({}); // {secId: inscripcion_id} (Parte B)
   const [activeVideo,setActiveVideo]=useState(null); // {secId,vid}
+  const [activeRevisorComentario,setActiveRevisorComentario]=useState(null); // {secId,vid} — popup de comentario del revisor al terminar
+  const esRevisor=userType==="revisor";
   // ── Sesión de DEMOSTRACIÓN (sin cuenta) ─────────────────────────────────────
   const [demoSesion,setDemoSesion]=useState(null); // {secId,vid,bridge} activa | null
   const [demoEstado,setDemoEstado]=useState(null); // null | "cargando" | "nodisp"
@@ -1871,6 +1874,10 @@ export default function App(){
         const {data:f}=await supabase.rpc("mi_formacion");
         setFormacion(f||null);
       }catch(fErr){ console.warn("formacion:",fErr); }
+      // Monitoreo del revisor eclesiástico: registra el inicio de sesión.
+      if(uType==="revisor"){
+        try{ supabase.rpc("registrar_actividad_revisor",{p_tipo:"login",p_detalle:{restore:!!isRestore}}).then(()=>{},()=>{}); }catch(e){ console.error("actividad login revisor:",e); }
+      }
       setPhase("course");
     }catch(e){
       console.error("handleLoginSuccess:",e);
@@ -2052,8 +2059,18 @@ export default function App(){
 
   const handleVideoWatched=()=>{
     const {secId,vid}=activeVideo;
-    markVideoWatched(secId,vid);
     setActiveVideo(null);
+    // REVISOR: no hay encuesta ni evaluación ni avance de secuencia. Al terminar,
+    // se registra el fin y se abre el popup de comentario para el administrador.
+    if(esRevisor){
+      try{
+        const vuuid=bridge?.frontToUuid?.[secId]?.[vid.id]||null;
+        supabase.rpc("registrar_actividad_revisor",{p_tipo:"video_fin",p_video_id:vuuid,p_detalle:{secId}}).then(()=>{},()=>{});
+      }catch(e){ console.error("actividad revisor:",e); }
+      setActiveRevisorComentario({secId,vid});
+      return;
+    }
+    markVideoWatched(secId,vid);
     // Encuesta de calidad al terminar CADA bloque (una por video → 4 por tema),
     // SOLO si no se respondió ya para este video (evita re-preguntar al reintentar).
     if(encuestasHechas.has(`${secId}:${vid.id}`)){
@@ -2612,17 +2629,22 @@ export default function App(){
       )}
       {/* OVERLAY MODALS — flujo de video/evaluación (chunks diferidos; solo uno
           se muestra a la vez, por eso comparten un único Suspense). */}
-      {(activeVideo||activeEncuesta||activeEval||(showResult&&lastResult)||(showSecComplete&&completedSecId))&&(
+      {(activeVideo||activeRevisorComentario||activeEncuesta||activeEval||(showResult&&lastResult)||(showSecComplete&&completedSecId))&&(
         <Suspense fallback={<div style={OVERLAY}><div style={{color:C.gold,fontFamily:"'Cinzel',serif"}}>{T("Cargando…","Loading…","Chargement…","Wird geladen…","Carregando…","Caricamento…")}</div></div>}>
           {activeVideo&&(
             <VideoModal secId={activeVideo.secId} vid={activeVideo.vid} bridge={bridge}
               startAt={progress[activeVideo.secId]?.[activeVideo.vid.id]?.pos||0}
               marca={`${[formData.nombre,formData.apellido].filter(Boolean).join(" ")}${formData.registrationId?" · "+formData.registrationId:(formData.email?" · "+formData.email:"")}`.trim()}
               userId={uid}
+              esRevisor={esRevisor}
               onProgress={(s)=>{ const sec=activeVideo.secId, vi=activeVideo.vid.id;
                 persistProgreso(sec,vi,{posicion_seg:s});
                 setProgress(p=>{ const sp=p[sec]||{}; return {...p,[sec]:{...sp,[vi]:{...sp[vi],pos:s}}}; }); }}
               onWatched={handleVideoWatched} onClose={()=>setActiveVideo(null)}/>
+          )}
+          {activeRevisorComentario&&(
+            <RevisorComentarioModal secId={activeRevisorComentario.secId} vid={activeRevisorComentario.vid}
+              bridge={bridge} onClose={()=>setActiveRevisorComentario(null)}/>
           )}
           {activeEncuesta&&(
             <EncuestaVideoModal secId={activeEncuesta.secId} vid={activeEncuesta.vid}

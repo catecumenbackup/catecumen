@@ -164,6 +164,7 @@
       <button class="tab" data-tab="etiquetas">🏷️ Etiquetas</button>
       <button class="tab" data-tab="usuarios">👤 Usuarios</button>
       <button class="tab" data-tab="crear">➕ Crear usuario</button>
+      <button class="tab" data-tab="revisores">👁️ Revisores <span id="rev-badge" class="pill bad" style="display:none"></span></button>
       <button class="tab" data-tab="mensajes">✉️ Mensajes <span id="msg-badge" class="pill bad" style="display:none"></span></button>
       <button class="tab" data-tab="correos">📧 Correos</button>
       <button class="tab" data-tab="sesiones">📅 Sesiones</button>
@@ -848,6 +849,37 @@
     </div>
 
     <!-- TAB AUDITORÍA -->
+    <!-- TAB REVISORES -->
+    <div id="tab-revisores" class="tabpane hidden">
+      <h2>👁️ Revisores eclesiásticos</h2>
+      <p style="color:var(--ivory-m);font-size:13px;margin:0 0 14px">
+        Da de alta a un sacerdote como <b>revisor</b>: ve todo el catálogo <b>sin límite</b> de reproducciones ni caducidad, conservando la protección anti-piratería (token de Bunny, marca de agua y descarga registrada). Crea la cuenta, copia el <b>enlace</b> y envíaselo; él solo fija su contraseña. Abajo ves su actividad y los comentarios que te envía.
+      </p>
+      <div style="background:rgba(200,169,81,.06);border:1px solid rgba(200,169,81,.25);border-radius:12px;padding:14px;margin-bottom:16px">
+        <h3 style="margin:0 0 10px;color:var(--gold);font-size:15px">Alta de revisor</h3>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+          <label>Correo (opcional) <input id="rev-email" type="email" placeholder="padre@ejemplo.com" style="width:210px;display:block"/></label>
+          <label>Teléfono <input id="rev-tel" type="tel" placeholder="+52 442 123 4567" style="width:170px;display:block"/></label>
+          <label>Nombre <input id="rev-nombre" type="text" placeholder="Pbro. Nombre" style="width:170px;display:block"/></label>
+          <label>Apellido <input id="rev-apellido" type="text" placeholder="" style="width:140px;display:block"/></label>
+          <button id="rev-btn" class="btn" onclick="crearRevisor()">Crear y generar enlace</button>
+        </div>
+        <div id="rev-msg" class="msg" style="margin-top:10px"></div>
+        <div id="rev-enlace-box" style="display:none;margin-top:10px">
+          <p id="rev-usuario" style="color:var(--gold);font-size:12.5px;margin:0 0 8px"></p>
+          <p style="color:var(--ivory-m);font-size:12.5px;margin:0 0 6px">Enlace para el sacerdote (abre y fija su contraseña). Cópialo y envíaselo (p. ej. por WhatsApp):</p>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input id="rev-enlace" type="text" readonly style="flex:1;min-width:280px"/>
+            <button class="btn ghost sm" onclick="revCopiar()">Copiar</button>
+          </div>
+        </div>
+      </div>
+      <div style="margin-bottom:10px"><button class="btn ghost" onclick="cargarRevisores()">↻ Recargar</button></div>
+      <div class="scroll"><table id="rev-tabla"><thead><tr>
+        <th>Revisor</th><th>Correo</th><th>Última actividad</th><th>Activid.</th><th>Descargas</th><th>Coment.</th><th></th>
+      </tr></thead><tbody id="rev-tbody"></tbody></table></div>
+      <div id="rev-detalle" style="display:none;margin-top:18px"></div>
+    </div>
     <div id="tab-auditoria" class="tabpane hidden">
       <h2>📜 Registro de acciones</h2>
       <div class="scroll"><table><thead><tr>
@@ -1047,6 +1079,7 @@
     iniciarVigilanciaInactividad();
     cargarEstadisticas(); cargarVideos(); cargarUsuarios(); refrescarBadgeMensajes(); cargarGrupos(); cargarAtencion(); refrescarBadgeAccesos();
     refrescarBadgeAvisos(); setInterval(refrescarBadgeAvisos, 60000); // avisos: badge cada 60s
+    refreshRevBadge(); setInterval(refreshRevBadge, 60000); // revisores: comentarios sin leer
   }
   async function salir(){ await sb.auth.signOut(); location.reload(); }
 
@@ -1824,6 +1857,74 @@
     }catch(e){ $("qr-panel").innerHTML="<p style='color:#f88'>No se pudo generar el QR.</p>"; }
   };
 
+  // ---------- REVISORES ECLESIÁSTICOS ----------
+  const EDGE_REVISOR=SUPABASE_URL+"/functions/v1/crear-revisor";
+  window.crearRevisor=async function(){
+    const msg=$("rev-msg"); msg.className="msg"; msg.textContent="";
+    const email=$("rev-email").value.trim();
+    const telefono=$("rev-tel").value.trim();
+    if(!email && telefono.replace(/\D/g,"").length<7){ msg.className="msg err"; msg.textContent="Indica un correo o un teléfono (mínimo 7 dígitos)."; return; }
+    const btn=$("rev-btn"); btn.disabled=true; msg.textContent="Creando…";
+    try{
+      const {data:{session}}=await sb.auth.getSession();
+      const res=await fetch(EDGE_REVISOR,{method:"POST",
+        headers:{"Content-Type":"application/json","Authorization":`Bearer ${session.access_token}`,"apikey":SUPABASE_ANON},
+        body:JSON.stringify({email,telefono,nombre:$("rev-nombre").value.trim(),apellido:$("rev-apellido").value.trim()})});
+      const out=await res.json();
+      if(!res.ok||out.error){ msg.className="msg err"; msg.textContent="Error: "+(out.error||res.status); btn.disabled=false; return; }
+      msg.className="msg ok"; msg.textContent="Revisor creado.";
+      $("rev-usuario").textContent="Usuario de acceso (para iniciar sesión): "+out.email+"  ·  comparte este usuario Y el enlace.";
+      if(out.enlace){ $("rev-enlace").value=out.enlace; }
+      else { $("rev-enlace").value=""; msg.textContent+=" — no se generó el enlace automáticamente; genera uno de recuperación de contraseña desde Supabase → Authentication."; }
+      $("rev-enlace-box").style.display="block";
+      $("rev-email").value=$("rev-tel").value=$("rev-nombre").value=$("rev-apellido").value="";
+      btn.disabled=false; cargarRevisores();
+    }catch(e){ msg.className="msg err"; msg.textContent="Error: "+(e.message||e); btn.disabled=false; }
+  };
+  window.revCopiar=function(){ const i=$("rev-enlace"); i.select(); try{document.execCommand("copy");}catch(e){} try{navigator.clipboard.writeText(i.value);}catch(e){} };
+  async function refreshRevBadge(){ try{ const {data}=await sb.rpc("admin_revisor_comentarios_no_leidos"); const b=$("rev-badge"); if(!b)return; if(data>0){ b.textContent=data; b.style.display="inline-block"; } else b.style.display="none"; }catch(e){} }
+  async function cargarRevisores(){
+    const tb=$("rev-tbody"); tb.innerHTML='<tr><td colspan="7" style="color:var(--ivory-m)">Cargando…</td></tr>';
+    const {data,error}=await sb.rpc("admin_revisores_listar");
+    if(error){ tb.innerHTML='<tr><td colspan="7" style="color:#F87171">'+esc(error.message)+'</td></tr>'; return; }
+    if(!data||!data.length){ tb.innerHTML='<tr><td colspan="7" style="color:var(--ivory-m)">Aún no hay revisores. Da de alta uno arriba.</td></tr>'; refreshRevBadge(); return; }
+    tb.innerHTML=data.map(r=>`<tr>
+      <td>${esc(r.nombre||"—")}${r.n_comentarios_no_leidos>0?` <span class="pill bad">${r.n_comentarios_no_leidos}</span>`:""}</td>
+      <td>${esc(r.email||"")}</td>
+      <td>${r.ultima_actividad?new Date(r.ultima_actividad).toLocaleString():"—"}</td>
+      <td>${r.n_actividades||0}</td>
+      <td>${r.n_descargas||0}</td>
+      <td>${r.n_comentarios||0}</td>
+      <td><button class="btn ghost sm" onclick="verRevisor('${r.usuario_id}',${JSON.stringify(esc(r.nombre||r.email||"")).replace(/"/g,'&quot;')})">Ver</button></td>
+    </tr>`).join("");
+    refreshRevBadge();
+  }
+  const REV_TIPO={login:"Inició sesión",video_abierto:"Abrió un video",video_fin:"Terminó un video",comentario:"Envió comentario",intento:"Intento de descarga",exito:"Descargó",reproduccion_offline:"Reprodujo sin conexión"};
+  window.verRevisor=async function(uid,nombre){
+    const box=$("rev-detalle"); box.style.display="block"; box.innerHTML='<p style="color:var(--ivory-m)">Cargando…</p>';
+    const [act,com]=await Promise.all([
+      sb.rpc("admin_revisor_actividad",{p_usuario_id:uid}),
+      sb.rpc("admin_revisor_comentarios",{p_usuario_id:uid})
+    ]);
+    const A=act.data||[], Cm=com.data||[];
+    const nombreJs=JSON.stringify(nombre||"");
+    box.innerHTML=`<h3 style="color:var(--gold);margin:0 0 10px">Revisor: ${esc(nombre||"")}</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+        <div><h4 style="margin:0 0 6px">Comentarios (${Cm.length})</h4>${
+          Cm.length?Cm.map(c=>`<div style="background:rgba(255,255,255,.04);border:1px solid rgba(200,169,81,.2);border-radius:8px;padding:8px 10px;margin-bottom:8px">
+            <div style="font-size:11px;color:var(--ivory-m)">${new Date(c.creado).toLocaleString()} · ${esc(c.contexto||(c.sacramento?c.sacramento+" #"+(c.orden||""):""))} ${c.leido?"":'<span class="pill bad">nuevo</span>'}</div>
+            <div style="font-size:13px;color:var(--ivory);white-space:pre-wrap;margin-top:4px">${esc(c.comentario)}</div>
+            ${c.leido?"":`<button class="btn ghost sm" style="margin-top:6px" onclick="revMarkRead(${c.id},'${uid}',${nombreJs.replace(/"/g,'&quot;')})">Marcar leído</button>`}
+          </div>`).join(""):'<p style="color:var(--ivory-m)">Sin comentarios aún.</p>'
+        }</div>
+        <div><h4 style="margin:0 0 6px">Actividad reciente (${A.length})</h4><div class="scroll" style="max-height:380px"><table><tbody>${
+          A.length?A.map(a=>`<tr><td style="font-size:11px;color:var(--ivory-m);white-space:nowrap">${new Date(a.creado).toLocaleString()}</td>
+            <td style="font-size:12px">${esc(REV_TIPO[a.tipo]||a.tipo)}${a.sacramento?` · ${esc(a.sacramento)} #${a.orden||""}`:""}</td></tr>`).join(""):'<tr><td style="color:var(--ivory-m)">Sin actividad.</td></tr>'
+        }</tbody></table></div></div>
+      </div>`;
+  };
+  window.revMarkRead=async function(id,uid,nombre){ await sb.rpc("admin_revisor_comentario_leido",{p_id:id}); verRevisor(uid,nombre); cargarRevisores(); };
+
   // ---------- TABS ----------
   document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{
     document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
@@ -1852,6 +1953,7 @@
     if(t.dataset.tab==="clics") cargarClics();
     if(t.dataset.tab==="correos") cargarCorreos();
     if(t.dataset.tab==="crear") cuToggle();
+    if(t.dataset.tab==="revisores") cargarRevisores();
     if(t.dataset.tab==="accesos"){ cargarSolicitudes(); cargarCupoCfg(); cargarCupos(); cargarDescargas(); cargarProrrogas(); }
   }));
 
