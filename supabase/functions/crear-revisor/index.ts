@@ -82,6 +82,8 @@ serve(async (req: Request) => {
     const apellido = String(body.apellido || "eclesiástico").trim();
 
     // 4) Crear la cuenta de auth (contraseña aleatoria; el sacerdote la cambia por enlace)
+    let uid: string;
+    let reutilizada = false;
     const { data: created, error: createErr } = await admin.auth.admin.createUser({
       email, password: genPassword(), email_confirm: true,
       user_metadata: { rol: "revisor" },
@@ -89,29 +91,40 @@ serve(async (req: Request) => {
     if (createErr || !created?.user) {
       const msg = createErr?.message || "no se pudo crear la cuenta";
       const dup = /already|registered|exists/i.test(msg);
-      return json({ error: dup ? "ya existe una cuenta con ese correo" : msg }, 400);
+      if (!dup) return json({ error: msg }, 400);
+      // Ya existe: si es un REVISOR, reutilizamos la cuenta y regeneramos el enlace
+      // (permite reenviar un enlace institucional nuevo sin duplicar).
+      const { data: prof } = await admin.from("usuarios")
+        .select("id, tipo_usuario").eq("email", email).maybeSingle();
+      if (!prof || prof.tipo_usuario !== "revisor")
+        return json({ error: "ya existe una cuenta con ese correo/usuario y no es un revisor" }, 400);
+      uid = prof.id as string;
+      reutilizada = true;
+    } else {
+      uid = created.user.id;
     }
-    const uid = created.user.id;
 
-    // 5) Insertar el perfil de revisor (mínimo; sin datos de perfil ni sacramentos)
-    const registroId = "REV-" + Date.now().toString(36).toUpperCase() + "-" +
-      Math.random().toString(36).slice(2, 7).toUpperCase();
-    const fila: Record<string, unknown> = {
-      id: uid,
-      tipo_usuario: "revisor",
-      nombre, apellido, email,
-      telefono: telefono || null,
-      sacramentos_elegidos: null,
-      registro_id: registroId,
-      estado_inscripcion: "activo",
-      cortesia: true,
-      formacion_gratuita: true,
-      pago_realizado: false,
-    };
-    const { error: insErr } = await admin.from("usuarios").insert(fila);
-    if (insErr) {
-      await admin.auth.admin.deleteUser(uid).catch(() => {});
-      return json({ error: "no se pudo crear el perfil: " + insErr.message }, 500);
+    // 5) Insertar el perfil de revisor (solo si es cuenta nueva)
+    if (!reutilizada) {
+      const registroId = "REV-" + Date.now().toString(36).toUpperCase() + "-" +
+        Math.random().toString(36).slice(2, 7).toUpperCase();
+      const fila: Record<string, unknown> = {
+        id: uid,
+        tipo_usuario: "revisor",
+        nombre, apellido, email,
+        telefono: telefono || null,
+        sacramentos_elegidos: null,
+        registro_id: registroId,
+        estado_inscripcion: "activo",
+        cortesia: true,
+        formacion_gratuita: true,
+        pago_realizado: false,
+      };
+      const { error: insErr } = await admin.from("usuarios").insert(fila);
+      if (insErr) {
+        await admin.auth.admin.deleteUser(uid).catch(() => {});
+        return json({ error: "no se pudo crear el perfil: " + insErr.message }, 500);
+      }
     }
 
     // 6) Generar el enlace para que el sacerdote fije su contraseña (no envía correo)
@@ -133,13 +146,13 @@ serve(async (req: Request) => {
     try {
       await admin.from("admin_log").insert({
         admin_id: callerId, admin_email: callerEmail,
-        accion: "revisor.creado",
+        accion: reutilizada ? "revisor.enlace_regenerado" : "revisor.creado",
         entidad: "usuarios", entidad_id: uid,
         detalle: { email, nombre, apellido },
       });
     } catch (_) { /* la auditoría no debe tumbar la creación */ }
 
-    return json({ ok: true, user_id: uid, email, telefono: telefono || null,
+    return json({ ok: true, user_id: uid, email, telefono: telefono || null, reutilizada,
       enlace: enlaceBranded || enlace, enlace_directo: enlace });
   } catch (e) {
     return json({ error: String((e as Error)?.message || e) }, 500);

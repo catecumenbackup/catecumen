@@ -1872,7 +1872,7 @@
         body:JSON.stringify({email,telefono,nombre:$("rev-nombre").value.trim(),apellido:$("rev-apellido").value.trim()})});
       const out=await res.json();
       if(!res.ok||out.error){ msg.className="msg err"; msg.textContent="Error: "+(out.error||res.status); btn.disabled=false; return; }
-      msg.className="msg ok"; msg.textContent="Revisor creado.";
+      msg.className="msg ok"; msg.textContent=out.reutilizada?"Enlace regenerado (la cuenta ya existía).":"Revisor creado.";
       $("rev-usuario").textContent="Usuario de acceso (para iniciar sesión): "+out.email+"  ·  comparte este usuario Y el enlace.";
       if(out.enlace){ $("rev-enlace").value=out.enlace; }
       else { $("rev-enlace").value=""; msg.textContent+=" — no se generó el enlace automáticamente; genera uno de recuperación de contraseña desde Supabase → Authentication."; }
