@@ -61,6 +61,7 @@ export default defineConfig({
         presentacion: resolve(__dirname, "presentacion/index.html"),
         apoyar: resolve(__dirname, "apoyar/index.html"),
         qr: resolve(__dirname, "qr/index.html"),
+        acceso: resolve(__dirname, "acceso/index.html"),
       },
     },
   },

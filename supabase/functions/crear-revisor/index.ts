@@ -34,7 +34,8 @@ const CORS = {
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const ANON_KEY     = Deno.env.get("SUPABASE_ANON_KEY")!;
-const REDIRECT_URL = Deno.env.get("REVISOR_REDIRECT_URL") || "https://catecumen.com/recuperar/";
+const REDIRECT_URL = Deno.env.get("REVISOR_REDIRECT_URL") || "https://www.catecumen.com/recuperar";
+const SITE_URL     = Deno.env.get("REVISOR_SITE_URL") || "https://www.catecumen.com";
 
 const admin = createClient(SUPABASE_URL, SERVICE_ROLE);
 
@@ -123,6 +124,11 @@ serve(async (req: Request) => {
       if (!linkErr) enlace = link?.properties?.action_link || null;
     } catch (_) { /* si falla, el admin puede regenerar desde el panel */ }
 
+    // Enlace INSTITUCIONAL: envuelve el enlace de Supabase en catecumen.com/acceso/
+    // (en el hash, para no mandar el token al servidor). La página /acceso redirige
+    // al endpoint de verificación de Supabase. Así el sacerdote ve un enlace de la marca.
+    const enlaceBranded = enlace ? (SITE_URL + "/acceso/#" + encodeURIComponent(enlace)) : null;
+
     // 7) Auditoría
     try {
       await admin.from("admin_log").insert({
@@ -133,7 +139,8 @@ serve(async (req: Request) => {
       });
     } catch (_) { /* la auditoría no debe tumbar la creación */ }
 
-    return json({ ok: true, user_id: uid, email, telefono: telefono || null, enlace });
+    return json({ ok: true, user_id: uid, email, telefono: telefono || null,
+      enlace: enlaceBranded || enlace, enlace_directo: enlace });
   } catch (e) {
     return json({ error: String((e as Error)?.message || e) }, 500);
   }
