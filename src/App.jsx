@@ -1709,6 +1709,20 @@ export default function App(){
     }catch(e){ console.error("loadBridge:",e); return null; }
   };
   useEffect(()=>{ loadBridge(); },[]);
+  // Geo de acceso (país/ciudad) para la estadística del admin. Anónimo: NO guarda
+  // la IP ni liga al usuario. Una vez por sesión y SOLO si aceptó cookies de analítica.
+  useEffect(()=>{
+    try{
+      if(localStorage.getItem("catecumen_cookies")!=="aceptadas") return;
+      if(sessionStorage.getItem("cat_geo_logged")) return;
+      sessionStorage.setItem("cat_geo_logged","1");
+      fetch("https://ipwho.is/").then(r=>r.json()).then(g=>{
+        if(g&&g.success&&g.country){
+          supabase.rpc("registrar_acceso_geo",{p_pais:g.country,p_pais_codigo:g.country_code||"",p_ciudad:g.city||""}).then(()=>{},()=>{});
+        }
+      }).catch(()=>{});
+    }catch(e){}
+  },[]);
   // Resúmenes por tema cargados desde el panel (BD). Rellenan RESUMENES_DB, que
   // prevalece sobre los de course.js. Se usan al abrir un resumen (tras el arranque).
   useEffect(()=>{ (async()=>{ try{ const {data}=await supabase.rpc("obtener_resumenes");

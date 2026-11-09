@@ -191,6 +191,16 @@
         <div class="panelbox"><h2 style="margin-top:0">📊 Distribución de calificaciones</h2><div class="dist" id="dist"></div></div>
         <div class="panelbox"><h2 style="margin-top:0">📈 Tendencia semanal <span id="trend-note" style="font-size:11px;color:var(--ivory-m);font-family:'Crimson Text',serif"></span></h2><div class="trend" id="trend"></div></div>
       </div>
+      <h2>🌎 Accesos por ubicación <span style="font-size:11px;color:var(--ivory-m);font-family:'Crimson Text',serif">(anónimo; solo de quienes aceptan cookies, sin guardar IP)</span></h2>
+      <div class="controls">
+        <label>Periodo: <select id="geo-dias" onchange="cargarAccesosGeo()" style="width:auto;display:inline-block">
+          <option value="7">7 días</option><option value="30">30 días</option><option value="90" selected>90 días</option><option value="365">1 año</option></select></label>
+        <span id="geo-total" style="color:var(--ivory-m);font-size:13px"></span>
+      </div>
+      <div class="two">
+        <div class="panelbox"><h2 style="margin-top:0">Países</h2><div class="scroll" style="max-height:320px"><table><thead><tr><th>País</th><th class="num">Accesos</th></tr></thead><tbody id="geo-paises"></tbody></table></div></div>
+        <div class="panelbox"><h2 style="margin-top:0">Ciudades</h2><div class="scroll" style="max-height:320px"><table><thead><tr><th>Ciudad</th><th>País</th><th class="num">Accesos</th></tr></thead><tbody id="geo-ciudades"></tbody></table></div></div>
+      </div>
       <h2>⚠️ Videos que necesitan atención</h2>
       <div id="atencion" class="panelbox"></div>
       <h2>Resultados por video</h2>
@@ -2050,7 +2060,18 @@
       if(error) throw error;
       DATA=data; initFiltrosEst(); renderEst();
     }catch(e){ console.error("estadisticas:",e); }
+    cargarAccesosGeo();
   }
+  async function cargarAccesosGeo(){
+    const dias=parseInt(($("geo-dias")||{}).value||"90",10);
+    const {data,error}=await sb.rpc("admin_estadisticas_accesos",{p_dias:dias});
+    if(error){ if($("geo-paises")) $("geo-paises").innerHTML='<tr><td colspan="2" style="color:#F87171">'+esc(error.message)+'</td></tr>'; return; }
+    const d=data||{}; if($("geo-total")) $("geo-total").textContent=(d.total||0)+" accesos registrados";
+    const paises=d.paises||[], ciudades=d.ciudades||[];
+    if($("geo-paises")) $("geo-paises").innerHTML=paises.length?paises.map(p=>`<tr><td>${esc(p.pais||"—")}</td><td class="num">${p.n}</td></tr>`).join(""):'<tr><td colspan="2" style="color:var(--ivory-m)">Aún no hay datos. (Se irá poblando conforme entren usuarios que acepten cookies.)</td></tr>';
+    if($("geo-ciudades")) $("geo-ciudades").innerHTML=ciudades.length?ciudades.map(c=>`<tr><td>${esc(c.ciudad||"—")}</td><td>${esc(c.pais||"")}</td><td class="num">${c.n}</td></tr>`).join(""):'<tr><td colspan="3" style="color:var(--ivory-m)">Aún no hay datos.</td></tr>';
+  }
+  window.cargarAccesosGeo=cargarAccesosGeo;
   function initFiltrosEst(){
     const sacs=[...new Set((DATA.por_video||[]).map(r=>r.sacramento).filter(Boolean))].sort();
     $("f-sacramento").innerHTML='<option value="">Todos</option>'+sacs.map(s=>`<option>${esc(s)}</option>`).join("");
