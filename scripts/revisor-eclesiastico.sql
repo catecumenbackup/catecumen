@@ -229,6 +229,11 @@ create table if not exists public.revisor_actividad (
 );
 alter table public.revisor_actividad enable row level security;  -- sin políticas: solo vía RPC SECURITY DEFINER
 create index if not exists idx_revisor_actividad_user on public.revisor_actividad (usuario_id, creado desc);
+-- FK en cascada: al ELIMINAR la cuenta (admin-eliminar-usuario borra de auth.users),
+-- su actividad y comentarios se limpian solos (eliminación total del revisor).
+alter table public.revisor_actividad drop constraint if exists revisor_actividad_usuario_fk;
+alter table public.revisor_actividad add constraint revisor_actividad_usuario_fk
+  foreign key (usuario_id) references auth.users(id) on delete cascade;
 
 -- El propio revisor registra su actividad (solo si realmente es revisor).
 create or replace function public.registrar_actividad_revisor(
@@ -257,6 +262,9 @@ create table if not exists public.revisor_comentarios (
 );
 alter table public.revisor_comentarios enable row level security;  -- sin políticas: solo vía RPC
 create index if not exists idx_revisor_coment_creado on public.revisor_comentarios (creado desc);
+alter table public.revisor_comentarios drop constraint if exists revisor_comentarios_usuario_fk;
+alter table public.revisor_comentarios add constraint revisor_comentarios_usuario_fk
+  foreign key (usuario_id) references auth.users(id) on delete cascade;
 
 create or replace function public.revisor_comentar(
   p_video_id uuid, p_contexto text, p_comentario text)
