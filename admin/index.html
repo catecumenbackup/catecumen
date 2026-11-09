@@ -1877,9 +1877,8 @@
       $("rev-usuario").innerHTML = (esSint && out.telefono)
         ? ("Inicia sesión con el <b>teléfono</b> "+esc(out.telefono)+" (o el usuario <b>"+esc(out.email)+"</b>) y la contraseña que fije. Comparte esto <b>y</b> el enlace de abajo.")
         : ("Usuario de acceso para iniciar sesión: <b>"+esc(out.email)+"</b>. Comparte el usuario <b>y</b> el enlace de abajo.");
-      if(out.enlace){ $("rev-enlace").value=out.enlace; }
-      else { $("rev-enlace").value=""; msg.textContent+=" — no se generó el enlace automáticamente; genera uno de recuperación de contraseña desde Supabase → Authentication."; }
-      $("rev-enlace-box").style.display="block";
+      try{ const link=await revLinkCrear(out.user_id); $("rev-enlace").value=link; $("rev-enlace-box").style.display="block"; }
+      catch(e){ $("rev-enlace-box").style.display="none"; msg.textContent+=" — genera el enlace desde la fila con «Enlace»."; }
       $("rev-email").value=$("rev-tel").value=$("rev-nombre").value=$("rev-apellido").value="";
       btn.disabled=false; cargarRevisores();
     }catch(e){ msg.className="msg err"; msg.textContent="Error: "+(e.message||e); btn.disabled=false; }
@@ -1899,8 +1898,7 @@
       <td>${r.n_descargas||0}</td>
       <td>${r.n_comentarios||0}</td>
       <td style="white-space:nowrap"><button class="btn ghost sm" onclick="verRevisor('${r.usuario_id}',${JSON.stringify(esc(r.nombre||r.email||"")).replace(/"/g,'&quot;')})">Ver</button>
-        <button class="btn ghost sm" onclick="revEnlace('${esc(r.email||"")}')">Enlace</button>
-        <button class="btn ghost sm" onclick="revInvalidar('${esc(r.email||"")}')">Anular enlaces</button>
+        <button class="btn ghost sm" onclick="revEnlace('${r.usuario_id}')">Enlace</button>
         ${r.suspendido
           ? `<button class="btn ghost sm" onclick="revAcceso('${r.usuario_id}',false)">Reactivar</button>`
           : `<button class="btn ghost sm" style="color:#F87171;border-color:#F87171" onclick="revAcceso('${r.usuario_id}',true)">Revocar</button>`}</td>
@@ -1920,6 +1918,7 @@
         <h3 style="color:var(--gold);margin:0">Revisor: ${esc(nombre||"")}</h3>
         <button class="btn ghost sm" style="color:#F87171;border-color:#F87171" onclick="revEliminar('${uid}',${nombreJs.replace(/"/g,'&quot;')})">🗑️ Eliminar revisor</button>
       </div>
+      <div id="rev-enlaces-box" style="margin:0 0 14px;background:rgba(200,169,81,.06);border:1px solid rgba(200,169,81,.2);border-radius:10px;padding:10px 12px">${await revRenderEnlaces(uid)}</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
         <div><h4 style="margin:0 0 6px">Comentarios (${Cm.length})</h4>${
           Cm.length?Cm.map(c=>`<div style="background:rgba(255,255,255,.04);border:1px solid rgba(200,169,81,.2);border-radius:8px;padding:8px 10px;margin-bottom:8px">
@@ -1935,6 +1934,42 @@
       </div>`;
   };
   window.revMarkRead=async function(id,uid,nombre){ await sb.rpc("admin_revisor_comentario_leido",{p_id:id}); verRevisor(uid,nombre); cargarRevisores(); };
+  // ── Enlaces de acceso del revisor (varios, cada uno rastreable/revocable) ──
+  async function revLinkCrear(uid){
+    const {data,error}=await sb.rpc("admin_revisor_enlace_crear",{p_usuario_id:uid});
+    if(error) throw new Error(error.message);
+    return "https://www.catecumen.com/acceso/?rt="+data;
+  }
+  async function revRenderEnlaces(uid){
+    const {data}=await sb.rpc("admin_revisor_enlaces_listar",{p_usuario_id:uid});
+    const rows=data||[];
+    const est=(e)=> e.revocado?'<span class="pill bad">anulado</span>':(e.usado_en?('usado '+new Date(e.usado_en).toLocaleDateString()):'<span style="color:#7bd88f">activo</span>');
+    return `<h4 style="margin:0 0 8px">Enlaces de acceso (${rows.length}) <button class="btn ghost sm" onclick="revEnlaceNuevo('${uid}')">+ Generar enlace</button></h4>`+
+      (rows.length? '<div class="scroll" style="max-height:220px"><table><tbody>'+rows.map(e=>`<tr>
+         <td style="font-size:11px;color:var(--ivory-m);white-space:nowrap">${new Date(e.creado).toLocaleString()}</td>
+         <td style="font-size:12px">${est(e)}</td>
+         <td style="white-space:nowrap">${e.revocado?'':`<button class="btn ghost sm" onclick="revEnlaceEstado(${e.id},'revocar','${uid}')">Anular</button>`} <button class="btn ghost sm" style="color:#F87171;border-color:#F87171" onclick="revEnlaceEstado(${e.id},'borrar','${uid}')">Borrar</button></td>
+       </tr>`).join('')+'</tbody></table></div>'
+       : '<p style="color:var(--ivory-m);font-size:13px;margin:0">Sin enlaces. Genera uno con «+ Generar enlace».</p>');
+  }
+  async function _revRefreshEnlaces(uid){ const el=document.getElementById("rev-enlaces-box"); if(el) el.innerHTML=await revRenderEnlaces(uid); }
+  window.revEnlaceNuevo=async function(uid){
+    const msg=$("rev-msg"); msg.className="msg"; msg.textContent="Generando enlace…";
+    try{
+      const link=await revLinkCrear(uid);
+      $("rev-usuario").innerHTML="Enlace nuevo (sirve una sola vez). Cópialo y envíaselo:";
+      $("rev-enlace").value=link; $("rev-enlace-box").style.display="block";
+      msg.className="msg ok"; msg.textContent="Enlace generado.";
+      $("rev-enlace-box").scrollIntoView({behavior:"smooth",block:"center"});
+      _revRefreshEnlaces(uid);
+    }catch(e){ msg.className="msg err"; msg.textContent="Error: "+(e.message||e); }
+  };
+  window.revEnlaceEstado=async function(id,accion,uid){
+    if(accion==='borrar' && !confirm("¿Borrar este enlace? Si aún no se ha usado, dejará de funcionar.")) return;
+    const {error}=await sb.rpc("admin_revisor_enlace_estado",{p_id:id,p_accion:accion});
+    if(error){ alert("Error: "+error.message); return; }
+    _revRefreshEnlaces(uid);
+  };
   window.revAcceso=async function(uid,revocar){
     if(!confirm(revocar?"¿Revocar el acceso de este revisor? No podrá iniciar sesión ni ver el contenido.":"¿Reactivar el acceso de este revisor?")) return;
     const {error}=await sb.rpc("admin_revisor_acceso",{p_usuario_id:uid,p_revocar:revocar});
@@ -1952,27 +1987,9 @@
     if(!res.ok||out.error) throw new Error(out.error||("HTTP "+res.status));
     return out;
   }
-  window.revEnlace=async function(email){
-    const msg=$("rev-msg"); msg.className="msg"; msg.textContent="Generando enlace…";
-    try{
-      const out=await _revGenerar(email,true);
-      if(out.enlace){
-        $("rev-usuario").innerHTML="Enlace nuevo para <b>"+esc(email)+"</b> (el anterior quedó anulado). Cópialo y envíaselo:";
-        $("rev-enlace").value=out.enlace; $("rev-enlace-box").style.display="block";
-        msg.className="msg ok"; msg.textContent="Enlace regenerado.";
-        $("rev-enlace-box").scrollIntoView({behavior:"smooth",block:"center"});
-      } else { msg.className="msg err"; msg.textContent="No se pudo generar el enlace."; }
-    }catch(e){ msg.className="msg err"; msg.textContent="Error: "+(e.message||e); }
-  };
-  window.revInvalidar=async function(email){
-    if(!confirm("¿Anular los enlaces de acceso ya entregados a este revisor?\n\nCualquier enlace que hayas compartido dejará de funcionar. Para darle acceso de nuevo, usa \"Enlace\" y comparte el nuevo. (Si ya fijó su contraseña, esto no cierra su sesión; para cortar el acceso usa \"Revocar\".)")) return;
-    const msg=$("rev-msg"); msg.className="msg"; msg.textContent="Anulando enlaces…";
-    try{
-      await _revGenerar(email,false);   // genera (y desecha) un token nuevo → invalida los anteriores
-      $("rev-enlace-box").style.display="none";
-      msg.className="msg ok"; msg.textContent="Los enlaces anteriores de "+email+" quedaron anulados.";
-    }catch(e){ msg.className="msg err"; msg.textContent="Error: "+(e.message||e); }
-  };
+  // "Enlace" desde la fila: genera un enlace nuevo (token propio) y lo muestra.
+  // La gestión completa (ver todos / anular / borrar) está en el detalle "Ver".
+  window.revEnlace=function(uid){ return revEnlaceNuevo(uid); };
   // ELIMINACIÓN TOTAL del revisor (cuenta auth + perfil + actividad/comentarios por FK en cascada).
   window.revEliminar=async function(uid,nombre){
     if(!confirm("¿ELIMINAR por completo a este revisor"+(nombre?(" ("+nombre+")"):"")+"?\n\nSe borra su cuenta, su acceso y TODOS sus datos (actividad y comentarios). Los enlaces dejan de servir. Es IRREVERSIBLE.")) return;

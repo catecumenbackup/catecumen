@@ -393,5 +393,57 @@ begin
   return (select count(*) from revisor_comentarios where not leido);
 end $$;
 
+-- ════════════════════════════════════════════════════════════════════════════
+--  ENLACES DE ACCESO (varios por revisor, cada uno rastreable/revocable/borrable)
+--  Supabase guarda UN solo token de recuperación por cuenta, así que para tener
+--  varios enlaces independientes usamos tokens PROPIOS. El enlace es
+--  https://www.catecumen.com/acceso/?rt=<token>; al abrirlo, la edge function
+--  `revisor-canjear` valida el token (no revocado, no usado, cuenta activa) y
+--  acuña al momento un enlace de recuperación de Supabase → /recuperar.
+-- ════════════════════════════════════════════════════════════════════════════
+create table if not exists public.revisor_enlaces (
+  id          bigserial primary key,
+  usuario_id  uuid not null references auth.users(id) on delete cascade,
+  token       text not null unique,
+  creado      timestamptz not null default now(),
+  creado_por  uuid,
+  usado_en    timestamptz,
+  revocado    boolean not null default false
+);
+alter table public.revisor_enlaces enable row level security;  -- sin políticas: la edge usa service-role; el admin vía RPC
+create index if not exists idx_revisor_enlaces_user on public.revisor_enlaces(usuario_id, creado desc);
+
+-- Admin: crea un enlace (token) para un revisor → devuelve el token (el panel arma la URL).
+create or replace function public.admin_revisor_enlace_crear(p_usuario_id uuid)
+returns text language plpgsql security definer set search_path = public, extensions as $$
+declare v_token text;
+begin
+  if not es_admin() then raise exception 'no autorizado'; end if;
+  if not exists(select 1 from usuarios where id=p_usuario_id and tipo_usuario='revisor') then raise exception 'no es revisor'; end if;
+  v_token := encode(gen_random_bytes(24),'hex');
+  insert into revisor_enlaces(usuario_id, token, creado_por) values (p_usuario_id, v_token, auth.uid());
+  return v_token;
+end $$;
+
+create or replace function public.admin_revisor_enlaces_listar(p_usuario_id uuid)
+returns table (id bigint, creado timestamptz, usado_en timestamptz, revocado boolean)
+language plpgsql security definer set search_path = public as $$
+begin
+  if not es_admin() then raise exception 'no autorizado'; end if;
+  return query select e.id, e.creado, e.usado_en, e.revocado from revisor_enlaces e where e.usuario_id=p_usuario_id order by e.creado desc;
+end $$;
+
+create or replace function public.admin_revisor_enlace_estado(p_id bigint, p_accion text)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not es_admin() then raise exception 'no autorizado'; end if;
+  if p_accion='revocar' then update revisor_enlaces set revocado=true where id=p_id;
+  elsif p_accion='borrar' then delete from revisor_enlaces where id=p_id;
+  else raise exception 'accion invalida'; end if;
+  begin insert into admin_log (admin_id, admin_email, accion, entidad, entidad_id)
+    values (auth.uid(), (select email from auth.users where id=auth.uid()), 'revisor.enlace_'||p_accion, 'revisor_enlaces', p_id::text);
+  exception when others then null; end;
+end $$;
+
 -- Verificación segura (no usa auth.uid, no revierte):
 -- select count(*) as revisores from public.usuarios where tipo_usuario='revisor';

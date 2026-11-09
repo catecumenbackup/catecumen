@@ -30,19 +30,40 @@
     <div class="err" id="err">Este enlace no es válido o ya se usó. Solicita uno nuevo al administrador.</div>
   </div>
 <script>
-  (function(){
-    try{
-      var h = location.hash ? decodeURIComponent(location.hash.slice(1)) : "";
-      if(!h){ var q = new URLSearchParams(location.search); h = q.get("u") || ""; }
-      // Solo se permite redirigir al endpoint de verificación de Supabase (evita abuso de redirección abierta).
-      if(h && /^https:\/\/[a-z0-9.\-]+\.supabase\.co\/auth\/v1\/verify/i.test(h)){
-        location.replace(h);
-        return;
-      }
-    }catch(e){}
+  var SUPA = "https://jqlfjfamraavsbhdusuq.supabase.co";
+  var ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxbGZqZmFtcmFhdnNiaGR1c3VxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyMDEwNjIsImV4cCI6MjA5Njc3NzA2Mn0.AFD2j0ERaNqx4gii8z3sOvdbkIJl3Kzs_qyDErm7SL8";
+  var ESVERIFY = /^https:\/\/[a-z0-9.\-]+\.supabase\.co\/auth\/v1\/verify/i;
+  function fail(msg){
     document.getElementById("spin").style.display = "none";
     document.getElementById("msg").style.display = "none";
-    document.getElementById("err").style.display = "block";
+    var e = document.getElementById("err");
+    if(msg) e.textContent = msg + " Solicita uno nuevo al administrador.";
+    e.style.display = "block";
+  }
+  (function(){
+    try{
+      var q = new URLSearchParams(location.search);
+      // Enlace de revisor con token propio: se canjea en el servidor (uno por enlace,
+      // revocable) por un enlace de verificación de Supabase generado al momento.
+      var rt = q.get("rt");
+      if(rt){
+        fetch(SUPA + "/functions/v1/revisor-canjear", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "apikey": ANON },
+          body: JSON.stringify({ token: rt })
+        }).then(function(r){ return r.json(); })
+          .then(function(o){
+            if(o && o.enlace && ESVERIFY.test(o.enlace)){ location.replace(o.enlace); }
+            else { fail(o && o.error ? o.error : ""); }
+          }).catch(function(){ fail(); });
+        return;
+      }
+      // Compatibilidad: enlace de Supabase embebido en el hash (o ?u=).
+      var h = location.hash ? decodeURIComponent(location.hash.slice(1)) : "";
+      if(!h){ h = q.get("u") || ""; }
+      if(h && ESVERIFY.test(h)){ location.replace(h); return; }
+    }catch(e){}
+    fail();
   })();
 </script>
 </body>
